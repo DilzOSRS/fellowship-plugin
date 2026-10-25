@@ -22,9 +22,9 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: Phase 3a, in progress. Phases 1 and 2 are done (all steps tested in-game 2026-10-25). 3a.1 and 3a.2 done (tested in-game 2026-10-25). Next step: 3a.3.**
+**Current phase: Phase 3b, not started. Phases 1, 2 and 3a are done (all steps tested in-game 2026-10-25). Next: plan 3b and break it into small steps.**
 
-Phase 3a steps (each one ends with the user testing it; for testing, temporarily make the expedition 1 minute long):
+Phase 3a steps, all done (for in-game testing, the expedition was temporarily made 1 minute long):
 1. **3a.1 Coins.** A coin balance, saved per account and shown in the panel. Starts at 0.
 2. **3a.2 Send on an expedition.** A button sends the character on "Explore Lumbridge Swamp Caves". The start time is saved per account, the card shows "Away, back in 29m", and the character earns no OSRS-based XP while away. Survives restarts.
 3. **3a.3 Collect.** After 30 minutes the card says the character is back, with a Collect button that gives 1,000 XP and 10–50 coins.
@@ -54,7 +54,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 |---|---|---|
 | 1 | Sidebar panel. One "Adventurer" earning Fellowship XP 1:1 from all OSRS XP. Fellowship's own level curve. Show level + XP bar. Save progress per OSRS account. | Done |
 | 2 | Level cap 10. At 10, evolve Adventurer into Knight, Archer or Wizard. | Done |
-| 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: 1,000 XP + 10–50 coins. | In progress |
+| 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: 1,000 XP + 10–50 coins. | Done |
 | 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | Not started |
 | 4–5 | Parked, to be redesigned after 3b ships. | Parked |
 

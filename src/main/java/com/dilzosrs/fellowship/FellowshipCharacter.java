@@ -131,6 +131,25 @@ public class FellowshipCharacter
 		return isAway() && !now.isBefore(getExpeditionEnd());
 	}
 
+	/**
+	 * Bring the character home from a finished expedition and add its XP reward.
+	 * Coins belong to the account, so the caller handles those.
+	 *
+	 * @return the expedition that was collected, or null if there's nothing to collect yet
+	 */
+	public Expedition collectExpedition(Instant now)
+	{
+		if (!isExpeditionDone(now))
+		{
+			return null;
+		}
+		Expedition finished = expedition;
+		expedition = null;
+		expeditionStart = null;
+		addXp(finished.getXpReward());
+		return finished;
+	}
+
 	/** How long until the expedition is done (zero once it is), or null when the character is home. */
 	public Duration getTimeLeft(Instant now)
 	{

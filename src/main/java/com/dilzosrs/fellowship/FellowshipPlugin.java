@@ -2,6 +2,7 @@ package com.dilzosrs.fellowship;
 
 import java.awt.image.BufferedImage;
 import java.time.Instant;
+import java.util.Random;
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,7 @@ public class FellowshipPlugin extends Plugin
 	private ClientToolbar clientToolbar;
 
 	private final XpTracker xpTracker = new XpTracker();
+	private final Random random = new Random();
 	private FellowshipPanel panel;
 	private NavigationButton navButton;
 	private FellowshipCharacter character;
@@ -58,7 +60,7 @@ public class FellowshipPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition);
+		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -156,6 +158,37 @@ public class FellowshipPlugin extends Plugin
 			}
 			configManager.setRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_KEY, expedition.name());
 			configManager.setRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_START_KEY, start.toEpochMilli());
+			updatePanel();
+		});
+	}
+
+	/**
+	 * Called from the panel (on the Swing thread) when the player collects a finished expedition.
+	 */
+	private void collectExpedition()
+	{
+		clientThread.invokeLater(() ->
+		{
+			if (character == null)
+			{
+				return;
+			}
+			long xpBefore = character.getXp();
+			Expedition finished = character.collectExpedition(Instant.now());
+			if (finished == null)
+			{
+				return;
+			}
+			int coinsGained = finished.rollCoins(random);
+			coins += coinsGained;
+
+			configManager.setRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, character.getXp());
+			configManager.setRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, coins);
+			configManager.unsetRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_KEY);
+			configManager.unsetRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_START_KEY);
+
+			long xpGained = character.getXp() - xpBefore;
+			SwingUtilities.invokeLater(() -> panel.showReward(xpGained, coinsGained));
 			updatePanel();
 		});
 	}

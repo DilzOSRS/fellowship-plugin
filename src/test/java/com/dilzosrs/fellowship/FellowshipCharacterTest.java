@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Random;
 import net.runelite.api.Skill;
 import org.junit.Test;
 
@@ -194,6 +195,68 @@ public class FellowshipCharacterTest
 		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
 		assertFalse(character.canEvolve());
 		assertFalse(character.evolve(CharacterClass.KNIGHT));
+	}
+
+	@Test
+	public void cantCollectBeforeTheTimeIsUp()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
+		assertNull(character.collectExpedition(START));
+		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
+		assertNull(character.collectExpedition(START.plus(Duration.ofMinutes(29))));
+		assertTrue(character.isAway());
+		assertEquals(0, character.getXp());
+	}
+
+	@Test
+	public void collectingGivesXpAndBringsTheCharacterHome()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
+		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
+		assertEquals(Expedition.LUMBRIDGE_SWAMP_CAVES, character.collectExpedition(START.plus(Duration.ofMinutes(30))));
+		assertEquals(1_000, character.getXp());
+		assertFalse(character.isAway());
+		// Home again, so OSRS XP counts again.
+		character.gainXp(Skill.WOODCUTTING, 50);
+		assertEquals(1_050, character.getXp());
+		// Can't collect the same expedition twice.
+		assertNull(character.collectExpedition(START.plus(Duration.ofMinutes(31))));
+	}
+
+	@Test
+	public void expeditionXpGetsNoClassBonus()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.WIZARD, 0);
+		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
+		character.collectExpedition(START.plus(Duration.ofMinutes(30)));
+		assertEquals(1_000, character.getXp());
+	}
+
+	@Test
+	public void expeditionXpRespectsTheLevelCap()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, CAP_XP - 400);
+		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
+		character.collectExpedition(START.plus(Duration.ofMinutes(30)));
+		assertEquals(CAP_XP, character.getXp());
+	}
+
+	@Test
+	public void coinRewardIsBetweenTenAndFifty()
+	{
+		Random random = new Random(42);
+		boolean sawTen = false;
+		boolean sawFifty = false;
+		for (int i = 0; i < 5_000; i++)
+		{
+			int coins = Expedition.LUMBRIDGE_SWAMP_CAVES.rollCoins(random);
+			assertTrue(coins >= 10 && coins <= 50);
+			sawTen |= coins == 10;
+			sawFifty |= coins == 50;
+		}
+		// Both ends of the range can actually happen.
+		assertTrue(sawTen);
+		assertTrue(sawFifty);
 	}
 
 	@Test

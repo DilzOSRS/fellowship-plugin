@@ -25,6 +25,7 @@ public class FellowshipPanel extends PluginPanel
 {
 	private final Consumer<CharacterClass> onEvolve;
 	private final Consumer<Expedition> onSendExpedition;
+	private final Runnable onCollect;
 
 	private final JLabel coinsLabel = new JLabel();
 	private final JLabel nameLabel = new JLabel();
@@ -40,15 +41,20 @@ public class FellowshipPanel extends PluginPanel
 	private final Timer countdownTimer = new Timer(1000, e -> updateCountdown());
 	private Expedition shownExpedition;
 	private Instant shownExpeditionEnd;
+	/** What the last collected expedition gave, or null. */
+	private String lastReward;
 
 	/**
 	 * @param onEvolve called on the Swing thread when the player confirms evolving into a class
 	 * @param onSendExpedition called on the Swing thread when the player confirms sending the character away
+	 * @param onCollect called on the Swing thread when the player collects a finished expedition
 	 */
-	public FellowshipPanel(Consumer<CharacterClass> onEvolve, Consumer<Expedition> onSendExpedition)
+	public FellowshipPanel(Consumer<CharacterClass> onEvolve, Consumer<Expedition> onSendExpedition,
+		Runnable onCollect)
 	{
 		this.onEvolve = onEvolve;
 		this.onSendExpedition = onSendExpedition;
+		this.onCollect = onCollect;
 
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 		setLayout(new BorderLayout(0, 10));
@@ -206,7 +212,9 @@ public class FellowshipPanel extends PluginPanel
 		if (expedition == null)
 		{
 			countdownTimer.stop();
-			expeditionLabel.setText("Send on an expedition:");
+			expeditionLabel.setText(lastReward == null
+				? "Send on an expedition:"
+				: "<html>" + lastReward + "<br><br>Send on an expedition:</html>");
 			for (Expedition option : Expedition.values())
 			{
 				// The name gets its own line, because it's too long to fit inside a button.
@@ -220,15 +228,30 @@ public class FellowshipPanel extends PluginPanel
 				row.add(button, BorderLayout.SOUTH);
 				expeditionButtons.add(row);
 			}
+			expeditionButtons.setVisible(true);
 		}
 		else
 		{
+			// The reward message is only shown until the next expedition starts.
+			lastReward = null;
+			expeditionButtons.setVisible(false);
 			countdownTimer.start();
 			updateCountdown();
 		}
-		expeditionButtons.setVisible(expedition == null);
 		expeditionButtons.revalidate();
 		expeditionButtons.repaint();
+	}
+
+	/**
+	 * Show what the last expedition gave. Must be called on the Swing thread, before the
+	 * character is shown at home again.
+	 */
+	public void showReward(long xpGained, int coinsGained)
+	{
+		lastReward = xpGained > 0
+			? String.format("Back with +%,d XP<br>and +%d coins!", xpGained, coinsGained)
+			// An Adventurer at the level cap wastes the XP, like any other XP.
+			: String.format("Back with +%d coins!<br>(No XP: level cap reached.)", coinsGained);
 	}
 
 	private void updateCountdown()
@@ -241,8 +264,16 @@ public class FellowshipPanel extends PluginPanel
 		if (left.isNegative() || left.isZero())
 		{
 			countdownTimer.stop();
-			// Collecting the reward comes in step 3a.3.
 			expeditionLabel.setText("<html>Back from<br>" + shownExpedition.getDisplayName() + "!</html>");
+			if (expeditionButtons.getComponentCount() == 0)
+			{
+				JButton collect = new JButton("Collect");
+				collect.addActionListener(e -> onCollect.run());
+				expeditionButtons.add(collect);
+				expeditionButtons.setVisible(true);
+				expeditionButtons.revalidate();
+				expeditionButtons.repaint();
+			}
 			return;
 		}
 		// Explicit line breaks: letting Swing wrap long HTML text cuts off the last line.
