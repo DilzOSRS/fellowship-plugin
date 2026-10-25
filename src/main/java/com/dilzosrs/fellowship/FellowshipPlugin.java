@@ -97,7 +97,7 @@ public class FellowshipPlugin extends Plugin
 		int gained = xpTracker.update(event.getSkill(), event.getXp());
 		if (gained > 0 && character != null)
 		{
-			character.addXp(gained);
+			character.gainXp(event.getSkill(), gained);
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
 			configManager.setRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, character.getXp());

@@ -22,9 +22,9 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: Phase 2, in progress. Phase 1 is done (all steps tested in-game 2026-10-25). 2.1 done (unit tests only). 2.2 and 2.3 done (tested in-game 2026-10-25). Next step: 2.4.**
+**Current phase: Phase 3a, not started. Phases 1 and 2 are done (all steps tested in-game 2026-10-25). Next: answer 3a's open question (expedition length and reward), then break 3a into small steps.**
 
-Phase 2 steps (each one ends with the user testing it; for 2.2–2.4, temporarily make levels cheap so level 10 is quick to reach):
+Phase 2 steps, all done (for in-game testing, levels were temporarily made cheap so level 10 was quick to reach):
 1. **2.1 Curve to 99.** Extend `LevelCurve` past level 10 with gentler growth, up to 99. Unit tests only.
 2. **2.2 Level 10 cap.** The Adventurer stops at level 10. XP earned at the cap is wasted, and the panel says it's ready to evolve.
 3. **2.3 Evolve.** At level 10 the panel offers Knight, Archer or Wizard, with a confirm step since the choice is permanent. The class is saved per account and shown on the card, the character resets to level 1, and the cap goes up to 99.
@@ -48,7 +48,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Sidebar panel. One "Adventurer" earning Fellowship XP 1:1 from all OSRS XP. Fellowship's own level curve. Show level + XP bar. Save progress per OSRS account. | Done |
-| 2 | Level cap 10. At 10, evolve Adventurer into Knight, Archer or Wizard. | In progress |
+| 2 | Level cap 10. At 10, evolve Adventurer into Knight, Archer or Wizard. | Done |
 | 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: XP + 100 coins. | Not started |
 | 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | Not started |
 | 4–5 | Parked, to be redesigned after 3b ships. | Parked |
@@ -61,10 +61,9 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - **Evolving (Phase 2), decided 2026-10-25:** a job advancement resets the character to level 1 (XP back to 0), with a higher level cap. Why: a fresh start feels exciting, and with many characters it keeps an even spread of levels instead of a pile of high-level ones. (This replaced an earlier Pokémon-style "keep your level" plan. Don't switch again until it has been playtested.)
 - **Level cap:** the Adventurer is capped at 10. XP earned at the cap is wasted until it evolves (the user's choice, to push players to evolve). Evolved classes go up to 99. There's no reason for a lower cap while levels don't unlock anything yet.
 - **Curve past 10:** each level costs 5% more than the last, so level 99 needs about 61.4M XP (roughly 3,000h for a low-level player, 600h for a fast endgame player). The user chose a steady, easy-to-track rate; hefty grinds are fine until levels unlock more. Playtest and adjust.
-- **Class bonuses (2x XP):** Archer gets Ranged. Wizard gets Magic. Knight gets Attack + Strength. Defence stays 1x because Magic and Ranged also give Defence XP.
+- **Class bonuses (2x XP):** Archer gets Ranged. Wizard gets Magic. Knight gets Attack + Strength. Defence stays 1x because Magic and Ranged also give Defence XP. Hitpoints is 1x for every class (confirmed 2026-10-25). The Adventurer has no bonuses.
 
 ## Open questions
-- Hitpoints XP: confirm it's 1x for every class.
 - Expedition length and XP reward. (Needed for 3a.)
 
 ## Ideas Parking Lot (not now)

@@ -1,5 +1,7 @@
 package com.dilzosrs.fellowship;
 
+import net.runelite.api.Skill;
+
 /**
  * A Fellowship character. Its level comes from its total Fellowship XP, and its class
  * sets its level cap.
@@ -28,6 +30,14 @@ public class FellowshipCharacter
 	public int getLevelCap()
 	{
 		return characterClass.getLevelCap();
+	}
+
+	/**
+	 * Add Fellowship XP for OSRS XP gained in a skill, applying the class's bonus for that skill.
+	 */
+	public void gainXp(Skill skill, long osrsXp)
+	{
+		addXp(osrsXp * characterClass.getXpMultiplier(skill));
 	}
 
 	public void addXp(long amount)

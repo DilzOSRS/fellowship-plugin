@@ -3,6 +3,7 @@ package com.dilzosrs.fellowship;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import net.runelite.api.Skill;
 import org.junit.Test;
 
 public class FellowshipCharacterTest
@@ -79,6 +80,53 @@ public class FellowshipCharacterTest
 		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ARCHER, LevelCurve.xpForLevel(99));
 		assertFalse(character.canEvolve());
 		assertFalse(character.evolve(CharacterClass.KNIGHT));
+	}
+
+	@Test
+	public void adventurerHasNoBonuses()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
+		character.gainXp(Skill.ATTACK, 100);
+		character.gainXp(Skill.RANGED, 100);
+		character.gainXp(Skill.MAGIC, 100);
+		assertEquals(300, character.getXp());
+	}
+
+	@Test
+	public void knightGetsDoubleAttackAndStrength()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.KNIGHT, 0);
+		character.gainXp(Skill.ATTACK, 100);
+		character.gainXp(Skill.STRENGTH, 100);
+		assertEquals(400, character.getXp());
+	}
+
+	@Test
+	public void archerGetsDoubleRanged()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ARCHER, 0);
+		character.gainXp(Skill.RANGED, 100);
+		character.gainXp(Skill.MAGIC, 100);
+		assertEquals(300, character.getXp());
+	}
+
+	@Test
+	public void wizardGetsDoubleMagic()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.WIZARD, 0);
+		character.gainXp(Skill.MAGIC, 100);
+		character.gainXp(Skill.RANGED, 100);
+		assertEquals(300, character.getXp());
+	}
+
+	@Test
+	public void defenceAndHitpointsAreNeverDoubled()
+	{
+		for (CharacterClass characterClass : CharacterClass.values())
+		{
+			assertEquals(1, characterClass.getXpMultiplier(Skill.DEFENCE));
+			assertEquals(1, characterClass.getXpMultiplier(Skill.HITPOINTS));
+		}
 	}
 
 	@Test
