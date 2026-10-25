@@ -22,7 +22,14 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: Phase 1, not started. Setup is done: the project is created from the template, renamed and runs in the dev client (confirmed by the user 2026-10-25). Next step is breaking Phase 1 into small pieces.**
+**Current phase: Phase 1, in progress. 1.1 done (tested in-game 2026-10-25). Next step: 1.2.**
+
+Phase 1 steps (each one ends with the user testing it in the dev client):
+1. **1.1 Empty sidebar panel.** A Fellowship icon in the sidebar that opens a panel with a title. No game logic.
+2. **1.2 Count XP gains.** Listen for XP changes, skip the login snapshot, and show "XP gained this session" in the panel.
+3. **1.3 Level curve.** Decide the numbers, then write a small class that turns total XP into level + progress, with unit tests.
+4. **1.4 Show the Adventurer.** The panel shows the Adventurer's level and an XP bar, fed by 1.2 and 1.3.
+5. **1.5 Save per account.** Store the Adventurer's XP per OSRS account so it survives restarts and switching accounts.
 
 ## Running & environment notes
 - Run the dev client with `.\gradlew.bat run`, or IntelliJ → Gradle panel → fellowship → Tasks → other → `run`.
@@ -33,7 +40,7 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 
 | Phase | Scope | Status |
 |---|---|---|
-| 1 | Sidebar panel. One "Adventurer" earning Fellowship XP 1:1 from all OSRS XP. Fellowship's own level curve. Show level + XP bar. Save progress per OSRS account. | Not started |
+| 1 | Sidebar panel. One "Adventurer" earning Fellowship XP 1:1 from all OSRS XP. Fellowship's own level curve. Show level + XP bar. Save progress per OSRS account. | In progress |
 | 2 | Level cap 10. At 10, evolve Adventurer into Knight, Archer or Wizard. | Not started |
 | 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: XP + 100 coins. | Not started |
 | 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | Not started |
@@ -49,12 +56,16 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 ## Open questions
 - What happens after evolving at level 10? Is there a new level cap? (Needed for Phase 2.)
 - Hitpoints XP: confirm it's 1x for every class.
-- Level curve numbers: how much XP per level? (Needed for Phase 1.)
+- Level curve numbers: how much XP per level? (Needed for Phase 1.) Must feel fair to low-level players too, not just endgame XP rates. Plan: keep the numbers in one constant and playtest.
 - Expedition length and XP reward. (Needed for 3a.)
 
 ## Ideas Parking Lot (not now)
 - Characters with different XP rules: combat-only, skilling-only, or skill multipliers.
 - Area-based XP, e.g. a vampire who only gains XP in Morytania.
 - More expeditions, item rewards, and RNG-based unlocks.
+- Second class advancement, MapleStory-style (e.g. Wizard → Battle Mage / Cleric / Arcane Wizard). Possible answer to "what happens after level 10".
+- Many unlockable characters, some hard or rare, each with its own unique way to unlock.
+- Gear (weapons etc.) from expeditions and other sources. Design not figured out yet.
+- Fellowship Guild level, built from all characters' levels, so switching characters still feels like progress. It could gate expeditions and characters.
 - Phases 4–5 redesign.
 - Online features (leaderboards, trading). Risky under the rules, so maybe never.
