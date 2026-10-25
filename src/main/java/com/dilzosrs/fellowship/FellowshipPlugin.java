@@ -37,7 +37,7 @@ public class FellowshipPlugin extends Plugin
 	private final XpTracker xpTracker = new XpTracker();
 	private FellowshipPanel panel;
 	private NavigationButton navButton;
-	private long sessionXp;
+	private Adventurer adventurer;
 
 	@Override
 	protected void startUp() throws Exception
@@ -54,7 +54,10 @@ public class FellowshipPlugin extends Plugin
 
 		clientToolbar.addNavigation(navButton);
 
-		sessionXp = 0;
+		// Not saved yet, so progress resets on restart. Saving comes in step 1.5.
+		adventurer = new Adventurer("Adventurer");
+		updatePanel();
+
 		xpTracker.reset();
 		// If the plugin is turned on while already logged in, the game won't resend
 		// the XP totals, so take the snapshot ourselves.
@@ -76,9 +79,8 @@ public class FellowshipPlugin extends Plugin
 		int gained = xpTracker.update(event.getSkill(), event.getXp());
 		if (gained > 0)
 		{
-			sessionXp += gained;
-			long xp = sessionXp;
-			SwingUtilities.invokeLater(() -> panel.setSessionXp(xp));
+			adventurer.addXp(gained);
+			updatePanel();
 		}
 	}
 
@@ -90,6 +92,14 @@ public class FellowshipPlugin extends Plugin
 		{
 			xpTracker.reset();
 		}
+	}
+
+	private void updatePanel()
+	{
+		// Copy the values now, because the panel is updated later on the Swing thread.
+		String name = adventurer.getName();
+		long xp = adventurer.getXp();
+		SwingUtilities.invokeLater(() -> panel.showAdventurer(name, xp));
 	}
 
 	private void snapshotXpIfLoggedIn()

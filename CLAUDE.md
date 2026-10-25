@@ -22,7 +22,7 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: Phase 1, in progress. 1.1 and 1.2 done (tested in-game 2026-10-25). 1.3 done (unit tests only; nothing to see in-game until 1.4). Next step: 1.4.**
+**Current phase: Phase 1, in progress. 1.1–1.4 done (tested in-game 2026-10-25). Next step: 1.5.**
 
 Phase 1 steps (each one ends with the user testing it in the dev client):
 1. **1.1 Empty sidebar panel.** A Fellowship icon in the sidebar that opens a panel with a title. No game logic.
@@ -48,7 +48,7 @@ Phase 1 steps (each one ends with the user testing it in the dev client):
 
 ## Decisions
 - **XP tracking:** count only XP gained while RuneLite is running. On login RuneLite reports *total* XP, so only count gains after that first snapshot.
-- **Level curve:** Fellowship uses its own curve, not the OSRS table (at 1:1, the OSRS table hits level 10 at 1,154 XP). Starting point for playtesting (picked 2026-10-25): level 2 costs 6,000 XP, and each level after costs 25% more, so level 10 needs 154,814 XP total (roughly 8h for a low-level player, 1.5h for a fast endgame player). Max level is 10 for now. Must stay fair to low-level players. The numbers are constants in `LevelCurve.java`.
+- **Level curve:** Fellowship uses its own curve, not the OSRS table (at 1:1, the OSRS table hits level 10 at 1,154 XP). Current playtest values (2026-10-25): level 2 costs 1,500 XP, and each level after costs 50% more, so level 10 needs 112,331 XP total (roughly 5.5h for a low-level player, 1h for a fast endgame player). The first try (6,000 XP, +25%) felt too slow at level 1. Max level is 10 for now. Must stay fair to low-level players. The numbers are constants in `LevelCurve.java`.
 - **Expedition timers:** real time. Store the start time, so expeditions finish even while logged out.
 - **Active character on an expedition:** allowed. Until a new active character is picked, nobody gets 100% XP and everyone else stays at 10%.
 - **Class bonuses (2x XP):** Archer gets Ranged. Wizard gets Magic. Knight gets Attack + Strength. Defence stays 1x because Magic and Ranged also give Defence XP.
