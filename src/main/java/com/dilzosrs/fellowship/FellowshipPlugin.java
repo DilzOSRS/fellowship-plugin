@@ -27,9 +27,10 @@ import net.runelite.client.util.ImageUtil;
 )
 public class FellowshipPlugin extends Plugin
 {
-	// Never rename these without a migration, or players lose their saved progress.
+	// Never change these strings without a migration, or players lose their saved progress.
 	private static final String CONFIG_GROUP = "fellowship";
-	private static final String ADVENTURER_XP_KEY = "adventurerXp";
+	private static final String CHARACTER_XP_KEY = "adventurerXp";
+	private static final String CHARACTER_CLASS_KEY = "characterClass";
 
 	@Inject
 	private Client client;
@@ -46,12 +47,12 @@ public class FellowshipPlugin extends Plugin
 	private final XpTracker xpTracker = new XpTracker();
 	private FellowshipPanel panel;
 	private NavigationButton navButton;
-	private Adventurer adventurer;
+	private FellowshipCharacter character;
 
 	@Override
 	protected void startUp() throws Exception
 	{
-		panel = new FellowshipPanel();
+		panel = new FellowshipPanel(this::evolve);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -68,7 +69,7 @@ public class FellowshipPlugin extends Plugin
 		// and the game won't resend the XP totals, so load and snapshot ourselves.
 		clientThread.invokeLater(() ->
 		{
-			loadAdventurer();
+			loadCharacter();
 			snapshotXpIfLoggedIn();
 		});
 
@@ -79,27 +80,27 @@ public class FellowshipPlugin extends Plugin
 	protected void shutDown() throws Exception
 	{
 		clientToolbar.removeNavigation(navButton);
-		adventurer = null;
+		character = null;
 		log.debug("Fellowship stopped!");
 	}
 
 	@Subscribe
 	public void onRuneScapeProfileChanged(RuneScapeProfileChanged event)
 	{
-		// Logged into an account (or a different one): load its saved Adventurer.
-		loadAdventurer();
+		// Logged into an account (or a different one): load its saved character.
+		loadCharacter();
 	}
 
 	@Subscribe
 	public void onStatChanged(StatChanged event)
 	{
 		int gained = xpTracker.update(event.getSkill(), event.getXp());
-		if (gained > 0 && adventurer != null)
+		if (gained > 0 && character != null)
 		{
-			adventurer.addXp(gained);
+			character.addXp(gained);
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
-			configManager.setRSProfileConfiguration(CONFIG_GROUP, ADVENTURER_XP_KEY, adventurer.getXp());
+			configManager.setRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, character.getXp());
 			updatePanel();
 		}
 	}
@@ -108,35 +109,71 @@ public class FellowshipPlugin extends Plugin
 	public void onGameStateChanged(GameStateChanged event)
 	{
 		// Logged out: the next login (maybe on another account) starts a fresh snapshot,
-		// and no XP is counted until that account's Adventurer is loaded.
+		// and no XP is counted until that account's character is loaded.
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
 			xpTracker.reset();
-			adventurer = null;
+			character = null;
 		}
 	}
 
-	private void loadAdventurer()
+	/**
+	 * Called from the panel (on the Swing thread) once the player confirms a class.
+	 */
+	private void evolve(CharacterClass newClass)
+	{
+		// The character is only changed on the client thread, like everywhere else.
+		clientThread.invokeLater(() ->
+		{
+			if (character == null || !character.evolve(newClass))
+			{
+				return;
+			}
+			configManager.setRSProfileConfiguration(CONFIG_GROUP, CHARACTER_CLASS_KEY, newClass.name());
+			configManager.setRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, character.getXp());
+			updatePanel();
+		});
+	}
+
+	private void loadCharacter()
 	{
 		if (configManager.getRSProfileKey() == null)
 		{
 			// Not logged in yet, so we don't know which account's progress to load.
-			adventurer = null;
+			character = null;
 			return;
 		}
 
-		Long savedXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, ADVENTURER_XP_KEY, Long.class);
-		adventurer = new Adventurer("Adventurer", savedXp == null ? 0 : savedXp);
+		Long savedXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, Long.class);
+		String savedClass = configManager.getRSProfileConfiguration(CONFIG_GROUP, CHARACTER_CLASS_KEY);
+		character = new FellowshipCharacter(parseClass(savedClass), savedXp == null ? 0 : savedXp);
 		updatePanel();
+	}
+
+	private static CharacterClass parseClass(String savedClass)
+	{
+		if (savedClass == null)
+		{
+			return CharacterClass.ADVENTURER;
+		}
+		try
+		{
+			return CharacterClass.valueOf(savedClass);
+		}
+		catch (IllegalArgumentException e)
+		{
+			log.warn("Unknown saved class {}, using Adventurer", savedClass);
+			return CharacterClass.ADVENTURER;
+		}
 	}
 
 	private void updatePanel()
 	{
 		// Copy the values now, because the panel is updated later on the Swing thread.
-		String name = adventurer.getName();
-		long xp = adventurer.getXp();
-		int levelCap = adventurer.getLevelCap();
-		SwingUtilities.invokeLater(() -> panel.showAdventurer(name, xp, levelCap));
+		CharacterClass characterClass = character.getCharacterClass();
+		long xp = character.getXp();
+		boolean canEvolve = character.canEvolve();
+		SwingUtilities.invokeLater(() -> panel.showCharacter(characterClass, xp, canEvolve));
 	}
 
 	private void snapshotXpIfLoggedIn()

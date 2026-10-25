@@ -22,7 +22,7 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: Phase 2, in progress. Phase 1 is done (all steps tested in-game 2026-10-25). 2.1 done (unit tests only). 2.2 done (tested in-game 2026-10-25). Next step: 2.3.**
+**Current phase: Phase 2, in progress. Phase 1 is done (all steps tested in-game 2026-10-25). 2.1 done (unit tests only). 2.2 and 2.3 done (tested in-game 2026-10-25). Next step: 2.4.**
 
 Phase 2 steps (each one ends with the user testing it; for 2.2–2.4, temporarily make levels cheap so level 10 is quick to reach):
 1. **2.1 Curve to 99.** Extend `LevelCurve` past level 10 with gentler growth, up to 99. Unit tests only.
