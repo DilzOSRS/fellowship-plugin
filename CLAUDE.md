@@ -22,7 +22,14 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: not started. Tools are set up (Java 11, IntelliJ, Git; GitHub user `DilzOSRS`). Next step is creating the project from the RuneLite plugin template.**
+**Current phase: Phase 1, not started. Setup is done: the project is created from the template, renamed and runs in the dev client (confirmed by the user 2026-10-25). Next step is breaking Phase 1 into small pieces.**
+
+## Running & environment notes
+- Run the dev client with `.\gradlew.bat run`, or IntelliJ → Gradle panel → fellowship → Tasks → other → `run`.
+- The dev client shares the user's `.runelite` profile, so their other hub plugins load too. Warnings from those plugins aren't ours.
+- Log in through the Jagex icon in the dev client sidebar (built-in, no setup).
+- Fixed 2026-10-25: an incomplete `~/.m2/repository/org/lwjgl` cache broke `run` (missing `natives-linux-arm64`). It was moved to the Recycle Bin. If it happens again, check `~/.m2` first rather than editing `build.gradle`.
+- Git is at `C:\Program Files\Git\cmd\git.exe` (it may not be on PATH in older shells). The code isn't pushed to GitHub yet.
 
 | Phase | Scope | Status |
 |---|---|---|
