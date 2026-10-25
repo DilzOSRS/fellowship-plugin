@@ -2,7 +2,15 @@ package com.dilzosrs.fellowship;
 
 import java.awt.image.BufferedImage;
 import javax.inject.Inject;
+import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Client;
+import net.runelite.api.GameState;
+import net.runelite.api.Skill;
+import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.StatChanged;
+import net.runelite.client.callback.ClientThread;
+import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -18,14 +26,23 @@ import net.runelite.client.util.ImageUtil;
 public class FellowshipPlugin extends Plugin
 {
 	@Inject
+	private Client client;
+
+	@Inject
+	private ClientThread clientThread;
+
+	@Inject
 	private ClientToolbar clientToolbar;
 
+	private final XpTracker xpTracker = new XpTracker();
+	private FellowshipPanel panel;
 	private NavigationButton navButton;
+	private long sessionXp;
 
 	@Override
 	protected void startUp() throws Exception
 	{
-		FellowshipPanel panel = new FellowshipPanel();
+		panel = new FellowshipPanel();
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -36,6 +53,13 @@ public class FellowshipPlugin extends Plugin
 			.build();
 
 		clientToolbar.addNavigation(navButton);
+
+		sessionXp = 0;
+		xpTracker.reset();
+		// If the plugin is turned on while already logged in, the game won't resend
+		// the XP totals, so take the snapshot ourselves.
+		clientThread.invokeLater(this::snapshotXpIfLoggedIn);
+
 		log.debug("Fellowship started!");
 	}
 
@@ -44,5 +68,39 @@ public class FellowshipPlugin extends Plugin
 	{
 		clientToolbar.removeNavigation(navButton);
 		log.debug("Fellowship stopped!");
+	}
+
+	@Subscribe
+	public void onStatChanged(StatChanged event)
+	{
+		int gained = xpTracker.update(event.getSkill(), event.getXp());
+		if (gained > 0)
+		{
+			sessionXp += gained;
+			long xp = sessionXp;
+			SwingUtilities.invokeLater(() -> panel.setSessionXp(xp));
+		}
+	}
+
+	@Subscribe
+	public void onGameStateChanged(GameStateChanged event)
+	{
+		// Logged out: the next login (maybe on another account) starts a fresh snapshot.
+		if (event.getGameState() == GameState.LOGIN_SCREEN)
+		{
+			xpTracker.reset();
+		}
+	}
+
+	private void snapshotXpIfLoggedIn()
+	{
+		if (client.getGameState() != GameState.LOGGED_IN)
+		{
+			return;
+		}
+		for (Skill skill : Skill.values())
+		{
+			xpTracker.update(skill, client.getSkillExperience(skill));
+		}
 	}
 }

@@ -22,14 +22,14 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: Phase 1, in progress. 1.1 done (tested in-game 2026-10-25). Next step: 1.2.**
+**Current phase: Phase 1, in progress. 1.1 and 1.2 done (tested in-game 2026-10-25). Next step: 1.3.**
 
 Phase 1 steps (each one ends with the user testing it in the dev client):
 1. **1.1 Empty sidebar panel.** A Fellowship icon in the sidebar that opens a panel with a title. No game logic.
 2. **1.2 Count XP gains.** Listen for XP changes, skip the login snapshot, and show "XP gained this session" in the panel.
 3. **1.3 Level curve.** Decide the numbers, then write a small class that turns total XP into level + progress, with unit tests.
 4. **1.4 Show the Adventurer.** The panel shows the Adventurer's level and an XP bar, fed by 1.2 and 1.3.
-5. **1.5 Save per account.** Store the Adventurer's XP per OSRS account so it survives restarts and switching accounts.
+5. **1.5 Save per account.** Store the Adventurer's XP per OSRS account so it survives restarts, switching accounts and turning the plugin off and on. Progress must never be lost; this is a long-term game. (The 1.2 session counter is temporary and gets replaced.)
 
 ## Running & environment notes
 - Run the dev client with `.\gradlew.bat run`, or IntelliJ → Gradle panel → fellowship → Tasks → other → `run`.

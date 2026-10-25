@@ -8,10 +8,12 @@ import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 
 /**
- * The Fellowship sidebar panel. For now it only shows a title.
+ * The Fellowship sidebar panel.
  */
 public class FellowshipPanel extends PluginPanel
 {
+	private final JLabel sessionXpLabel = new JLabel();
+
 	public FellowshipPanel()
 	{
 		setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -22,7 +24,15 @@ public class FellowshipPanel extends PluginPanel
 		title.setForeground(Color.WHITE);
 		add(title, BorderLayout.NORTH);
 
-		JLabel placeholder = new JLabel("Your Adventurer will appear here.");
-		add(placeholder, BorderLayout.CENTER);
+		add(sessionXpLabel, BorderLayout.CENTER);
+		setSessionXp(0);
+	}
+
+	/**
+	 * Must be called on the Swing thread.
+	 */
+	public void setSessionXp(long xp)
+	{
+		sessionXpLabel.setText(String.format("XP gained this session: %,d", xp));
 	}
 }
