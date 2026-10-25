@@ -31,6 +31,7 @@ public class FellowshipPlugin extends Plugin
 	private static final String CONFIG_GROUP = "fellowship";
 	private static final String CHARACTER_XP_KEY = "adventurerXp";
 	private static final String CHARACTER_CLASS_KEY = "characterClass";
+	private static final String COINS_KEY = "coins";
 
 	@Inject
 	private Client client;
@@ -48,6 +49,8 @@ public class FellowshipPlugin extends Plugin
 	private FellowshipPanel panel;
 	private NavigationButton navButton;
 	private FellowshipCharacter character;
+	/** Coins belong to the account, not to one character. */
+	private long coins;
 
 	@Override
 	protected void startUp() throws Exception
@@ -147,6 +150,10 @@ public class FellowshipPlugin extends Plugin
 		Long savedXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, Long.class);
 		String savedClass = configManager.getRSProfileConfiguration(CONFIG_GROUP, CHARACTER_CLASS_KEY);
 		character = new FellowshipCharacter(parseClass(savedClass), savedXp == null ? 0 : savedXp);
+
+		Long savedCoins = configManager.getRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, Long.class);
+		coins = savedCoins == null ? 0 : savedCoins;
+
 		updatePanel();
 	}
 
@@ -173,7 +180,12 @@ public class FellowshipPlugin extends Plugin
 		CharacterClass characterClass = character.getCharacterClass();
 		long xp = character.getXp();
 		boolean canEvolve = character.canEvolve();
-		SwingUtilities.invokeLater(() -> panel.showCharacter(characterClass, xp, canEvolve));
+		long coinsNow = coins;
+		SwingUtilities.invokeLater(() ->
+		{
+			panel.showCharacter(characterClass, xp, canEvolve);
+			panel.showCoins(coinsNow);
+		});
 	}
 
 	private void snapshotXpIfLoggedIn()

@@ -22,7 +22,12 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: Phase 3a, not started. Phases 1 and 2 are done (all steps tested in-game 2026-10-25). Next: answer 3a's open question (expedition length and reward), then break 3a into small steps.**
+**Current phase: Phase 3a, in progress. Phases 1 and 2 are done (all steps tested in-game 2026-10-25). 3a.1 done (tested in-game 2026-10-25). Next step: 3a.2.**
+
+Phase 3a steps (each one ends with the user testing it; for testing, temporarily make the expedition 1 minute long):
+1. **3a.1 Coins.** A coin balance, saved per account and shown in the panel. Starts at 0.
+2. **3a.2 Send on an expedition.** A button sends the character on "Explore Lumbridge Swamp Caves". The start time is saved per account, the card shows "Away, back in 29m", and the character earns no OSRS-based XP while away. Survives restarts.
+3. **3a.3 Collect.** After 30 minutes the card says the character is back, with a Collect button that gives 1,000 XP and 10–50 coins.
 
 Phase 2 steps, all done (for in-game testing, levels were temporarily made cheap so level 10 was quick to reach):
 1. **2.1 Curve to 99.** Extend `LevelCurve` past level 10 with gentler growth, up to 99. Unit tests only.
@@ -49,14 +54,16 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 |---|---|---|
 | 1 | Sidebar panel. One "Adventurer" earning Fellowship XP 1:1 from all OSRS XP. Fellowship's own level curve. Show level + XP bar. Save progress per OSRS account. | Done |
 | 2 | Level cap 10. At 10, evolve Adventurer into Knight, Archer or Wizard. | Done |
-| 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: XP + 100 coins. | Not started |
+| 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: 1,000 XP + 10–50 coins. | In progress |
 | 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | Not started |
 | 4–5 | Parked, to be redesigned after 3b ships. | Parked |
 
 ## Decisions
 - **XP tracking:** count only XP gained while RuneLite is running. On login RuneLite reports *total* XP, so only count gains after that first snapshot.
-- **Level curve:** Fellowship uses its own curve, not the OSRS table (at 1:1, the OSRS table hits level 10 at 1,154 XP). Current playtest values (2026-10-25): level 2 costs 1,500 XP, and each level after costs 50% more, so level 10 needs 112,331 XP total (roughly 5.5h for a low-level player, 1h for a fast endgame player). The first try (6,000 XP, +25%) felt too slow at level 1. Max level is 10 for now. Must stay fair to low-level players. The numbers are constants in `LevelCurve.java`.
-- **Expedition timers:** real time. Store the start time, so expeditions finish even while logged out.
+- **Level curve:** Fellowship uses its own curve, not the OSRS table (at 1:1, the OSRS table hits level 10 at 1,154 XP). Current playtest values (2026-10-25): level 2 costs 1,500 XP, and each level after costs 50% more, so level 10 needs 112,331 XP total (roughly 5.5h for a low-level player, 1h for a fast endgame player). The first try (6,000 XP, +25%) felt too slow at level 1. Max level is 10 for now. Must stay fair to low-level players. The numbers are constants in `LevelCurve.java`. (Level caps: see below.)
+- **Expedition timers:** real time, same speed online and offline. Store the start time, so expeditions finish even while logged out.
+- **Expedition 1 (decided 2026-10-25):** "Explore Lumbridge Swamp Caves". 30 minutes. Rewards 1,000 XP (fixed for now; the level cap still applies, and class bonuses don't) plus a random 10–50 coins, about 3–4 runs per 100-coin recruit. The player clicks Collect when it's done. Early expeditions should be short.
+- **Coins:** shown as "coins", not "GP", so nobody mistakes them for real gold.
 - **Active character on an expedition:** allowed. Until a new active character is picked, nobody gets 100% XP and everyone else stays at 10%.
 - **Evolving (Phase 2), decided 2026-10-25:** a job advancement resets the character to level 1 (XP back to 0), with a higher level cap. Why: a fresh start feels exciting, and with many characters it keeps an even spread of levels instead of a pile of high-level ones. (This replaced an earlier Pokémon-style "keep your level" plan. Don't switch again until it has been playtested.)
 - **Level cap:** the Adventurer is capped at 10. XP earned at the cap is wasted until it evolves (the user's choice, to push players to evolve). Evolved classes go up to 99. There's no reason for a lower cap while levels don't unlock anything yet.
@@ -64,12 +71,13 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - **Class bonuses (2x XP):** Archer gets Ranged. Wizard gets Magic. Knight gets Attack + Strength. Defence stays 1x because Magic and Ranged also give Defence XP. Hitpoints is 1x for every class (confirmed 2026-10-25). The Adventurer has no bonuses.
 
 ## Open questions
-- Expedition length and XP reward. (Needed for 3a.)
 
 ## Ideas Parking Lot (not now)
 - Characters with different XP rules: combat-only, skilling-only, or skill multipliers.
 - Area-based XP, e.g. a vampire who only gains XP in Morytania.
-- More expeditions, item rewards, and RNG-based unlocks.
+- More expeditions, item rewards, and RNG-based unlocks. Expeditions should get RNG item loot at some point.
+- Expedition speed: 100% while playing, 50% while logged out. Parked because it's complex and punishes sending characters off before logging out.
+- Expedition XP that scales with level (e.g. half a level) instead of a fixed 1,000, if fixed XP stops mattering at high levels.
 - Second class advancement, MapleStory-style (e.g. Wizard → Battle Mage / Cleric / Arcane Wizard). Possible answer to "what happens after level 10".
 - Many unlockable characters, some hard or rare, each with its own unique way to unlock.
 - Gear (weapons etc.) from expeditions and other sources. Design not figured out yet.

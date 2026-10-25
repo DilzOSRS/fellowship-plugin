@@ -22,6 +22,7 @@ public class FellowshipPanel extends PluginPanel
 {
 	private final Consumer<CharacterClass> onEvolve;
 
+	private final JLabel coinsLabel = new JLabel();
 	private final JLabel nameLabel = new JLabel();
 	private final JLabel levelLabel = new JLabel();
 	private final ProgressBar xpBar = new ProgressBar();
@@ -39,10 +40,15 @@ public class FellowshipPanel extends PluginPanel
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 		setLayout(new BorderLayout(0, 10));
 
+		JPanel titleRow = new JPanel(new BorderLayout());
+		titleRow.setOpaque(false);
 		JLabel title = new JLabel("Fellowship");
 		title.setFont(FontManager.getRunescapeBoldFont());
 		title.setForeground(Color.WHITE);
-		add(title, BorderLayout.NORTH);
+		titleRow.add(title, BorderLayout.WEST);
+		coinsLabel.setForeground(ColorScheme.GRAND_EXCHANGE_PRICE);
+		titleRow.add(coinsLabel, BorderLayout.EAST);
+		add(titleRow, BorderLayout.NORTH);
 
 		// One card per character. For now there is only one character.
 		JPanel card = new JPanel(new BorderLayout(0, 6));
@@ -79,6 +85,14 @@ public class FellowshipPanel extends PluginPanel
 
 		// Shown until an account's character is loaded.
 		nameLabel.setText("Log in to begin");
+	}
+
+	/**
+	 * Show the account's coin balance. Must be called on the Swing thread.
+	 */
+	public void showCoins(long coins)
+	{
+		coinsLabel.setText(String.format("%,d coins", coins));
 	}
 
 	/**
