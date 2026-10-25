@@ -135,7 +135,8 @@ public class FellowshipPlugin extends Plugin
 		// Copy the values now, because the panel is updated later on the Swing thread.
 		String name = adventurer.getName();
 		long xp = adventurer.getXp();
-		SwingUtilities.invokeLater(() -> panel.showAdventurer(name, xp));
+		int levelCap = adventurer.getLevelCap();
+		SwingUtilities.invokeLater(() -> panel.showAdventurer(name, xp, levelCap));
 	}
 
 	private void snapshotXpIfLoggedIn()

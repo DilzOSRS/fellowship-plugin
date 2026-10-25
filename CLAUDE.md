@@ -22,7 +22,7 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: Phase 2, in progress. Phase 1 is done (all steps tested in-game 2026-10-25). 2.1 done (unit tests only). Next step: 2.2.**
+**Current phase: Phase 2, in progress. Phase 1 is done (all steps tested in-game 2026-10-25). 2.1 done (unit tests only). 2.2 done (tested in-game 2026-10-25). Next step: 2.3.**
 
 Phase 2 steps (each one ends with the user testing it; for 2.2–2.4, temporarily make levels cheap so level 10 is quick to reach):
 1. **2.1 Curve to 99.** Extend `LevelCurve` past level 10 with gentler growth, up to 99. Unit tests only.
@@ -42,6 +42,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - The dev client shares the user's `.runelite` profile, so their other hub plugins load too. Warnings from those plugins aren't ours.
 - Log in through the Jagex icon in the dev client sidebar (built-in, no setup).
 - Fixed 2026-10-25: an incomplete `~/.m2/repository/org/lwjgl` cache broke `run` (missing `natives-linux-arm64`). It was moved to the Recycle Bin. If it happens again, check `~/.m2` first rather than editing `build.gradle`.
+- Builds can crash with "Native memory allocation failed" when Windows is low on memory (e.g. during a Premiere export). It's not a code problem; close big programs and retry.
 - Git is at `C:\Program Files\Git\cmd\git.exe` (it may not be on PATH in older shells). The code is on GitHub at https://github.com/DilzOSRS/fellowship-plugin (public, `origin`, first pushed 2026-10-25).
 
 | Phase | Scope | Status |

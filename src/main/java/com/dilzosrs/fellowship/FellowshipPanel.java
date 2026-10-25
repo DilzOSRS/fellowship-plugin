@@ -62,18 +62,20 @@ public class FellowshipPanel extends PluginPanel
 	/**
 	 * Show a character's name, level and XP bar. Must be called on the Swing thread.
 	 */
-	public void showAdventurer(String name, long xp)
+	public void showAdventurer(String name, long xp, int levelCap)
 	{
 		int level = LevelCurve.levelForXp(xp);
 		nameLabel.setText(name);
 		levelLabel.setText("Level " + level);
 
-		if (level >= LevelCurve.MAX_LEVEL)
+		if (level >= levelCap)
 		{
 			xpBar.setMaximumValue(1);
 			xpBar.setValue(1);
 			xpBar.setCenterLabel("Max");
-			xpLabel.setText(String.format("Max level (%,d XP)", xp));
+			xpLabel.setText(levelCap < LevelCurve.MAX_LEVEL
+				? "Level cap reached. Ready to evolve!"
+				: String.format("Max level (%,d XP)", xp));
 			return;
 		}
 
