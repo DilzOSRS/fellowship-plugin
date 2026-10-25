@@ -2,12 +2,17 @@ package com.dilzosrs.fellowship;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import java.time.Duration;
+import java.time.Instant;
 import net.runelite.api.Skill;
 import org.junit.Test;
 
 public class FellowshipCharacterTest
 {
+	private static final Instant START = Instant.parse("2026-10-25T20:00:00Z");
+
 	private static final long CAP_XP = LevelCurve.xpForLevel(CharacterClass.ADVENTURER.getLevelCap());
 
 	@Test
@@ -127,6 +132,68 @@ public class FellowshipCharacterTest
 			assertEquals(1, characterClass.getXpMultiplier(Skill.DEFENCE));
 			assertEquals(1, characterClass.getXpMultiplier(Skill.HITPOINTS));
 		}
+	}
+
+	@Test
+	public void startsAtHome()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
+		assertFalse(character.isAway());
+		assertNull(character.getExpeditionEnd());
+		assertNull(character.getTimeLeft(START));
+	}
+
+	@Test
+	public void expeditionLastsThirtyMinutes()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
+		assertTrue(character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START));
+		assertTrue(character.isAway());
+		assertEquals(START.plus(Duration.ofMinutes(30)), character.getExpeditionEnd());
+		assertEquals(Duration.ofMinutes(30), character.getTimeLeft(START));
+		assertEquals(Duration.ofMinutes(10), character.getTimeLeft(START.plus(Duration.ofMinutes(20))));
+	}
+
+	@Test
+	public void expeditionIsDoneWhenTimeIsUp()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
+		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
+		assertFalse(character.isExpeditionDone(START.plus(Duration.ofMinutes(29))));
+		assertTrue(character.isExpeditionDone(START.plus(Duration.ofMinutes(30))));
+		// Hours later (e.g. after being logged out), it's still done and never "negative".
+		assertTrue(character.isExpeditionDone(START.plus(Duration.ofHours(5))));
+		assertEquals(Duration.ZERO, character.getTimeLeft(START.plus(Duration.ofHours(5))));
+		// It stays away until collected.
+		assertTrue(character.isAway());
+	}
+
+	@Test
+	public void noOsrsXpWhileAway()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.WIZARD, 0);
+		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
+		character.gainXp(Skill.MAGIC, 500);
+		character.gainXp(Skill.WOODCUTTING, 500);
+		assertEquals(0, character.getXp());
+	}
+
+	@Test
+	public void cantStartTwoExpeditions()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
+		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
+		assertFalse(character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START.plus(Duration.ofMinutes(5))));
+		assertEquals(START, character.getExpeditionStart());
+	}
+
+	@Test
+	public void cantEvolveWhileAway()
+	{
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, CAP_XP);
+		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
+		assertFalse(character.canEvolve());
+		assertFalse(character.evolve(CharacterClass.KNIGHT));
 	}
 
 	@Test

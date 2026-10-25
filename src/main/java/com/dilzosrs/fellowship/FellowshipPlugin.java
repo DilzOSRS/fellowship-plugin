@@ -1,6 +1,7 @@
 package com.dilzosrs.fellowship;
 
 import java.awt.image.BufferedImage;
+import java.time.Instant;
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,8 @@ public class FellowshipPlugin extends Plugin
 	private static final String CHARACTER_XP_KEY = "adventurerXp";
 	private static final String CHARACTER_CLASS_KEY = "characterClass";
 	private static final String COINS_KEY = "coins";
+	private static final String EXPEDITION_KEY = "expedition";
+	private static final String EXPEDITION_START_KEY = "expeditionStart";
 
 	@Inject
 	private Client client;
@@ -55,7 +58,7 @@ public class FellowshipPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		panel = new FellowshipPanel(this::evolve);
+		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -83,6 +86,7 @@ public class FellowshipPlugin extends Plugin
 	protected void shutDown() throws Exception
 	{
 		clientToolbar.removeNavigation(navButton);
+		panel.stopTimers();
 		character = null;
 		log.debug("Fellowship stopped!");
 	}
@@ -138,6 +142,24 @@ public class FellowshipPlugin extends Plugin
 		});
 	}
 
+	/**
+	 * Called from the panel (on the Swing thread) once the player confirms sending the character away.
+	 */
+	private void sendOnExpedition(Expedition expedition)
+	{
+		clientThread.invokeLater(() ->
+		{
+			Instant start = Instant.now();
+			if (character == null || !character.startExpedition(expedition, start))
+			{
+				return;
+			}
+			configManager.setRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_KEY, expedition.name());
+			configManager.setRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_START_KEY, start.toEpochMilli());
+			updatePanel();
+		});
+	}
+
 	private void loadCharacter()
 	{
 		if (configManager.getRSProfileKey() == null)
@@ -150,6 +172,15 @@ public class FellowshipPlugin extends Plugin
 		Long savedXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, Long.class);
 		String savedClass = configManager.getRSProfileConfiguration(CONFIG_GROUP, CHARACTER_CLASS_KEY);
 		character = new FellowshipCharacter(parseClass(savedClass), savedXp == null ? 0 : savedXp);
+
+		Expedition savedExpedition = parseExpedition(
+			configManager.getRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_KEY));
+		Long savedStart = configManager.getRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_START_KEY, Long.class);
+		if (savedExpedition != null && savedStart != null)
+		{
+			// Timers run in real time, so an expedition can finish while logged out.
+			character.startExpedition(savedExpedition, Instant.ofEpochMilli(savedStart));
+		}
 
 		Long savedCoins = configManager.getRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, Long.class);
 		coins = savedCoins == null ? 0 : savedCoins;
@@ -174,16 +205,35 @@ public class FellowshipPlugin extends Plugin
 		}
 	}
 
+	private static Expedition parseExpedition(String savedExpedition)
+	{
+		if (savedExpedition == null)
+		{
+			return null;
+		}
+		try
+		{
+			return Expedition.valueOf(savedExpedition);
+		}
+		catch (IllegalArgumentException e)
+		{
+			log.warn("Unknown saved expedition {}, ignoring it", savedExpedition);
+			return null;
+		}
+	}
+
 	private void updatePanel()
 	{
 		// Copy the values now, because the panel is updated later on the Swing thread.
 		CharacterClass characterClass = character.getCharacterClass();
 		long xp = character.getXp();
 		boolean canEvolve = character.canEvolve();
+		Expedition expedition = character.getExpedition();
+		Instant expeditionEnd = character.getExpeditionEnd();
 		long coinsNow = coins;
 		SwingUtilities.invokeLater(() ->
 		{
-			panel.showCharacter(characterClass, xp, canEvolve);
+			panel.showCharacter(characterClass, xp, canEvolve, expedition, expeditionEnd);
 			panel.showCoins(coinsNow);
 		});
 	}

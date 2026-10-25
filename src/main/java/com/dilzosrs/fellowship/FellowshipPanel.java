@@ -4,11 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
@@ -21,6 +24,7 @@ import net.runelite.client.ui.components.ProgressBar;
 public class FellowshipPanel extends PluginPanel
 {
 	private final Consumer<CharacterClass> onEvolve;
+	private final Consumer<Expedition> onSendExpedition;
 
 	private final JLabel coinsLabel = new JLabel();
 	private final JLabel nameLabel = new JLabel();
@@ -29,13 +33,22 @@ public class FellowshipPanel extends PluginPanel
 	private final JLabel xpLabel = new JLabel();
 	// One button per row, because the sidebar is too narrow for the class names side by side.
 	private final JPanel evolveButtons = new JPanel(new GridLayout(0, 1, 0, 4));
+	private final JLabel expeditionLabel = new JLabel();
+	private final JPanel expeditionButtons = new JPanel(new GridLayout(0, 1, 0, 4));
+
+	// Ticks every second while the character is away, to update the countdown.
+	private final Timer countdownTimer = new Timer(1000, e -> updateCountdown());
+	private Expedition shownExpedition;
+	private Instant shownExpeditionEnd;
 
 	/**
 	 * @param onEvolve called on the Swing thread when the player confirms evolving into a class
+	 * @param onSendExpedition called on the Swing thread when the player confirms sending the character away
 	 */
-	public FellowshipPanel(Consumer<CharacterClass> onEvolve)
+	public FellowshipPanel(Consumer<CharacterClass> onEvolve, Consumer<Expedition> onSendExpedition)
 	{
 		this.onEvolve = onEvolve;
+		this.onSendExpedition = onSendExpedition;
 
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 		setLayout(new BorderLayout(0, 10));
@@ -81,10 +94,27 @@ public class FellowshipPanel extends PluginPanel
 		body.add(evolveButtons, BorderLayout.SOUTH);
 
 		card.add(body, BorderLayout.CENTER);
+
+		JPanel expeditionArea = new JPanel(new BorderLayout(0, 4));
+		expeditionArea.setOpaque(false);
+		expeditionArea.setBorder(new EmptyBorder(6, 0, 0, 0));
+		expeditionArea.add(expeditionLabel, BorderLayout.NORTH);
+		expeditionButtons.setOpaque(false);
+		expeditionArea.add(expeditionButtons, BorderLayout.SOUTH);
+		card.add(expeditionArea, BorderLayout.SOUTH);
+
 		add(card, BorderLayout.CENTER);
 
 		// Shown until an account's character is loaded.
 		nameLabel.setText("Log in to begin");
+	}
+
+	/**
+	 * Stop the countdown timer. Call when the plugin shuts down.
+	 */
+	public void stopTimers()
+	{
+		countdownTimer.stop();
 	}
 
 	/**
@@ -96,15 +126,20 @@ public class FellowshipPanel extends PluginPanel
 	}
 
 	/**
-	 * Show a character's class, level and XP bar. Must be called on the Swing thread.
+	 * Show a character's class, level, XP bar and expedition. Must be called on the Swing thread.
+	 *
+	 * @param expedition the expedition the character is on, or null when it's home
+	 * @param expeditionEnd when that expedition finishes, or null when the character is home
 	 */
-	public void showCharacter(CharacterClass characterClass, long xp, boolean canEvolve)
+	public void showCharacter(CharacterClass characterClass, long xp, boolean canEvolve,
+		Expedition expedition, Instant expeditionEnd)
 	{
 		int level = LevelCurve.levelForXp(xp);
 		int levelCap = characterClass.getLevelCap();
 		nameLabel.setText(characterClass.getDisplayName());
 		levelLabel.setText("Level " + level);
 		showEvolveButtons(canEvolve ? characterClass : null);
+		showExpedition(expedition, expeditionEnd);
 
 		if (level >= levelCap)
 		{
@@ -157,5 +192,99 @@ public class FellowshipPanel extends PluginPanel
 		{
 			onEvolve.accept(newClass);
 		}
+	}
+
+	/**
+	 * Show the expeditions the character can go on, or a countdown if it's away.
+	 */
+	private void showExpedition(Expedition expedition, Instant expeditionEnd)
+	{
+		shownExpedition = expedition;
+		shownExpeditionEnd = expeditionEnd;
+
+		expeditionButtons.removeAll();
+		if (expedition == null)
+		{
+			countdownTimer.stop();
+			expeditionLabel.setText("Send on an expedition:");
+			for (Expedition option : Expedition.values())
+			{
+				// The name gets its own line, because it's too long to fit inside a button.
+				JPanel row = new JPanel(new BorderLayout(0, 2));
+				row.setOpaque(false);
+				JLabel name = new JLabel(option.getDisplayName());
+				name.setForeground(Color.WHITE);
+				row.add(name, BorderLayout.NORTH);
+				JButton button = new JButton("Send (" + formatDuration(option.getDuration()) + ")");
+				button.addActionListener(e -> confirmSend(option));
+				row.add(button, BorderLayout.SOUTH);
+				expeditionButtons.add(row);
+			}
+		}
+		else
+		{
+			countdownTimer.start();
+			updateCountdown();
+		}
+		expeditionButtons.setVisible(expedition == null);
+		expeditionButtons.revalidate();
+		expeditionButtons.repaint();
+	}
+
+	private void updateCountdown()
+	{
+		if (shownExpedition == null)
+		{
+			return;
+		}
+		Duration left = Duration.between(Instant.now(), shownExpeditionEnd);
+		if (left.isNegative() || left.isZero())
+		{
+			countdownTimer.stop();
+			// Collecting the reward comes in step 3a.3.
+			expeditionLabel.setText("<html>Back from<br>" + shownExpedition.getDisplayName() + "!</html>");
+			return;
+		}
+		// Explicit line breaks: letting Swing wrap long HTML text cuts off the last line.
+		expeditionLabel.setText("<html>Away on an expedition:<br>" + shownExpedition.getDisplayName()
+			+ "<br>Back in " + formatCountdown(left) + "</html>");
+	}
+
+	private void confirmSend(Expedition expedition)
+	{
+		int choice = JOptionPane.showConfirmDialog(
+			this,
+			"Send your character to " + expedition.getDisplayName() + " for "
+				+ formatDuration(expedition.getDuration()) + "?\n\n"
+				+ "It won't earn XP from your OSRS play while it's away.",
+			"Expedition",
+			JOptionPane.YES_NO_OPTION);
+		if (choice == JOptionPane.YES_OPTION)
+		{
+			onSendExpedition.accept(expedition);
+		}
+	}
+
+	/** e.g. "30 min" or "2h 30m". */
+	private static String formatDuration(Duration duration)
+	{
+		long hours = duration.toHours();
+		long minutes = duration.toMinutesPart();
+		if (hours == 0)
+		{
+			return minutes + " min";
+		}
+		return minutes == 0 ? hours + "h" : hours + "h " + minutes + "m";
+	}
+
+	/** e.g. "29:41", or "1:05:00" when an hour or more is left. */
+	private static String formatCountdown(Duration left)
+	{
+		long hours = left.toHours();
+		int minutes = left.toMinutesPart();
+		int seconds = left.toSecondsPart();
+		return hours > 0
+			? String.format("%d:%02d:%02d", hours, minutes, seconds)
+			: String.format("%d:%02d", minutes, seconds);
 	}
 }

@@ -22,7 +22,7 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: Phase 3a, in progress. Phases 1 and 2 are done (all steps tested in-game 2026-10-25). 3a.1 done (tested in-game 2026-10-25). Next step: 3a.2.**
+**Current phase: Phase 3a, in progress. Phases 1 and 2 are done (all steps tested in-game 2026-10-25). 3a.1 and 3a.2 done (tested in-game 2026-10-25). Next step: 3a.3.**
 
 Phase 3a steps (each one ends with the user testing it; for testing, temporarily make the expedition 1 minute long):
 1. **3a.1 Coins.** A coin balance, saved per account and shown in the panel. Starts at 0.

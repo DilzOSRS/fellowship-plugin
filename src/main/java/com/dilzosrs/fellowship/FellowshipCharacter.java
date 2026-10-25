@@ -1,15 +1,21 @@
 package com.dilzosrs.fellowship;
 
+import java.time.Duration;
+import java.time.Instant;
 import net.runelite.api.Skill;
 
 /**
  * A Fellowship character. Its level comes from its total Fellowship XP, and its class
- * sets its level cap.
+ * sets its level cap. It can be away on an expedition, and earns no OSRS-based XP while away.
  */
 public class FellowshipCharacter
 {
 	private CharacterClass characterClass;
 	private long xp;
+
+	/** The expedition the character is on, or null when it's home. */
+	private Expedition expedition;
+	private Instant expeditionStart;
 
 	public FellowshipCharacter(CharacterClass characterClass, long xp)
 	{
@@ -34,9 +40,14 @@ public class FellowshipCharacter
 
 	/**
 	 * Add Fellowship XP for OSRS XP gained in a skill, applying the class's bonus for that skill.
+	 * A character who is away on an expedition gets nothing.
 	 */
 	public void gainXp(Skill skill, long osrsXp)
 	{
+		if (isAway())
+		{
+			return;
+		}
 		addXp(osrsXp * characterClass.getXpMultiplier(skill));
 	}
 
@@ -57,7 +68,7 @@ public class FellowshipCharacter
 
 	public boolean canEvolve()
 	{
-		return isAtLevelCap() && !characterClass.getEvolutions().isEmpty();
+		return !isAway() && isAtLevelCap() && !characterClass.getEvolutions().isEmpty();
 	}
 
 	/**
@@ -74,6 +85,61 @@ public class FellowshipCharacter
 		characterClass = newClass;
 		xp = 0;
 		return true;
+	}
+
+	public boolean isAway()
+	{
+		return expedition != null;
+	}
+
+	/** The expedition the character is on, or null when it's home. */
+	public Expedition getExpedition()
+	{
+		return expedition;
+	}
+
+	/** When the current expedition finishes, or null when the character is home. */
+	public Instant getExpeditionEnd()
+	{
+		return isAway() ? expeditionStart.plus(expedition.getDuration()) : null;
+	}
+
+	/**
+	 * Send the character on an expedition, or restore one loaded from a save.
+	 *
+	 * @return false if the character is already away
+	 */
+	public boolean startExpedition(Expedition newExpedition, Instant start)
+	{
+		if (isAway())
+		{
+			return false;
+		}
+		expedition = newExpedition;
+		expeditionStart = start;
+		return true;
+	}
+
+	public Instant getExpeditionStart()
+	{
+		return expeditionStart;
+	}
+
+	/** True once the expedition's time is up. The character stays away until it's collected. */
+	public boolean isExpeditionDone(Instant now)
+	{
+		return isAway() && !now.isBefore(getExpeditionEnd());
+	}
+
+	/** How long until the expedition is done (zero once it is), or null when the character is home. */
+	public Duration getTimeLeft(Instant now)
+	{
+		if (!isAway())
+		{
+			return null;
+		}
+		Duration left = Duration.between(now, getExpeditionEnd());
+		return left.isNegative() ? Duration.ZERO : left;
 	}
 
 	private long maxXp()
