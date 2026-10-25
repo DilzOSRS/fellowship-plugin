@@ -10,7 +10,9 @@ import net.runelite.api.Skill;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.StatChanged;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -25,8 +27,15 @@ import net.runelite.client.util.ImageUtil;
 )
 public class FellowshipPlugin extends Plugin
 {
+	// Never rename these without a migration, or players lose their saved progress.
+	private static final String CONFIG_GROUP = "fellowship";
+	private static final String ADVENTURER_XP_KEY = "adventurerXp";
+
 	@Inject
 	private Client client;
+
+	@Inject
+	private ConfigManager configManager;
 
 	@Inject
 	private ClientThread clientThread;
@@ -54,14 +63,14 @@ public class FellowshipPlugin extends Plugin
 
 		clientToolbar.addNavigation(navButton);
 
-		// Not saved yet, so progress resets on restart. Saving comes in step 1.5.
-		adventurer = new Adventurer("Adventurer");
-		updatePanel();
-
 		xpTracker.reset();
-		// If the plugin is turned on while already logged in, the game won't resend
-		// the XP totals, so take the snapshot ourselves.
-		clientThread.invokeLater(this::snapshotXpIfLoggedIn);
+		// If the plugin is turned on while already logged in, the account is already known
+		// and the game won't resend the XP totals, so load and snapshot ourselves.
+		clientThread.invokeLater(() ->
+		{
+			loadAdventurer();
+			snapshotXpIfLoggedIn();
+		});
 
 		log.debug("Fellowship started!");
 	}
@@ -70,16 +79,27 @@ public class FellowshipPlugin extends Plugin
 	protected void shutDown() throws Exception
 	{
 		clientToolbar.removeNavigation(navButton);
+		adventurer = null;
 		log.debug("Fellowship stopped!");
+	}
+
+	@Subscribe
+	public void onRuneScapeProfileChanged(RuneScapeProfileChanged event)
+	{
+		// Logged into an account (or a different one): load its saved Adventurer.
+		loadAdventurer();
 	}
 
 	@Subscribe
 	public void onStatChanged(StatChanged event)
 	{
 		int gained = xpTracker.update(event.getSkill(), event.getXp());
-		if (gained > 0)
+		if (gained > 0 && adventurer != null)
 		{
 			adventurer.addXp(gained);
+			// Save on every gain, so progress is never lost. This only updates RuneLite's
+			// settings in memory; RuneLite writes them to disk itself.
+			configManager.setRSProfileConfiguration(CONFIG_GROUP, ADVENTURER_XP_KEY, adventurer.getXp());
 			updatePanel();
 		}
 	}
@@ -87,11 +107,27 @@ public class FellowshipPlugin extends Plugin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
-		// Logged out: the next login (maybe on another account) starts a fresh snapshot.
+		// Logged out: the next login (maybe on another account) starts a fresh snapshot,
+		// and no XP is counted until that account's Adventurer is loaded.
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
 			xpTracker.reset();
+			adventurer = null;
 		}
+	}
+
+	private void loadAdventurer()
+	{
+		if (configManager.getRSProfileKey() == null)
+		{
+			// Not logged in yet, so we don't know which account's progress to load.
+			adventurer = null;
+			return;
+		}
+
+		Long savedXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, ADVENTURER_XP_KEY, Long.class);
+		adventurer = new Adventurer("Adventurer", savedXp == null ? 0 : savedXp);
+		updatePanel();
 	}
 
 	private void updatePanel()

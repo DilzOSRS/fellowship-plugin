@@ -22,9 +22,9 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 
 ## Roadmap
-**Current phase: Phase 1, in progress. 1.1–1.4 done (tested in-game 2026-10-25). Next step: 1.5.**
+**Current phase: Phase 2, not started. Phase 1 is done (all steps tested in-game 2026-10-25). Next: answer Phase 2's open question, then break Phase 2 into small steps.**
 
-Phase 1 steps (each one ends with the user testing it in the dev client):
+Phase 1 steps, all done (each one ended with the user testing it in the dev client):
 1. **1.1 Empty sidebar panel.** A Fellowship icon in the sidebar that opens a panel with a title. No game logic.
 2. **1.2 Count XP gains.** Listen for XP changes, skip the login snapshot, and show "XP gained this session" in the panel.
 3. **1.3 Level curve.** Decide the numbers, then write a small class that turns total XP into level + progress, with unit tests.
@@ -40,7 +40,7 @@ Phase 1 steps (each one ends with the user testing it in the dev client):
 
 | Phase | Scope | Status |
 |---|---|---|
-| 1 | Sidebar panel. One "Adventurer" earning Fellowship XP 1:1 from all OSRS XP. Fellowship's own level curve. Show level + XP bar. Save progress per OSRS account. | In progress |
+| 1 | Sidebar panel. One "Adventurer" earning Fellowship XP 1:1 from all OSRS XP. Fellowship's own level curve. Show level + XP bar. Save progress per OSRS account. | Done |
 | 2 | Level cap 10. At 10, evolve Adventurer into Knight, Archer or Wizard. | Not started |
 | 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: XP + 100 coins. | Not started |
 | 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | Not started |
@@ -51,10 +51,11 @@ Phase 1 steps (each one ends with the user testing it in the dev client):
 - **Level curve:** Fellowship uses its own curve, not the OSRS table (at 1:1, the OSRS table hits level 10 at 1,154 XP). Current playtest values (2026-10-25): level 2 costs 1,500 XP, and each level after costs 50% more, so level 10 needs 112,331 XP total (roughly 5.5h for a low-level player, 1h for a fast endgame player). The first try (6,000 XP, +25%) felt too slow at level 1. Max level is 10 for now. Must stay fair to low-level players. The numbers are constants in `LevelCurve.java`.
 - **Expedition timers:** real time. Store the start time, so expeditions finish even while logged out.
 - **Active character on an expedition:** allowed. Until a new active character is picked, nobody gets 100% XP and everyone else stays at 10%.
+- **Evolving (Phase 2), decided 2026-10-25:** Pokémon style. A character keeps its level and XP when it evolves, and the level cap goes up. Picked so playtesting shows early if it feels dull. The new cap and the curve past level 10 are still open (the +50% growth gets far too steep past 10).
 - **Class bonuses (2x XP):** Archer gets Ranged. Wizard gets Magic. Knight gets Attack + Strength. Defence stays 1x because Magic and Ranged also give Defence XP.
 
 ## Open questions
-- What happens after evolving at level 10? Is there a new level cap? (Needed for Phase 2.)
+- New level cap after evolving, and how the curve grows past level 10. (Needed for Phase 2.)
 - Hitpoints XP: confirm it's 1x for every class.
 - Expedition length and XP reward. (Needed for 3a.)
 
@@ -66,5 +67,7 @@ Phase 1 steps (each one ends with the user testing it in the dev client):
 - Many unlockable characters, some hard or rare, each with its own unique way to unlock.
 - Gear (weapons etc.) from expeditions and other sources. Design not figured out yet.
 - Fellowship Guild level, built from all characters' levels, so switching characters still feels like progress. It could gate expeditions and characters.
+- Optional reset on evolving: drop back to level 1 for a stronger character long term, with Guild perks for resetting. Lifetime XP keeps counting toward the Guild, so nothing feels lost. Revisit after 3a, once levels unlock things. Never force a reset.
+- Beast Master: a 10% chance to unlock when you get a pet drop in OSRS (read the drop message only). Example of unlocks from rare game events, like an advancement from a rare raid item.
 - Phases 4–5 redesign.
 - Online features (leaderboards, trading). Risky under the rules, so maybe never.

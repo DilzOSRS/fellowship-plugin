@@ -54,6 +54,9 @@ public class FellowshipPanel extends PluginPanel
 		card.add(xpLabel, BorderLayout.SOUTH);
 
 		add(card, BorderLayout.CENTER);
+
+		// Shown until an account's Adventurer is loaded.
+		nameLabel.setText("Log in to begin");
 	}
 
 	/**

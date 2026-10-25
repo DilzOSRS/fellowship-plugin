@@ -8,9 +8,10 @@ public class Adventurer
 	private final String name;
 	private long xp;
 
-	public Adventurer(String name)
+	public Adventurer(String name, long xp)
 	{
 		this.name = name;
+		this.xp = xp;
 	}
 
 	public String getName()
