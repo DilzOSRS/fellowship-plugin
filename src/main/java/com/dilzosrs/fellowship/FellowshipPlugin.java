@@ -17,6 +17,7 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Skill;
+import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.StatChanged;
@@ -33,6 +34,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.Text;
 
 @Slf4j
 @PluginDescriptor(
@@ -164,6 +166,25 @@ public class FellowshipPlugin extends Plugin
 			saveVault();
 			updatePanel();
 		}
+	}
+
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		// Only the game's own messages count, so other players can't trigger loot by typing them.
+		if (vault == null || team == null || event.getType() != ChatMessageType.GAMEMESSAGE)
+		{
+			return;
+		}
+		BundleType bundle = ChatLoot.bundleFor(Text.removeTags(event.getMessage()));
+		if (bundle == null || !bundle.rollDrop(random))
+		{
+			return;
+		}
+		vault.addBundle(bundle);
+		saveVault();
+		sendChatMessage("You found a " + bundle.getDisplayName() + "! Open it in the Fellowship panel.");
+		updatePanel();
 	}
 
 	@Subscribe

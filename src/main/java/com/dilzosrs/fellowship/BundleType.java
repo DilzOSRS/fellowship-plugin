@@ -10,21 +10,24 @@ import java.util.Random;
  */
 public enum BundleType
 {
-	// Rarity odds in percent: Common, Uncommon, Rare, Epic, Legendary (must add up to 100).
-	GENERIC("Generic Bundle", 10, 30, 50, 30, 15, 4, 1),
-	SLAYER("Slayer Bundle", 10, 30, 50, 30, 15, 4, 1),
-	RAID("Raid Bundle", 30, 80, 0, 30, 40, 22, 8),
-	BOSS("Boss Bundle", 10, 40, 30, 35, 25, 8, 2),
-	CLUE("Clue Bundle", 15, 40, 40, 35, 20, 4, 1);
+	// Drop chance in percent (Generic: per 100,000 OSRS XP; the others: per completion or kill),
+	// coins, then rarity odds in percent: Common, Uncommon, Rare, Epic, Legendary (must add up to 100).
+	GENERIC("Generic Bundle", 10, 10, 30, 50, 30, 15, 4, 1),
+	SLAYER("Slayer Bundle", 10, 10, 30, 50, 30, 15, 4, 1),
+	RAID("Raid Bundle", 10, 30, 80, 0, 30, 40, 22, 8),
+	BOSS("Boss Bundle", 1, 10, 40, 30, 35, 25, 8, 2),
+	CLUE("Clue Bundle", 25, 15, 40, 40, 35, 20, 4, 1);
 
 	private final String displayName;
+	private final int dropChance;
 	private final int minCoins;
 	private final int maxCoins;
 	private final int[] rarityOdds;
 
-	BundleType(String displayName, int minCoins, int maxCoins, int... rarityOdds)
+	BundleType(String displayName, int dropChance, int minCoins, int maxCoins, int... rarityOdds)
 	{
 		this.displayName = displayName;
+		this.dropChance = dropChance;
 		this.minCoins = minCoins;
 		this.maxCoins = maxCoins;
 		this.rarityOdds = rarityOdds;
@@ -33,6 +36,18 @@ public enum BundleType
 	public String getDisplayName()
 	{
 		return displayName;
+	}
+
+	/** Chance in percent of getting this bundle each time its trigger happens. */
+	public int getDropChance()
+	{
+		return dropChance;
+	}
+
+	/** Roll the drop chance once. */
+	public boolean rollDrop(Random random)
+	{
+		return random.nextInt(100) < dropChance;
 	}
 
 	public int rollCoins(Random random)

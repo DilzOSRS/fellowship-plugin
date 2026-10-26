@@ -79,6 +79,15 @@ Every bundle gives some coins plus one item. Rarity is rolled first, then one it
 
 For scale: a character with a Rare weapon (ATK 6) and a Rare trinket (MAG 6, so +3 ATK) has effective ATK 9. So a party of three around that level clears its threat 8 reliably, while a party in Common gear (about ATK 1.5 each) almost always fails.
 
+**Decided 2026-10-26:**
+- **Rewards on success:** each member gets the XP (3,000 each). The coins and the Boss Bundle chance are rolled once for the account.
+- **Failure:** no XP and no loot, plus the injury risk.
+- **Injury rolls (*draft*):** with p = (threat − party DEF) ÷ threat:
+  - Success, DEF ≥ threat: nobody is hurt.
+  - Success, DEF < threat: one roll at chance p; if it hits, one member is hurt, picked with lower-DEF members more likely.
+  - Failure, DEF ≥ threat: 10% chance one member is hurt.
+  - Failure, DEF < threat: each member is hurt with chance 50% + p ÷ 2 (so at least 50%).
+
 ## 7. Open questions
 
 None blocking Phase 5. Still to decide later: real item names, and whether rewards (XP, coins) are split between party members or given to each.

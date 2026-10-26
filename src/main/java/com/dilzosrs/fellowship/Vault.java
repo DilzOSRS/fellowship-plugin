@@ -13,10 +13,8 @@ public class Vault
 {
 	public static final int STARTING_CAPACITY = 10;
 
-	/** OSRS XP needed for each Generic Bundle roll. */
+	/** OSRS XP needed for each Generic Bundle roll. The chance is in {@link BundleType#GENERIC}. */
 	static final long GENERIC_BUNDLE_XP = 100_000;
-	/** Chance of a Generic Bundle per roll, in percent. */
-	static final int GENERIC_BUNDLE_CHANCE = 10;
 
 	private final List<BundleType> bundles;
 	private final List<GearItem> items;
@@ -84,7 +82,7 @@ public class Vault
 		while (genericXpProgress >= GENERIC_BUNDLE_XP)
 		{
 			genericXpProgress -= GENERIC_BUNDLE_XP;
-			if (random.nextInt(100) < GENERIC_BUNDLE_CHANCE)
+			if (BundleType.GENERIC.rollDrop(random))
 			{
 				addBundle(BundleType.GENERIC);
 				found++;
