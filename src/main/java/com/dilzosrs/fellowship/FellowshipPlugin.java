@@ -1,7 +1,11 @@
 package com.dilzosrs.fellowship;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import java.awt.image.BufferedImage;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
@@ -31,11 +35,14 @@ public class FellowshipPlugin extends Plugin
 {
 	// Never change these strings without a migration, or players lose their saved progress.
 	private static final String CONFIG_GROUP = "fellowship";
-	private static final String CHARACTER_XP_KEY = "adventurerXp";
-	private static final String CHARACTER_CLASS_KEY = "characterClass";
+	private static final String TEAM_KEY = "team";
 	private static final String COINS_KEY = "coins";
-	private static final String EXPEDITION_KEY = "expedition";
-	private static final String EXPEDITION_START_KEY = "expeditionStart";
+
+	// The old single-character save. Only read once, to move it into the team list.
+	private static final String LEGACY_XP_KEY = "adventurerXp";
+	private static final String LEGACY_CLASS_KEY = "characterClass";
+	private static final String LEGACY_EXPEDITION_KEY = "expedition";
+	private static final String LEGACY_EXPEDITION_START_KEY = "expeditionStart";
 
 	@Inject
 	private Client client;
@@ -49,11 +56,15 @@ public class FellowshipPlugin extends Plugin
 	@Inject
 	private ClientToolbar clientToolbar;
 
+	@Inject
+	private Gson gson;
+
 	private final XpTracker xpTracker = new XpTracker();
 	private final Random random = new Random();
 	private FellowshipPanel panel;
 	private NavigationButton navButton;
-	private FellowshipCharacter character;
+	/** The account's characters, or null when no account is loaded. For now there is only one. */
+	private List<FellowshipCharacter> team;
 	/** Coins belong to the account, not to one character. */
 	private long coins;
 
@@ -77,7 +88,7 @@ public class FellowshipPlugin extends Plugin
 		// and the game won't resend the XP totals, so load and snapshot ourselves.
 		clientThread.invokeLater(() ->
 		{
-			loadCharacter();
+			loadTeam();
 			snapshotXpIfLoggedIn();
 		});
 
@@ -89,27 +100,28 @@ public class FellowshipPlugin extends Plugin
 	{
 		clientToolbar.removeNavigation(navButton);
 		panel.stopTimers();
-		character = null;
+		team = null;
 		log.debug("Fellowship stopped!");
 	}
 
 	@Subscribe
 	public void onRuneScapeProfileChanged(RuneScapeProfileChanged event)
 	{
-		// Logged into an account (or a different one): load its saved character.
-		loadCharacter();
+		// Logged into an account (or a different one): load its saved team.
+		loadTeam();
 	}
 
 	@Subscribe
 	public void onStatChanged(StatChanged event)
 	{
 		int gained = xpTracker.update(event.getSkill(), event.getXp());
+		FellowshipCharacter character = mainCharacter();
 		if (gained > 0 && character != null)
 		{
 			character.gainXp(event.getSkill(), gained);
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
-			configManager.setRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, character.getXp());
+			saveTeam();
 			updatePanel();
 		}
 	}
@@ -118,11 +130,11 @@ public class FellowshipPlugin extends Plugin
 	public void onGameStateChanged(GameStateChanged event)
 	{
 		// Logged out: the next login (maybe on another account) starts a fresh snapshot,
-		// and no XP is counted until that account's character is loaded.
+		// and no XP is counted until that account's team is loaded.
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
 			xpTracker.reset();
-			character = null;
+			team = null;
 		}
 	}
 
@@ -131,15 +143,15 @@ public class FellowshipPlugin extends Plugin
 	 */
 	private void evolve(CharacterClass newClass)
 	{
-		// The character is only changed on the client thread, like everywhere else.
+		// Characters are only changed on the client thread, like everywhere else.
 		clientThread.invokeLater(() ->
 		{
+			FellowshipCharacter character = mainCharacter();
 			if (character == null || !character.evolve(newClass))
 			{
 				return;
 			}
-			configManager.setRSProfileConfiguration(CONFIG_GROUP, CHARACTER_CLASS_KEY, newClass.name());
-			configManager.setRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, character.getXp());
+			saveTeam();
 			updatePanel();
 		});
 	}
@@ -151,13 +163,12 @@ public class FellowshipPlugin extends Plugin
 	{
 		clientThread.invokeLater(() ->
 		{
-			Instant start = Instant.now();
-			if (character == null || !character.startExpedition(expedition, start))
+			FellowshipCharacter character = mainCharacter();
+			if (character == null || !character.startExpedition(expedition, Instant.now()))
 			{
 				return;
 			}
-			configManager.setRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_KEY, expedition.name());
-			configManager.setRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_START_KEY, start.toEpochMilli());
+			saveTeam();
 			updatePanel();
 		});
 	}
@@ -169,6 +180,7 @@ public class FellowshipPlugin extends Plugin
 	{
 		clientThread.invokeLater(() ->
 		{
+			FellowshipCharacter character = mainCharacter();
 			if (character == null)
 			{
 				return;
@@ -182,10 +194,8 @@ public class FellowshipPlugin extends Plugin
 			int coinsGained = finished.rollCoins(random);
 			coins += coinsGained;
 
-			configManager.setRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, character.getXp());
+			saveTeam();
 			configManager.setRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, coins);
-			configManager.unsetRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_KEY);
-			configManager.unsetRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_START_KEY);
 
 			long xpGained = character.getXp() - xpBefore;
 			SwingUtilities.invokeLater(() -> panel.showReward(xpGained, coinsGained));
@@ -193,26 +203,52 @@ public class FellowshipPlugin extends Plugin
 		});
 	}
 
-	private void loadCharacter()
+	/** The character shown in the panel, or null when no team is loaded. */
+	private FellowshipCharacter mainCharacter()
 	{
+		return team == null ? null : team.get(0);
+	}
+
+	private void loadTeam()
+	{
+		team = null;
 		if (configManager.getRSProfileKey() == null)
 		{
 			// Not logged in yet, so we don't know which account's progress to load.
-			character = null;
 			return;
 		}
 
-		Long savedXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, CHARACTER_XP_KEY, Long.class);
-		String savedClass = configManager.getRSProfileConfiguration(CONFIG_GROUP, CHARACTER_CLASS_KEY);
-		character = new FellowshipCharacter(parseClass(savedClass), savedXp == null ? 0 : savedXp);
-
-		Expedition savedExpedition = parseExpedition(
-			configManager.getRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_KEY));
-		Long savedStart = configManager.getRSProfileConfiguration(CONFIG_GROUP, EXPEDITION_START_KEY, Long.class);
-		if (savedExpedition != null && savedStart != null)
+		String json = configManager.getRSProfileConfiguration(CONFIG_GROUP, TEAM_KEY);
+		if (json == null)
 		{
-			// Timers run in real time, so an expedition can finish while logged out.
-			character.startExpedition(savedExpedition, Instant.ofEpochMilli(savedStart));
+			team = moveOldSaveIntoTeam();
+		}
+		else
+		{
+			SavedCharacter[] saved;
+			try
+			{
+				saved = gson.fromJson(json, SavedCharacter[].class);
+			}
+			catch (JsonSyntaxException e)
+			{
+				// Leave the team unloaded, so the broken save is never overwritten with a fresh one.
+				log.warn("Couldn't read the saved Fellowship team", e);
+				return;
+			}
+			List<FellowshipCharacter> loaded = new ArrayList<>();
+			if (saved != null)
+			{
+				for (SavedCharacter savedCharacter : saved)
+				{
+					loaded.add(savedCharacter.toCharacter());
+				}
+			}
+			if (loaded.isEmpty())
+			{
+				loaded.add(new FellowshipCharacter(CharacterClass.ADVENTURER, 0));
+			}
+			team = loaded;
 		}
 
 		Long savedCoins = configManager.getRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, Long.class);
@@ -221,43 +257,47 @@ public class FellowshipPlugin extends Plugin
 		updatePanel();
 	}
 
-	private static CharacterClass parseClass(String savedClass)
+	/**
+	 * Build a one-character team from the old single-character save (or a fresh Adventurer if
+	 * there isn't one), save it in the new format, then remove the old keys.
+	 */
+	private List<FellowshipCharacter> moveOldSaveIntoTeam()
 	{
-		if (savedClass == null)
-		{
-			return CharacterClass.ADVENTURER;
-		}
-		try
-		{
-			return CharacterClass.valueOf(savedClass);
-		}
-		catch (IllegalArgumentException e)
-		{
-			log.warn("Unknown saved class {}, using Adventurer", savedClass);
-			return CharacterClass.ADVENTURER;
-		}
+		SavedCharacter old = new SavedCharacter();
+		old.characterClass = configManager.getRSProfileConfiguration(CONFIG_GROUP, LEGACY_CLASS_KEY);
+		Long oldXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, LEGACY_XP_KEY, Long.class);
+		old.xp = oldXp == null ? 0 : oldXp;
+		old.expedition = configManager.getRSProfileConfiguration(CONFIG_GROUP, LEGACY_EXPEDITION_KEY);
+		old.expeditionStart = configManager.getRSProfileConfiguration(CONFIG_GROUP, LEGACY_EXPEDITION_START_KEY, Long.class);
+
+		List<FellowshipCharacter> moved = new ArrayList<>();
+		moved.add(old.toCharacter());
+		team = moved;
+
+		// Save the new format first, so progress is never lost if something goes wrong in between.
+		saveTeam();
+		configManager.unsetRSProfileConfiguration(CONFIG_GROUP, LEGACY_XP_KEY);
+		configManager.unsetRSProfileConfiguration(CONFIG_GROUP, LEGACY_CLASS_KEY);
+		configManager.unsetRSProfileConfiguration(CONFIG_GROUP, LEGACY_EXPEDITION_KEY);
+		configManager.unsetRSProfileConfiguration(CONFIG_GROUP, LEGACY_EXPEDITION_START_KEY);
+		log.debug("Moved the old Fellowship save into the team format");
+		return moved;
 	}
 
-	private static Expedition parseExpedition(String savedExpedition)
+	private void saveTeam()
 	{
-		if (savedExpedition == null)
+		SavedCharacter[] saved = new SavedCharacter[team.size()];
+		for (int i = 0; i < team.size(); i++)
 		{
-			return null;
+			saved[i] = SavedCharacter.from(team.get(i));
 		}
-		try
-		{
-			return Expedition.valueOf(savedExpedition);
-		}
-		catch (IllegalArgumentException e)
-		{
-			log.warn("Unknown saved expedition {}, ignoring it", savedExpedition);
-			return null;
-		}
+		configManager.setRSProfileConfiguration(CONFIG_GROUP, TEAM_KEY, gson.toJson(saved));
 	}
 
 	private void updatePanel()
 	{
 		// Copy the values now, because the panel is updated later on the Swing thread.
+		FellowshipCharacter character = mainCharacter();
 		CharacterClass characterClass = character.getCharacterClass();
 		long xp = character.getXp();
 		boolean canEvolve = character.canEvolve();

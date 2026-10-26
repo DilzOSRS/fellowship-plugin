@@ -20,9 +20,15 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - **RNG unlocks are OK** as an exception (it's OSRS). Most progress comes from effort, and nothing ever costs real money.
 - **Tech rules:** Java only (no Kotlin/Scala). Public GitHub repo. BSD 2-Clause license. Avoid extra dependencies. No reflection, JNI, `Thread.sleep`, `Runtime` or `HttpURLConnection`. Don't create your own `Gson`/`OkHttp` instances. Don't use the `net.runelite` package name. Load resources with `getResourceAsStream`.
 - Re-check the rejected-features wiki before submitting, since it changes.
+- Before launch, all test saves get wiped. The one-time migration from the old single-character save (in `FellowshipPlugin.moveOldSaveIntoTeam`) can be deleted then, since no real player will have the old format.
 
 ## Roadmap
-**Current phase: Phase 3b, not started. Phases 1, 2 and 3a are done (all steps tested in-game 2026-10-25). Next: plan 3b and break it into small steps.**
+**Current phase: Phase 3b, in progress. Phases 1, 2 and 3a are done (all steps tested in-game 2026-10-25). 3b.1 done (migration tested in-game 2026-10-25). Next step: 3b.2.**
+
+Phase 3b steps (each one ends with the user testing it; for testing, temporarily make recruits cheap):
+1. **3b.1 Team save format.** Save the team as a list of characters (still just one) instead of single-character keys, and move the existing save into it once. Nothing visible changes; the current character must keep all its progress.
+2. **3b.2 Recruit.** A "Recruit Adventurer (100 coins)" button, disabled without enough coins or when the team has 3. Recruits are numbered ("Adventurer 2", "Adventurer 3") and get their own card with their own expedition and evolve buttons. For now the first character is active (100% XP) and recruits get 10%.
+3. **3b.3 Switch active.** A "Make active" button on each card, and the active card is clearly marked. If the active character is away on an expedition, nobody gets 100% until another is made active.
 
 Phase 3a steps, all done (for in-game testing, the expedition was temporarily made 1 minute long):
 1. **3a.1 Coins.** A coin balance, saved per account and shown in the panel. Starts at 0.
@@ -55,7 +61,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 | 1 | Sidebar panel. One "Adventurer" earning Fellowship XP 1:1 from all OSRS XP. Fellowship's own level curve. Show level + XP bar. Save progress per OSRS account. | Done |
 | 2 | Level cap 10. At 10, evolve Adventurer into Knight, Archer or Wizard. | Done |
 | 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: 1,000 XP + 10–50 coins. | Done |
-| 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | Not started |
+| 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | In progress |
 | 4–5 | Parked, to be redesigned after 3b ships. | Parked |
 
 ## Decisions
@@ -64,6 +70,8 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - **Expedition timers:** real time, same speed online and offline. Store the start time, so expeditions finish even while logged out.
 - **Expedition 1 (decided 2026-10-25):** "Explore Lumbridge Swamp Caves". 30 minutes. Rewards 1,000 XP (fixed for now; the level cap still applies, and class bonuses don't) plus a random 10–50 coins, about 3–4 runs per 100-coin recruit. The player clicks Collect when it's done. Early expeditions should be short.
 - **Coins:** shown as "coins", not "GP", so nobody mistakes them for real gold.
+- **Team (decided 2026-10-25):** the first character counts toward the team cap of 3 (so 2 recruits, 200 coins). Recruits are numbered ("Adventurer 2"); custom names can come later. Coins belong to the account and are shared.
+- **Inactive XP:** 10% of OSRS XP, and class bonuses stack on top (an inactive Wizard gets 20% of Magic XP). Fractions of an XP are carried over in memory so small drops still count; at most under 1 XP per character is lost on a restart.
 - **Active character on an expedition:** allowed. Until a new active character is picked, nobody gets 100% XP and everyone else stays at 10%.
 - **Evolving (Phase 2), decided 2026-10-25:** a job advancement resets the character to level 1 (XP back to 0), with a higher level cap. Why: a fresh start feels exciting, and with many characters it keeps an even spread of levels instead of a pile of high-level ones. (This replaced an earlier Pokémon-style "keep your level" plan. Don't switch again until it has been playtested.)
 - **Level cap:** the Adventurer is capped at 10. XP earned at the cap is wasted until it evolves (the user's choice, to push players to evolve). Evolved classes go up to 99. There's no reason for a lower cap while levels don't unlock anything yet.
@@ -84,6 +92,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - Fellowship Guild level, built from all characters' levels, so switching characters still feels like progress. It could gate expeditions and characters.
 - Guild perks for job advancing (which resets a character to level 1). Lifetime XP could keep counting toward the Guild, so a reset never feels like lost progress. Revisit after 3a.
 - Character art: a picture or model for each class instead of text only.
+- Custom names for recruits (typed in when recruiting).
 - Beast Master: a 10% chance to unlock when you get a pet drop in OSRS (read the drop message only). Example of unlocks from rare game events, like an advancement from a rare raid item.
 - Phases 4–5 redesign.
 - Online features (leaderboards, trading). Risky under the rules, so maybe never.
