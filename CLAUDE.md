@@ -23,9 +23,9 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Before launch, all test saves get wiped. The one-time migration from the old single-character save (in `FellowshipPlugin.moveOldSaveIntoTeam`) can be deleted then, since no real player will have the old format.
 
 ## Roadmap
-**Current phase: Phase 3b, in progress. Phases 1, 2 and 3a are done (all steps tested in-game 2026-10-25). 3b.1 and 3b.2 done (tested in-game 2026-10-25). Next step: 3b.3.**
+**Current phase: none. Phases 1, 2, 3a and 3b are all done (every step tested in-game 2026-10-25). Next: playtest, then redesign Phases 4–5 (see the Ideas Parking Lot) before building anything new.**
 
-Phase 3b steps (each one ends with the user testing it; for testing, temporarily make recruits cheap):
+Phase 3b steps, all done (for in-game testing, recruits were temporarily made cheap):
 1. **3b.1 Team save format.** Save the team as a list of characters (still just one) instead of single-character keys, and move the existing save into it once. Nothing visible changes; the current character must keep all its progress.
 2. **3b.2 Recruit.** A "Recruit Adventurer (100 coins)" button, disabled without enough coins or when the team has 3. Recruits are numbered ("Adventurer 2", "Adventurer 3") and get their own card with their own expedition and evolve buttons. For now the first character is active (100% XP) and recruits get 10%.
 3. **3b.3 Switch active.** A "Make active" button on each card, and the active card is clearly marked. If the active character is away on an expedition, nobody gets 100% until another is made active.
@@ -61,7 +61,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 | 1 | Sidebar panel. One "Adventurer" earning Fellowship XP 1:1 from all OSRS XP. Fellowship's own level curve. Show level + XP bar. Save progress per OSRS account. | Done |
 | 2 | Level cap 10. At 10, evolve Adventurer into Knight, Archer or Wizard. | Done |
 | 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: 1,000 XP + 10–50 coins. | Done |
-| 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | In progress |
+| 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | Done |
 | 4–5 | Parked, to be redesigned after 3b ships. | Parked |
 
 ## Decisions

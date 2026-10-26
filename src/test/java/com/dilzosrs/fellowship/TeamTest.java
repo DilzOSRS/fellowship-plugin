@@ -98,6 +98,55 @@ public class TeamTest
 	}
 
 	@Test
+	public void switchingActiveMovesTheFullShare()
+	{
+		Team team = new Team(Collections.emptyList());
+		team.recruit();
+		assertTrue(team.setActive(1));
+		assertEquals(1, team.getActiveIndex());
+		team.gainXp(Skill.WOODCUTTING, 500);
+		assertEquals(50, team.get(0).getXp());
+		assertEquals(500, team.get(1).getXp());
+	}
+
+	@Test
+	public void cantMakeAMissingOrAlreadyActiveCharacterActive()
+	{
+		Team team = new Team(Collections.emptyList());
+		assertFalse(team.setActive(0));
+		assertFalse(team.setActive(1));
+		assertFalse(team.setActive(-1));
+		assertEquals(0, team.getActiveIndex());
+	}
+
+	@Test
+	public void savedActiveIndexIsRestored()
+	{
+		Team team = new Team(List.of(
+			new FellowshipCharacter(CharacterClass.ADVENTURER, 0),
+			new FellowshipCharacter(CharacterClass.ADVENTURER, 0)), 1);
+		assertEquals(1, team.getActiveIndex());
+	}
+
+	@Test
+	public void badSavedActiveIndexFallsBackToTheFirst()
+	{
+		Team team = new Team(List.of(new FellowshipCharacter(CharacterClass.ADVENTURER, 0)), 5);
+		assertEquals(0, team.getActiveIndex());
+	}
+
+	@Test
+	public void activeAwayMeansNobodyGetsFullXp()
+	{
+		Team team = new Team(Collections.emptyList());
+		team.recruit();
+		team.get(0).startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, Instant.now());
+		team.gainXp(Skill.WOODCUTTING, 500);
+		assertEquals(0, team.get(0).getXp());
+		assertEquals(50, team.get(1).getXp());
+	}
+
+	@Test
 	public void awayCharactersGetNothing()
 	{
 		Team team = new Team(Collections.emptyList());

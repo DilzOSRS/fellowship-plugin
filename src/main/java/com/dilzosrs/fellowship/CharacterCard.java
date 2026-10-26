@@ -12,7 +12,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.ProgressBar;
@@ -26,9 +29,15 @@ public class CharacterCard extends JPanel
 	private final Consumer<Expedition> onSendExpedition;
 	private final Runnable onCollect;
 
+	// The active card gets a green stripe down its left side; the others get plain padding.
+	private static final Border ACTIVE_BORDER = new CompoundBorder(
+		new MatteBorder(0, 3, 0, 0, ColorScheme.PROGRESS_COMPLETE_COLOR), new EmptyBorder(8, 5, 8, 8));
+	private static final Border INACTIVE_BORDER = new EmptyBorder(8, 8, 8, 8);
+
 	private final JLabel nameLabel = new JLabel();
 	private final JLabel levelLabel = new JLabel();
 	private final JLabel roleLabel = new JLabel();
+	private final JButton makeActiveButton = new JButton("Make active");
 	private final ProgressBar xpBar = new ProgressBar();
 	private final JLabel xpLabel = new JLabel();
 	// One button per row, because the sidebar is too narrow for the class names side by side.
@@ -47,7 +56,8 @@ public class CharacterCard extends JPanel
 	/**
 	 * The callbacks are called on the Swing thread once the player confirms the action.
 	 */
-	public CharacterCard(Consumer<CharacterClass> onEvolve, Consumer<Expedition> onSendExpedition, Runnable onCollect)
+	public CharacterCard(Consumer<CharacterClass> onEvolve, Consumer<Expedition> onSendExpedition, Runnable onCollect,
+		Runnable onMakeActive)
 	{
 		this.onEvolve = onEvolve;
 		this.onSendExpedition = onSendExpedition;
@@ -55,7 +65,7 @@ public class CharacterCard extends JPanel
 
 		setLayout(new BorderLayout(0, 6));
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		setBorder(new EmptyBorder(8, 8, 8, 8));
+		setBorder(INACTIVE_BORDER);
 
 		JPanel header = new JPanel(new BorderLayout());
 		header.setOpaque(false);
@@ -63,8 +73,15 @@ public class CharacterCard extends JPanel
 		nameLabel.setForeground(Color.WHITE);
 		header.add(nameLabel, BorderLayout.WEST);
 		header.add(levelLabel, BorderLayout.EAST);
+
+		JPanel roleRow = new JPanel(new BorderLayout(0, 4));
+		roleRow.setOpaque(false);
 		roleLabel.setFont(FontManager.getRunescapeSmallFont());
-		header.add(roleLabel, BorderLayout.SOUTH);
+		roleRow.add(roleLabel, BorderLayout.NORTH);
+		// Switching is free and easy to undo, so there's no confirm step.
+		makeActiveButton.addActionListener(e -> onMakeActive.run());
+		roleRow.add(makeActiveButton, BorderLayout.SOUTH);
+		header.add(roleRow, BorderLayout.SOUTH);
 		add(header, BorderLayout.NORTH);
 
 		JPanel body = new JPanel(new BorderLayout(0, 4));
@@ -122,6 +139,8 @@ public class CharacterCard extends JPanel
 			roleLabel.setText(view.active ? "Active: 100% XP" : "Inactive: 10% XP");
 		}
 		roleLabel.setForeground(view.active ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.LIGHT_GRAY_COLOR);
+		makeActiveButton.setVisible(!view.active);
+		setBorder(view.active ? ACTIVE_BORDER : INACTIVE_BORDER);
 		showEvolveButtons(view.canEvolve ? view.characterClass : null);
 		showExpedition(view.expedition, view.expeditionEnd);
 

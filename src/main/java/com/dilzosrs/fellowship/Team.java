@@ -16,17 +16,28 @@ public class Team
 	static final int INACTIVE_XP_PERCENT = 10;
 
 	private final List<FellowshipCharacter> characters;
+	private int activeIndex;
 
 	/**
 	 * @param characters the saved characters; an empty list starts the team with one fresh Adventurer
 	 */
 	public Team(List<FellowshipCharacter> characters)
 	{
+		this(characters, 0);
+	}
+
+	/**
+	 * @param characters the saved characters; an empty list starts the team with one fresh Adventurer
+	 * @param activeIndex which character is active; anything out of range falls back to the first
+	 */
+	public Team(List<FellowshipCharacter> characters, int activeIndex)
+	{
 		this.characters = new ArrayList<>(characters);
 		if (this.characters.isEmpty())
 		{
 			this.characters.add(new FellowshipCharacter(CharacterClass.ADVENTURER, 0));
 		}
+		this.activeIndex = activeIndex >= 0 && activeIndex < this.characters.size() ? activeIndex : 0;
 	}
 
 	public List<FellowshipCharacter> getCharacters()
@@ -69,14 +80,30 @@ public class Team
 		return true;
 	}
 
-	/** Which character gets full XP. For now always the first one; step 3b.3 lets the player choose. */
+	/** Which character gets full XP. */
 	public int getActiveIndex()
 	{
-		return 0;
+		return activeIndex;
+	}
+
+	/**
+	 * Make a different character active. Switching is free and can be done any time.
+	 *
+	 * @return false if there's no character there, or it's already active
+	 */
+	public boolean setActive(int index)
+	{
+		if (index < 0 || index >= characters.size() || index == activeIndex)
+		{
+			return false;
+		}
+		activeIndex = index;
+		return true;
 	}
 
 	/**
 	 * Share OSRS XP gained in a skill out to the team: full XP for the active character, 10% for the rest.
+	 * Characters who are away get nothing, so if the active one is away, nobody gets full XP.
 	 */
 	public void gainXp(Skill skill, long osrsXp)
 	{

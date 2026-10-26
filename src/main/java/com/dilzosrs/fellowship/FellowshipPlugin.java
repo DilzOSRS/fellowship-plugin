@@ -37,6 +37,7 @@ public class FellowshipPlugin extends Plugin
 	private static final String CONFIG_GROUP = "fellowship";
 	private static final String TEAM_KEY = "team";
 	private static final String COINS_KEY = "coins";
+	private static final String ACTIVE_INDEX_KEY = "activeIndex";
 
 	// The old single-character save. Only read once, to move it into the team list.
 	private static final String LEGACY_XP_KEY = "adventurerXp";
@@ -71,7 +72,8 @@ public class FellowshipPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::recruit);
+		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::makeActive,
+			this::recruit);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -220,6 +222,22 @@ public class FellowshipPlugin extends Plugin
 		});
 	}
 
+	/**
+	 * Called from the panel (on the Swing thread) when the player makes a character active.
+	 */
+	private void makeActive(int index)
+	{
+		clientThread.invokeLater(() ->
+		{
+			if (team == null || !team.setActive(index))
+			{
+				return;
+			}
+			configManager.setRSProfileConfiguration(CONFIG_GROUP, ACTIVE_INDEX_KEY, index);
+			updatePanel();
+		});
+	}
+
 	/** The character at that position in the team, or null if there isn't one. */
 	private FellowshipCharacter characterAt(int index)
 	{
@@ -261,7 +279,8 @@ public class FellowshipPlugin extends Plugin
 					loaded.add(savedCharacter.toCharacter());
 				}
 			}
-			team = new Team(loaded);
+			Integer savedActive = configManager.getRSProfileConfiguration(CONFIG_GROUP, ACTIVE_INDEX_KEY, Integer.class);
+			team = new Team(loaded, savedActive == null ? 0 : savedActive);
 		}
 
 		Long savedCoins = configManager.getRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, Long.class);

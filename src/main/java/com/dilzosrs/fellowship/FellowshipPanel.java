@@ -25,6 +25,7 @@ public class FellowshipPanel extends PluginPanel
 	private final BiConsumer<Integer, CharacterClass> onEvolve;
 	private final BiConsumer<Integer, Expedition> onSendExpedition;
 	private final IntConsumer onCollect;
+	private final IntConsumer onMakeActive;
 	private final Runnable onRecruit;
 
 	private final JLabel coinsLabel = new JLabel();
@@ -37,11 +38,12 @@ public class FellowshipPanel extends PluginPanel
 	 * The Integer/int is the character's position in the team.
 	 */
 	public FellowshipPanel(BiConsumer<Integer, CharacterClass> onEvolve, BiConsumer<Integer, Expedition> onSendExpedition,
-		IntConsumer onCollect, Runnable onRecruit)
+		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onRecruit)
 	{
 		this.onEvolve = onEvolve;
 		this.onSendExpedition = onSendExpedition;
 		this.onCollect = onCollect;
+		this.onMakeActive = onMakeActive;
 		this.onRecruit = onRecruit;
 
 		setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -126,7 +128,8 @@ public class FellowshipPanel extends PluginPanel
 		CharacterCard card = new CharacterCard(
 			newClass -> onEvolve.accept(index, newClass),
 			expedition -> onSendExpedition.accept(index, expedition),
-			() -> onCollect.accept(index));
+			() -> onCollect.accept(index),
+			() -> onMakeActive.accept(index));
 		card.setAlignmentX(LEFT_ALIGNMENT);
 		if (index > 0)
 		{
