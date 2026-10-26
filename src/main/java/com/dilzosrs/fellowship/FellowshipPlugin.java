@@ -89,7 +89,8 @@ public class FellowshipPlugin extends Plugin
 	@Inject
 	private ItemManager itemManager;
 
-	private final PopupOverlay popup = new PopupOverlay();
+	@Inject
+	private PopupOverlay popup;
 
 	private final XpTracker xpTracker = new XpTracker();
 	private final Random random = new Random();
@@ -370,7 +371,7 @@ public class FellowshipPlugin extends Plugin
 				+ (bonus != null ? " They also found a " + bonus.getDisplayName() + "!" : ""));
 			if (bonus != null)
 			{
-				popup.show("Your party found a " + bonus.getDisplayName() + "!");
+				showBundlePopup(bonus, "Your party found a " + bonus.getDisplayName() + "!");
 			}
 			announceInjuries(injured, rest);
 			announceLevelUps(levelsBefore);
@@ -396,7 +397,13 @@ public class FellowshipPlugin extends Plugin
 	private void announceBundle(BundleType bundle)
 	{
 		sendChatMessage("You found a " + bundle.getDisplayName() + "! Open it in the Fellowship panel.");
-		popup.show("You found a " + bundle.getDisplayName() + "!");
+		showBundlePopup(bundle, "You found a " + bundle.getDisplayName() + "!");
+	}
+
+	/** Show a pop-up on the game screen with the bundle's casket beside the message. */
+	private void showBundlePopup(BundleType bundle, String message)
+	{
+		popup.show(message, itemManager.getImage(bundle.getIconItemId()));
 	}
 
 	private void announceInjuries(List<Integer> injured, Duration rest)
