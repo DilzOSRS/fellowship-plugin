@@ -51,7 +51,7 @@ Every bundle gives some coins plus one item. Rarity is rolled first, then one it
 
 | Bundle | How you get it | Chance | Coins inside (*draft*) | Common / Uncommon / Rare / Epic / Legendary (*draft*) |
 |---|---|---|---|---|
-| Generic Bundle | Every 100,000 OSRS XP gained (all skills added together) | 10% | 10–30 | 50 / 30 / 15 / 4 / 1 % |
+| Generic Bundle | Every 10,000 OSRS XP gained (all skills added together; was 100,000 at 10% until 2026-10-26, which felt too rare) | 25% | 10–30 | 50 / 30 / 15 / 4 / 1 % |
 | Slayer Bundle | Finish a Slayer task | 10% | 10–30 | 50 / 30 / 15 / 4 / 1 % |
 | Raid Bundle | Finish any raid: Chambers of Xeric, Theatre of Blood, Tombs of Amascut, The Fractured Archive | 10% | 30–80 | 0 / 30 / 40 / 22 / 8 % |
 | Boss Bundle | Kill a boss | 1% | 10–40 | 30 / 35 / 25 / 8 / 2 % |
