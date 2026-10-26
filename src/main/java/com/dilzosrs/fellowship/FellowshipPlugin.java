@@ -2,20 +2,29 @@ package com.dilzosrs.fellowship;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Skill;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.StatChanged;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.chat.ChatColorType;
+import net.runelite.client.chat.ChatMessageBuilder;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.RuneScapeProfileChanged;
@@ -41,6 +50,8 @@ public class FellowshipPlugin extends Plugin
 	private static final String GUILD_XP_KEY = "guildXp";
 	private static final String HIRES_USED_KEY = "hiresUsed";
 
+	private static final Color CHAT_TAG_COLOR = new Color(255, 200, 0);
+
 	// The old single-character save. Only read once, to move it into the team list.
 	private static final String LEGACY_XP_KEY = "adventurerXp";
 	private static final String LEGACY_CLASS_KEY = "characterClass";
@@ -62,6 +73,9 @@ public class FellowshipPlugin extends Plugin
 	@Inject
 	private Gson gson;
 
+	@Inject
+	private ChatMessageManager chatMessageManager;
+
 	private final XpTracker xpTracker = new XpTracker();
 	private final Random random = new Random();
 	private FellowshipPanel panel;
@@ -72,6 +86,8 @@ public class FellowshipPlugin extends Plugin
 	private long coins;
 	/** The account's Fellowship Guild, loaded with the team. */
 	private Guild guild;
+	/** Characters whose finished expedition has already been announced in chat, so it's said only once. */
+	private final Set<FellowshipCharacter> announcedReturns = new HashSet<>();
 
 	@Override
 	protected void startUp() throws Exception
@@ -123,17 +139,38 @@ public class FellowshipPlugin extends Plugin
 		int gained = xpTracker.update(event.getSkill(), event.getXp());
 		if (gained > 0 && team != null)
 		{
+			int[] levelsBefore = currentLevels();
 			int levelsGained = team.gainXp(event.getSkill(), gained);
 			if (levelsGained > 0)
 			{
+				announceLevelUps(levelsBefore);
 				// Every character level-up is worth 1 Guild XP.
-				guild.addXp(levelsGained);
-				saveGuild();
+				addGuildXp(levelsGained);
 			}
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
 			saveTeam();
 			updatePanel();
+		}
+	}
+
+	@Subscribe
+	public void onGameTick(GameTick event)
+	{
+		// Announce each finished expedition once. The team is small, so checking every tick is cheap.
+		if (team == null)
+		{
+			return;
+		}
+		Instant now = Instant.now();
+		for (int i = 0; i < team.size(); i++)
+		{
+			FellowshipCharacter character = team.get(i);
+			if (character.isExpeditionDone(now) && announcedReturns.add(character))
+			{
+				sendChatMessage(team.getDisplayName(i) + " is back from " + character.getExpedition().getDisplayName()
+					+ "! Collect the rewards in the Fellowship panel.");
+			}
 		}
 	}
 
@@ -158,10 +195,16 @@ public class FellowshipPlugin extends Plugin
 		clientThread.invokeLater(() ->
 		{
 			FellowshipCharacter character = characterAt(index);
-			if (character == null || !character.evolve(newClass))
+			if (character == null)
 			{
 				return;
 			}
+			String oldName = team.getDisplayName(index);
+			if (!character.evolve(newClass))
+			{
+				return;
+			}
+			sendChatMessage(oldName + " has been trained in the ways of the " + newClass.getDisplayName() + "!");
 			saveTeam();
 			updatePanel();
 		});
@@ -197,22 +240,26 @@ public class FellowshipPlugin extends Plugin
 				return;
 			}
 			long xpBefore = character.getXp();
-			int levelBefore = character.getLevel();
+			int[] levelsBefore = currentLevels();
 			Expedition finished = character.collectExpedition(Instant.now());
 			if (finished == null)
 			{
 				return;
 			}
+			announcedReturns.remove(character);
 			int coinsGained = finished.rollCoins(random);
 			coins += coinsGained;
+			long xpGained = character.getXp() - xpBefore;
+			sendChatMessage(team.getDisplayName(index) + " brought back "
+				+ (xpGained > 0 ? String.format("%,d XP and ", xpGained) : "")
+				+ coinsGained + " coins from " + finished.getDisplayName() + "!");
+			announceLevelUps(levelsBefore);
 			// 1 Guild XP for the expedition, plus 1 for each level its XP reward gave.
-			guild.addXp(1 + character.getLevel() - levelBefore);
+			addGuildXp(1 + character.getLevel() - levelsBefore[index]);
 
 			saveTeam();
 			saveCoins();
-			saveGuild();
 
-			long xpGained = character.getXp() - xpBefore;
 			SwingUtilities.invokeLater(() -> panel.showReward(index, xpGained, coinsGained));
 			updatePanel();
 		});
@@ -231,6 +278,7 @@ public class FellowshipPlugin extends Plugin
 			}
 			coins -= Guild.HIRE_COST;
 			team.hire();
+			sendChatMessage(team.getDisplayName(team.size() - 1) + " joined your Fellowship!");
 			saveTeam();
 			saveCoins();
 			saveGuild();
@@ -254,6 +302,60 @@ public class FellowshipPlugin extends Plugin
 		});
 	}
 
+	/** Each character's level right now, to compare against after XP is added. */
+	private int[] currentLevels()
+	{
+		int[] levels = new int[team.size()];
+		for (int i = 0; i < team.size(); i++)
+		{
+			levels[i] = team.get(i).getLevel();
+		}
+		return levels;
+	}
+
+	private void announceLevelUps(int[] levelsBefore)
+	{
+		for (int i = 0; i < levelsBefore.length; i++)
+		{
+			FellowshipCharacter character = team.get(i);
+			if (character.getLevel() > levelsBefore[i])
+			{
+				String name = team.getDisplayName(i);
+				sendChatMessage(name + " reached level " + character.getLevel() + "!"
+					+ (character.canEvolve() ? " " + name + "'s class advancement is ready." : ""));
+			}
+		}
+	}
+
+	private void addGuildXp(long amount)
+	{
+		int levelBefore = guild.getLevel();
+		guild.addXp(amount);
+		saveGuild();
+		if (guild.getLevel() > levelBefore)
+		{
+			sendChatMessage("Your Fellowship Guild reached level " + guild.getLevel() + "! You earned a hire.");
+		}
+	}
+
+	/**
+	 * Add a message to the player's own chatbox. Only they see it; nothing is sent to the server.
+	 */
+	private void sendChatMessage(String message)
+	{
+		// The tag is gold so Fellowship messages stand out; the rest uses the chatbox's normal
+		// colour, so it stays readable on both the transparent and the solid chatbox.
+		String formatted = new ChatMessageBuilder()
+			.append(CHAT_TAG_COLOR, "[Fellowship] ")
+			.append(ChatColorType.NORMAL)
+			.append(message)
+			.build();
+		chatMessageManager.queue(QueuedMessage.builder()
+			.type(ChatMessageType.GAMEMESSAGE)
+			.runeLiteFormattedMessage(formatted)
+			.build());
+	}
+
 	/** The character at that position in the team, or null if there isn't one. */
 	private FellowshipCharacter characterAt(int index)
 	{
@@ -263,6 +365,7 @@ public class FellowshipPlugin extends Plugin
 	private void loadTeam()
 	{
 		team = null;
+		announcedReturns.clear();
 		if (configManager.getRSProfileKey() == null)
 		{
 			// Not logged in yet, so we don't know which account's progress to load.

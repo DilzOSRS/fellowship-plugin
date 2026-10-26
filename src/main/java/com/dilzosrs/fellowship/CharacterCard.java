@@ -150,7 +150,7 @@ public class CharacterCard extends JPanel
 			xpBar.setValue(1);
 			xpBar.setCenterLabel("Max");
 			xpLabel.setText(view.canEvolve
-				? "Level cap reached. Choose a class:"
+				? "<html>Class advancement ready!<br>Choose a path:</html>"
 				: String.format("Max level (%,d XP)", view.xp));
 			return;
 		}
@@ -199,9 +199,9 @@ public class CharacterCard extends JPanel
 	{
 		int choice = JOptionPane.showConfirmDialog(
 			this,
-			"Evolve " + shownName + " into the " + newClass.getDisplayName() + " class?\n\n"
+			"Train " + shownName + " in the ways of the " + newClass.getDisplayName() + "?\n\n"
 				+ "This is permanent, and the character restarts at level 1.",
-			"Evolve",
+			"Class advancement",
 			JOptionPane.YES_NO_OPTION);
 		if (choice == JOptionPane.YES_OPTION)
 		{

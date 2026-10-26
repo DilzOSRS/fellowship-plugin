@@ -23,7 +23,19 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Before launch, all test saves get wiped. The one-time migration from the old single-character save (in `FellowshipPlugin.moveOldSaveIntoTeam`) can be deleted then, since no real player will have the old format.
 
 ## Roadmap
-**Current phase: none. Phases 1–4 are all done (every step tested in-game 2026-10-25). Next: playtest, then design Phase 5 (gear and loot) before building it. The compact roster / UI redesign is also waiting.**
+**Current phase: Phase 5 design. Phases 1–4b are all done (tested in-game 2026-10-25; the last wording and colour tweaks to 4b's messages weren't re-tested in-game). Next: answer Phase 5's open design questions, then break it into steps. The compact roster / UI redesign is also waiting.**
+
+Phase 4b, done: **chat messages** (only the player sees them; nothing is sent to the server) for level-ups and class advancement being ready, class advancement, a character coming back from an expedition, the rewards collected, the Guild levelling up, and a new hire. E.g. "Adventurer 2 reached level 5!"
+
+Phase 5 plan (gear and loot; decided 2026-10-25). Why: rare gear makes individual characters feel strong.
+- **Gear:** 3 slots (Weapon, Armour, Trinket). Rarities: Common, Uncommon, Rare, Epic, Legendary. Stats: Attack Power, Defence Power, Magic Power. Some gear is class-only. Unique perks on some gear come later (Phase 6).
+- **Owning gear:** gear can be moved between characters. Shared storage is small so it doesn't overwhelm. Any item can be salvaged for coins (rarer = more coins). When storage is full, new bundles wait unopened until there's room, so nothing is ever lost.
+- **Loot:** finishing things in OSRS gives a chance at a bundle; nothing (or almost nothing) is 100%. Each source has its own bundle with its own item pool (which can include coins). You open bundles from the panel. First triggers: Slayer task completions (Slayer Bundle), boss kills (Boss Bundle, small chance since kills are quick), clue scroll completions (Clue Bundle) and raid completions (Raid Bundle, higher chance since they're rare). All are detectable read-only from game messages.
+- **Pop-ups:** an on-screen pop-up when a bundle drops (and later for character unlocks). Comes with loot.
+- **One power-gated expedition:** needs a minimum power to enter, so stats matter as soon as gear exists.
+- **Rough step order (to confirm once the design questions are answered):** gear items and storage → equip and move gear, show character power → bundles, opening and salvage → loot triggers (one at a time) → pop-ups → the power-gated expedition.
+- **Open design questions before building:** the starting item list (about 15 items?), stat ranges per rarity, storage size, the drop chance per trigger, what's in each bundle (including coins), salvage values, how "power" is worked out from the three stats, and the power-gated expedition (name, length, power needed, rewards).
+
 
 Phase 4 steps, all done (for in-game testing, Guild levels and hires were temporarily made cheap):
 1. **4.1 Guild XP and level.** +1 Guild XP whenever any character levels up, and +1 per expedition collected. The panel shows "Fellowship Guild: Level 1 (5 / 20 XP)". Saved per account. Unit tests for the Guild curve.
@@ -69,7 +81,9 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 | 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: 1,000 XP + 10–50 coins. | Done |
 | 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | Done |
 | 4 | Fellowship Guild leveling and an unlimited roster. Guild levels give hires; hires still cost coins. | Done |
-| 5 | Gear and loot, designed together before any building. Loot comes from varied OSRS achievements (e.g. finishing a Slayer task: 10% chance of a loot box), not from grinding XP. Gear should make playing one character for a long time worthwhile. | Needs design |
+| 4b | Chat messages for level-ups, class advancement, expeditions, Guild levels and hires. | Done |
+| 5 | Gear and loot (see the Phase 5 plan above): 3 gear slots with stats and rarities, bundles from Slayer tasks, bosses, clues and raids, small storage with salvage, pop-ups, and one power-gated expedition. | Design in progress |
+| 6 | Dangerous expeditions: success or failure based on power, injured characters who must rest, and unique gear perks. | Later |
 | Ongoing | More characters (some rare, with unique ways to unlock) and more expeditions, added once the systems exist. | Later |
 
 ## Decisions
@@ -78,6 +92,8 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - **Expedition timers:** real time, same speed online and offline. Store the start time, so expeditions finish even while logged out.
 - **Expedition 1 (decided 2026-10-25):** "Explore Lumbridge Swamp Caves". 30 minutes. Rewards 1,000 XP (fixed for now; the level cap still applies, and class bonuses don't) plus a random 10–50 coins, about 3–4 runs per 100-coin recruit. The player clicks Collect when it's done. Early expeditions should be short.
 - **Coins:** shown as "coins", not "GP", so nobody mistakes them for real gold.
+- **Immersive wording (user preference):** player-facing text should feel in-world. Never say "evolve" to the player: use "class advancement", "Choose a path" and "has been trained in the ways of the Wizard". (Code names like `evolve()` are internal and fine.)
+- **Chat messages:** start with a gold "[Fellowship]" tag; the rest uses the chatbox's normal colour so it reads on both the transparent and the solid chatbox.
 - **Team (decided 2026-10-25, Phase 3b):** a cap of 3 in total. Recruits are numbered ("Adventurer 2"); custom names can come later. Coins belong to the account and are shared. Phase 4 replaces the cap (see Roster below).
 - **Inactive XP:** 10% of OSRS XP for every inactive character, however big the team (the user's choice for Phase 4; watch in playtesting whether big teams level too fast). Class bonuses stack on top (an inactive Wizard gets 20% of Magic XP). Fractions of an XP are carried over in memory so small drops still count; at most under 1 XP per character is lost on a restart.
 - **Roster (Phase 4, decided 2026-10-25):** no slot limit, but getting characters is hard: building a big team should be a big grind, and every new character should feel meaningful (which also makes choosing classes matter). Each Guild level above 1 gives one hire; hiring still costs coins (100 for now), so coins stay useful. Special unlocks later (e.g. Beast Master from a pet drop) are extra and don't use hires.
@@ -98,7 +114,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - Expedition XP that scales with level (e.g. half a level) instead of a fixed 1,000, if fixed XP stops mattering at high levels.
 - Second class advancement, MapleStory-style (e.g. Wizard → Battle Mage / Cleric / Arcane Wizard). Possible answer to "what happens after level 10".
 - Many unlockable characters, some hard or rare, each with its own unique way to unlock.
-- Gear (weapons etc.) from expeditions and other sources. Now Phase 5.
+- More loot triggers: level-ups (small chance, since low skills level fast), quest completions, collection log slots (only works if the player has the game's collection log chat notification turned on), and more.
 - Guild levels could also gate expeditions and rare characters, not just hires.
 - Character art: a picture or model for each class instead of text only.
 - UI redesign pass: the panel works but looks plain. Do it once the core concepts settle, so it isn't redone for every new feature. Game logic is already separate from the panel code (`Team`/`FellowshipCharacter` vs `FellowshipPanel`/`CharacterCard`), so a redesign shouldn't touch the rules. Limits: the sidebar is narrow (about 225px) and built with Swing.
