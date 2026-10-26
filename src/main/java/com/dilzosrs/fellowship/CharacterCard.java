@@ -53,6 +53,8 @@ public class CharacterCard extends JPanel
 	private String shownName;
 	private Expedition shownExpedition;
 	private Instant shownExpeditionEnd;
+	/** When the shown character's injury heals, or null if it isn't resting. */
+	private Instant shownRestingUntil;
 	/** What the last collected expedition gave, or null. */
 	private String lastReward;
 
@@ -151,15 +153,21 @@ public class CharacterCard extends JPanel
 		{
 			roleLabel.setText(view.active ? "Active, but away: no XP" : "Away: no XP");
 		}
+		else if (view.restingUntil != null)
+		{
+			roleLabel.setText(view.active ? "Active, but injured: no XP" : "Injured: no XP");
+		}
 		else
 		{
 			roleLabel.setText(view.active ? "Active: 100% XP" : "Inactive: 10% XP");
 		}
-		roleLabel.setForeground(view.active ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.LIGHT_GRAY_COLOR);
+		roleLabel.setForeground(view.restingUntil != null ? ColorScheme.PROGRESS_ERROR_COLOR
+			: view.active ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.LIGHT_GRAY_COLOR);
 		makeActiveButton.setVisible(!view.active);
 		setBorder(view.active ? ACTIVE_BORDER : INACTIVE_BORDER);
 		showEvolveButtons(view.canEvolve ? view.characterClass : null);
 		showGear(view);
+		shownRestingUntil = view.restingUntil;
 		showExpedition(view.expedition, view.expeditionEnd);
 
 		if (level >= levelCap)
@@ -276,7 +284,14 @@ public class CharacterCard extends JPanel
 		shownExpeditionEnd = expeditionEnd;
 
 		expeditionButtons.removeAll();
-		if (expedition == null)
+		if (expedition == null && shownRestingUntil != null)
+		{
+			// Injured: no expeditions until healed. The timer counts down the rest.
+			expeditionButtons.setVisible(false);
+			countdownTimer.start();
+			updateCountdown();
+		}
+		else if (expedition == null)
 		{
 			countdownTimer.stop();
 			expeditionLabel.setText(lastReward == null
@@ -320,6 +335,19 @@ public class CharacterCard extends JPanel
 	{
 		if (shownExpedition == null)
 		{
+			if (shownRestingUntil != null)
+			{
+				Duration rest = Duration.between(Instant.now(), shownRestingUntil);
+				if (rest.isNegative() || rest.isZero())
+				{
+					// Healed: the plugin announces it and refreshes the card with the Send buttons.
+					countdownTimer.stop();
+					expeditionLabel.setText("Recovered!");
+					return;
+				}
+				expeditionLabel.setText("<html>" + (lastReward == null ? "" : lastReward + "<br><br>")
+					+ "Injured and resting.<br>Healed in " + formatCountdown(rest) + "</html>");
+			}
 			return;
 		}
 		Duration left = Duration.between(Instant.now(), shownExpeditionEnd);

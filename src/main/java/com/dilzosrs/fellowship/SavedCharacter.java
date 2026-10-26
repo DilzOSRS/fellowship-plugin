@@ -18,6 +18,8 @@ public class SavedCharacter
 	String expedition;
 	/** Epoch milliseconds. Null when the character is home. */
 	Long expeditionStart;
+	/** Epoch milliseconds when an injured character is healed. Null if it isn't injured. */
+	Long restingUntil;
 	/** What the character wears. Null for an empty slot. */
 	SavedVault.SavedGear weapon;
 	SavedVault.SavedGear armour;
@@ -32,6 +34,10 @@ public class SavedCharacter
 		{
 			saved.expedition = character.getExpedition().name();
 			saved.expeditionStart = character.getExpeditionStart().toEpochMilli();
+		}
+		if (character.getRestingUntil() != null)
+		{
+			saved.restingUntil = character.getRestingUntil().toEpochMilli();
 		}
 		saved.weapon = SavedVault.SavedGear.from(character.getEquipped(GearType.Slot.WEAPON));
 		saved.armour = SavedVault.SavedGear.from(character.getEquipped(GearType.Slot.ARMOUR));
@@ -56,6 +62,10 @@ public class SavedCharacter
 		{
 			// Timers run in real time, so an expedition can finish while logged out.
 			character.startExpedition(savedExpedition, Instant.ofEpochMilli(expeditionStart));
+		}
+		if (restingUntil != null)
+		{
+			character.injure(Instant.ofEpochMilli(restingUntil));
 		}
 		return character;
 	}

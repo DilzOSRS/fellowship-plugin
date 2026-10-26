@@ -21,6 +21,9 @@ public class FellowshipCharacter
 	private Expedition expedition;
 	private Instant expeditionStart;
 
+	/** When an injured character is healed, or null if it isn't injured. */
+	private Instant restingUntil;
+
 	/** Gear worn in each slot. A missing slot is empty. */
 	private final Map<GearType.Slot, GearItem> equipment = new EnumMap<>(GearType.Slot.class);
 
@@ -58,13 +61,13 @@ public class FellowshipCharacter
 	/**
 	 * Add a percentage of the OSRS XP gained in a skill, applying the class's bonus for that skill.
 	 * Fractions of an XP are carried over to the next gain, so small drops still add up.
-	 * A character who is away on an expedition gets nothing.
+	 * A character who is away on an expedition or resting from an injury gets nothing.
 	 *
 	 * @return how many levels the character gained
 	 */
 	public int gainXp(Skill skill, long osrsXp, int percent)
 	{
-		if (isAway())
+		if (isAway() || isResting(Instant.now()))
 		{
 			return 0;
 		}
@@ -130,6 +133,30 @@ public class FellowshipCharacter
 	public Instant getExpeditionEnd()
 	{
 		return isAway() ? expeditionStart.plus(expedition.getDuration()) : null;
+	}
+
+	/** Whether the character is resting from an injury at that moment. */
+	public boolean isResting(Instant now)
+	{
+		return restingUntil != null && now.isBefore(restingUntil);
+	}
+
+	/** When the character's injury heals, or null if it was never injured. */
+	public Instant getRestingUntil()
+	{
+		return restingUntil;
+	}
+
+	/** Injure the character: it rests (no XP, no expeditions) until the given time. */
+	public void injure(Instant healedAt)
+	{
+		restingUntil = healedAt;
+	}
+
+	/** Whether the character can be sent on an expedition right now: home and not resting. */
+	public boolean isAvailable(Instant now)
+	{
+		return !isAway() && !isResting(now);
 	}
 
 	/**

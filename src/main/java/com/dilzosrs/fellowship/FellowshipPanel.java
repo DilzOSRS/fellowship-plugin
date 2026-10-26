@@ -211,7 +211,7 @@ public class FellowshipPanel extends PluginPanel
 		List<Integer> candidates = new ArrayList<>();
 		for (int i = 0; i < shownTeam.size(); i++)
 		{
-			if (i != characterIndex && shownTeam.get(i).expedition == null)
+			if (i != characterIndex && shownTeam.get(i).expedition == null && shownTeam.get(i).restingUntil == null)
 			{
 				candidates.add(i);
 			}
@@ -219,7 +219,8 @@ public class FellowshipPanel extends PluginPanel
 		if (candidates.size() < needed)
 		{
 			JOptionPane.showMessageDialog(this, expedition.getDisplayName() + " needs a party of "
-				+ expedition.getPartySize() + ", but only " + (candidates.size() + 1) + " of your characters are home.",
+				+ expedition.getPartySize() + ", but only " + (candidates.size() + 1)
+				+ " of your characters are home and healthy.",
 				"Expedition", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}

@@ -17,6 +17,8 @@ public class CharacterView
 	final Expedition expedition;
 	/** Null when the character is home. */
 	final Instant expeditionEnd;
+	/** When an injured character is healed; null if it isn't resting. */
+	final Instant restingUntil;
 	/** Equipped gear; null for an empty slot. */
 	final GearItem weapon;
 	final GearItem armour;
@@ -35,6 +37,7 @@ public class CharacterView
 		this.canEvolve = character.canEvolve();
 		this.expedition = character.getExpedition();
 		this.expeditionEnd = character.getExpeditionEnd();
+		this.restingUntil = character.isResting(Instant.now()) ? character.getRestingUntil() : null;
 		this.weapon = character.getEquipped(GearType.Slot.WEAPON);
 		this.armour = character.getEquipped(GearType.Slot.ARMOUR);
 		this.trinket = character.getEquipped(GearType.Slot.TRINKET);

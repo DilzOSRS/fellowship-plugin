@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -94,6 +95,8 @@ public class FellowshipPlugin extends Plugin
 	private Vault vault;
 	/** Characters whose finished expedition has already been announced in chat, so it's said only once. */
 	private final Set<FellowshipCharacter> announcedReturns = new HashSet<>();
+	/** Characters resting from an injury, so their recovery is announced once. */
+	private final Set<FellowshipCharacter> restingCharacters = new HashSet<>();
 
 	@Override
 	protected void startUp() throws Exception
@@ -210,6 +213,12 @@ public class FellowshipPlugin extends Plugin
 				sendChatMessage(joinNames(party) + (party.size() == 1 ? " is" : " are") + " back from "
 					+ character.getExpedition().getDisplayName() + "! Collect the rewards in the Fellowship panel.");
 			}
+			if (restingCharacters.contains(character) && !character.isResting(now))
+			{
+				restingCharacters.remove(character);
+				sendChatMessage(team.getDisplayName(i) + " has recovered and is ready for action!");
+				updatePanel();
+			}
 		}
 	}
 
@@ -287,17 +296,35 @@ public class FellowshipPlugin extends Plugin
 				xpBefore[i] = team.get(i).getXp();
 			}
 
-			// Dangerous expeditions can fail: the party's average ATK against the threat level.
-			boolean success = Danger.rollSuccess(finished.getThreatLevel(), team.averageAtk(team.partyOf(index)), random);
-			List<Integer> party = team.collectParty(index, Instant.now(), success);
+			// Dangerous expeditions can fail (the party's average ATK against the threat level), and
+			// members can be injured (DEF against the threat level). Gear can't change while away,
+			// so these are worked out from what the party set off with.
+			Instant now = Instant.now();
+			List<Integer> partyBefore = team.partyOf(index);
+			double[] memberDefs = partyBefore.stream().mapToDouble(i -> team.get(i).getEffectiveDef()).toArray();
+			boolean success = Danger.rollSuccess(finished.getThreatLevel(), team.averageAtk(partyBefore), random);
+			List<Integer> party = team.collectParty(index, now, success);
 			if (party.isEmpty())
 			{
 				return;
 			}
+			List<Integer> injured = new ArrayList<>();
+			for (int position : Danger.rollInjuries(finished.getThreatLevel(), success, memberDefs, random))
+			{
+				injured.add(partyBefore.get(position));
+			}
+			Duration rest = finished.getDuration().multipliedBy(Danger.REST_MULTIPLIER);
+			for (int member : injured)
+			{
+				team.get(member).injure(now.plus(rest));
+				restingCharacters.add(team.get(member));
+			}
+
 			if (!success)
 			{
 				sendChatMessage(joinNames(party) + (party.size() == 1 ? " was" : " were") + " overwhelmed in "
 					+ finished.getDisplayName() + " and came back empty-handed.");
+				announceInjuries(injured, rest);
 				for (int member : party)
 				{
 					announcedReturns.remove(team.get(member));
@@ -321,6 +348,7 @@ public class FellowshipPlugin extends Plugin
 				+ String.format("%,d XP", xpEach) + (party.size() > 1 ? " each" : "") + " and "
 				+ coinsGained + " coins from " + finished.getDisplayName() + "!"
 				+ (bonus != null ? " They also found a " + bonus.getDisplayName() + "!" : ""));
+			announceInjuries(injured, rest);
 			announceLevelUps(levelsBefore);
 
 			int levelsGained = 0;
@@ -338,6 +366,16 @@ public class FellowshipPlugin extends Plugin
 			saveCoins();
 			updatePanel();
 		});
+	}
+
+	private void announceInjuries(List<Integer> injured, Duration rest)
+	{
+		if (injured.isEmpty())
+		{
+			return;
+		}
+		sendChatMessage(joinNames(injured) + (injured.size() == 1 ? " was" : " were") + " injured and must rest for "
+			+ rest.toHours() + " hours.");
 	}
 
 	/** e.g. "Knight", "Knight and Archer 2", or "Knight, Archer 2 and Wizard 3". */
@@ -584,6 +622,15 @@ public class FellowshipPlugin extends Plugin
 			}
 			Integer savedActive = configManager.getRSProfileConfiguration(CONFIG_GROUP, ACTIVE_INDEX_KEY, Integer.class);
 			team = new Team(loaded, savedActive == null ? 0 : savedActive);
+		}
+
+		restingCharacters.clear();
+		for (FellowshipCharacter character : team.getCharacters())
+		{
+			if (character.isResting(Instant.now()))
+			{
+				restingCharacters.add(character);
+			}
 		}
 
 		Long savedCoins = configManager.getRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, Long.class);

@@ -29,6 +29,7 @@ Phase 6 steps (each one ends with the user testing it; for testing, temporarily 
 1. **6.1 Party expedition.** Add "Looting the Dorgeshuun Caves" (threat 8, exactly 3 characters, 2 hours). A dialog picks 3 characters who are home; they all go away together and come back together. On return: 3,000 XP each, coins and the Boss Bundle chance once. No success/fail yet.
 2. **6.2 Success or failure.** Party ATK (average of ATK + half MAG) vs threat; failing gives no XP and no loot.
 3. **6.3 Injuries.** Party DEF vs threat decides injuries (see the design doc); injured characters rest for 5× the expedition length, earn no XP and can't be sent. Saved.
+4. **6.4 Skiller class (planned 2026-10-26, build after the playtest).** The first successful Looting the Dorgeshuun Caves unlocks hiring a **Skiller** (saved per account). Hiring one uses a Guild hire and costs **500 coins** (Adventurers stay 100). The Skiller works like the Adventurer: no XP bonus, level cap 10, then a class advancement into **Explorer**, **Artisan** or **Harvester** (cap 99). Their 2x XP skills are to be decided later (a suggestion was Harvester: gathering skills, Artisan: production skills, Explorer: Agility, Thieving, Runecraft, Prayer, Slayer). For now no gear is made for them, so they can only wear Generic trinkets.
 
 The compact roster / UI redesign is also waiting.
 

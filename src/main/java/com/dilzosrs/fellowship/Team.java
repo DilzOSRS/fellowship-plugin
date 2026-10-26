@@ -106,7 +106,8 @@ public class Team
 	 * Send several characters on an expedition together. They share a start time, which is how
 	 * they're known to be one party later (even after a restart).
 	 *
-	 * @return false (and nobody is sent) if the party is the wrong size, has repeats, or anyone is away
+	 * @return false (and nobody is sent) if the party is the wrong size, has repeats, or anyone is
+	 *     away or resting from an injury
 	 */
 	public boolean sendParty(List<Integer> indexes, Expedition expedition, Instant start)
 	{
@@ -116,7 +117,7 @@ public class Team
 		}
 		for (int index : indexes)
 		{
-			if (index < 0 || index >= characters.size() || characters.get(index).isAway())
+			if (index < 0 || index >= characters.size() || !characters.get(index).isAvailable(start))
 			{
 				return false;
 			}
