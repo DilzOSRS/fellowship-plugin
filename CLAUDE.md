@@ -34,11 +34,14 @@ Phase 6 steps (each one ends with the user testing it; for testing, temporarily 
 
 The compact roster / UI redesign is also waiting.
 
-**UI tabs (decided 2026-10-26, build after the playtest notes are collected and urgent fixes are done):**
-1. **Card tabs.** Each character card gets two tabs: **Info** (level, XP bar, class advancement, expeditions) and **Gear** (the 3 slots and ATK/DEF/MAG). Use RuneLite's `MaterialTabGroup`, not Swing's `JTabbedPane`.
-2. **Later:** expeditions move off the cards into an Expedition Board under the Fellowship card (see `docs/future-design.md`), and the compact roster (one row per character, click to open its tabbed card).
+**UI work (decided 2026-10-26; the user chose to start it during the playtest, since UI changes don't affect the game rules):**
+1. **New character card (done, looked at in-game 2026-10-26).** Built from the user's sketch: a header that's always visible (class icon, name, level, status, Make active and Collect buttons), then three `MaterialTabGroup` tabs: **Info** (XP bar, class advancement, stats), **Gear** (stats and slots) and **Expedition**. A full-height icon column was tried on paper but doesn't fit the ~189px inside a card. Class icons are in-game items drawn by RuneLite (`CharacterClass.getIconItemId`): fedora, rune full helm, coif, blue wizard hat, knife, rune axe, hammer, leather boots. Placeholders until custom art.
+2. **Next: unlock pop-up.** When a character takes a class advancement (and later, rare unlocks), show a pop-up on the game screen with the class icon: "Unlocked Knight!". Hiring a plain Adventurer doesn't get one. Still to decide: whether hiring a Skiller does.
+3. **Later:** expeditions move off the cards into an Expedition Board under the Fellowship card (see `docs/future-design.md`), and the compact roster (one row per character, click to open its tabbed card).
 
 **Future designs** (more expeditions, classes and gear, planned during the playtest but not scheduled) are in `docs/future-design.md`. One-line ideas still go in the Ideas Parking Lot.
+
+**v1** (the finish of the first build: complete, maybe small, with an end-game) is scoped in `docs/v1-plan.md`. Anything not listed there is after v1. Playtest notes go in `docs/playtest-notes.md`.
 
 Phase 4b, done: **chat messages** (only the player sees them; nothing is sent to the server) for level-ups and class advancement being ready, class advancement, a character coming back from an expedition, the rewards collected, the Guild levelling up, and a new hire. E.g. "Adventurer 2 reached level 5!"
 
@@ -133,7 +136,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - Many unlockable characters, some hard or rare, each with its own unique way to unlock.
 - More loot triggers: level-ups (small chance, since low skills level fast), quest completions, collection log slots (only works if the player has the game's collection log chat notification turned on), and more.
 - Guild levels could also gate expeditions and rare characters, not just hires.
-- Character art: a picture or model for each class instead of text only.
+- Character art: a picture for each class instead of text only. Possible (checked 2026-10-26): start with in-game item icons drawn by RuneLite at runtime as placeholders (could also give gear items icons), then custom pixel-art portraits (about 32–64px, PNGs in resources, art the user owns) once the class list settles. 3D models in the sidebar aren't practical.
 - UI redesign pass: the panel works but looks plain. Do it once the core concepts settle, so it isn't redone for every new feature. Game logic is already separate from the panel code (`Team`/`FellowshipCharacter` vs `FellowshipPanel`/`CharacterCard`), so a redesign shouldn't touch the rules. Limits: the sidebar is narrow (about 225px) and built with Swing.
 - Custom names for recruits (typed in when recruiting).
 - Beast Master: a 10% chance to unlock when you get a pet drop in OSRS (read the drop message only). Example of unlocks from rare game events, like an advancement from a rare raid item.

@@ -15,6 +15,38 @@ Each idea is tagged:
 | Explore Lumbridge Swamp Caves | 1 | 30 min | none | 1,000 XP, 10–50 coins | 2,000 |
 | Looting the Dorgeshuun Caves | exactly 3 | 2 h | 8 | 3,000 XP each, 40–100 coins, 20% Boss Bundle | 1,500 (if it succeeds) |
 
+### The expedition ladder (v1, started 2026-10-26)
+
+Threat is matched to gear: power by rarity is 1 / 3 / 6 / 10 / 15, plus class bonuses later, so a top character reaches roughly 20–25. Each tier should pay more than the last, so the risk is worth it.
+
+The early game has a small story: the Fellowship has set up camp. First you scout the **Encampment**, then your Skillers fortify it.
+
+| Tier | Threat | Expedition | Status |
+|---|---|---|---|
+| Safe | 0 | Scout the Encampment Perimeter | New (decided 2026-10-26), replaces Swamp Caves as the first expedition |
+| Safe (Skillers) | 0 | Securing and Fortifying the Encampment | Designed |
+| 1 | ~3 | Explore Lumbridge Swamp Caves | Built as a safe trip; moves up to tier 1 (decided 2026-10-26) |
+| 2 | 8 | Looting the Dorgeshuun Caves | Built |
+| 3 | ~13 | **needed** | |
+| 4 | ~20 | Plunder Tombs of the Barrow Brothers | Idea, end-game, needs a Vyre |
+
+Draft numbers for the changed ones:
+- **Scout the Encampment Perimeter:** solo, 30 min, safe, 1,000 XP and 10–50 coins (what the Swamp Caves give today).
+- **Explore Lumbridge Swamp Caves (tier 1):** *draft* party of 1–2, threat 3, 1 hour, 1,500 XP each, 20–60 coins, small Generic Bundle chance.
+
+**Unlocks (decided 2026-10-26):**
+- **Scout the Encampment Perimeter is locked at the start** and unlocks at **Guild level 2**.
+- **New Guild curve (proposed by the user, 2026-10-26; apply after the playtest):** each level costs 10, 15, 25 Guild XP for levels 2, 3, 4 (totals 10, 25, 50). After that, each step grows by 5 more than the last: 40 then 60 for levels 5 and 6 (totals 90, 150), confirmed by the user. Today's totals are 20, 50, 90, 140, 200. Side effects: hires come sooner (one per Guild level), and storage upgrades (from Guild level 4) unlock at 50 total instead of 90.
+- Encampment fortifying unlocks when you hire a Skiller (decided earlier).
+- Swamp Caves, Dorgeshuun and above: Guild levels to decide.
+
+Consequences to watch in playtesting (Claude suggested leaving the Perimeter open; the user chose to lock it):
+- With no expeditions, Guild XP only comes from level-ups. 10 Guild XP is about the Adventurer reaching level 10 plus one more level after its class advancement. For a low-level player that's 5+ hours with no expeditions.
+- Coins only come from expeditions and bundles, so no hiring (including Skillers) until then.
+- The panel should say clearly what to work toward, e.g. "Expeditions unlock at Guild level 2 (3 / 10 XP)", so a new player isn't confused about why there's nothing to do.
+
+Coding note: keep the Swamp Caves' saved key (`LUMBRIDGE_SWAMP_CAVES`) and add the Perimeter scout as a new expedition. Changing a saved key would break any character who is away on it when the save loads.
+
 ### Securing and Fortifying the Encampment (idea, 2026-10-26)
 
 - **Unlock (decided 2026-10-26):** hidden until you hire your first Skiller.
@@ -57,10 +89,173 @@ Template for each class idea: **name**, **how you unlock it**, **XP rules**, **g
 
 Note: each new class with its own weapon and armour needs about 10 new items (2 slots × 5 rarities). Decide the gear plan (section 3) before adding many classes.
 
-(Nothing yet.)
+### All class ideas at a glance (from the user's ideas doc, 2026-10-26)
+
+About 27 classes in total. Built ones are marked ✅.
+
+```
+Adventurer ✅ ─┬─ Knight ✅ ─── Paladin / Rune Knight / Berserker
+               ├─ Archer ✅ ─── Scout / Hunter / Trickster
+               └─ Wizard ✅ ─── Battle Mage / Cleric / Arcane Wizard
+
+Skiller ✅ ──── Harvester ✅ / Artisan ✅ / Explorer ✅
+
+Thief (rare) ─┬─ Bandit ──── Warlord
+              └─ Assassin ── Night Blade
+
+Vyre (rare) ── Blood Mage / Death Knight / Shadow Lord
+
+Beast Master (rare, from a pet drop)
+```
+
+### Shared systems these ideas need
+
+Most classes reuse the same few systems, so each one only has to be built once:
+
+| System | Needed by |
+|---|---|
+| **Second class advancement** (a class cap below 99, then another advancement) | Knight, Archer and Wizard lines, Thief tree |
+| **Perks** (each class does one special thing) | Thief tree, Vyre tree, probably the new Knight/Archer/Wizard classes |
+| **Rare unlocks** (a chance to get a character from OSRS activity) | Thief, Vyre, Beast Master |
+| **Location in OSRS** (knowing the player is in Morytania) | Vyre unlock |
+| **Expeditions locked behind a character** | Vyre's Barrows expedition |
+| **Gear borrowing** (using another class's gear) | Bandit, Assassin |
+
+Possible build order (not decided): second class advancement with the Knight/Archer/Wizard classes first (mostly content once the system exists), then perks, then rare unlocks with the Thief tree, then Vyre.
+
+**Perks are for special classes (decided 2026-10-26).** Only rare-unlock classes (Thief and Vyre trees for now) get perks, because they're hard to get and should feel unique. Normal classes still need to feel different, through their XP skills, gear and role (see the roles below).
+
+### Skiller line (built; XP skills changed 2026-10-26, apply after the playtest)
+
+New 2x XP skills, replacing the first guess in CLAUDE.md:
+
+| Class | 2x XP |
+|---|---|
+| Harvester | Mining, Woodcutting, Fishing, Farming, Runecraft |
+| Artisan | Smithing, Cooking, Fletching, Crafting, Herblore, Construction |
+| Explorer | Hunter, Sailing, Thieving, Agility, Firemaking |
+
+- Hunter moves from Harvester to Explorer, Runecraft from Explorer to Harvester, and Firemaking from Artisan to Explorer. Sailing is new (RuneLite already knows the skill).
+- **Prayer and Slayer** are left out of the Skiller line on purpose, saved for other classes later (e.g. Prayer for the Cleric).
+- **Overlap:** Explorer and Thief both get 2x Thieving and Agility. Fine, since the Thief has perks.
+
+### Second advancements for Knight, Archer and Wizard (names only, 2026-10-26)
+
+| From | Choices |
+|---|---|
+| Knight | Paladin, Rune Knight, Berserker |
+| Archer | Scout, Hunter, Trickster |
+| Wizard | Battle Mage, Cleric, Arcane Wizard |
+
+**Roles (decided 2026-10-26):**
+
+| Role | Knight | Archer | Wizard |
+|---|---|---|---|
+| Support | Paladin | Scout | Cleric |
+| Raw damage | Berserker | Hunter | (Battle Mage?) |
+| Magic damage | Rune Knight? | Trickster | Arcane Wizard? |
+
+(The question marks are guesses to confirm.)
+
+No perks for these, so the role has to come from somewhere else. Suggestion: a **stat tilt** per class. Party power is an average, so a Support with high DEF raises the whole party's DEF and means fewer injuries. A Raw damage class leans into ATK. That's a small system (a multiplier on ATK/DEF/MAG per class) and fits the gear plan in section 3.
+
+Still to decide for each: level cap before the advancement, 2x XP skills, stat tilt, gear (suggest: keeps its parent's gear).
+
+Naming note: "Hunter" is also an OSRS skill, now an Explorer skill. Kept for now (decided 2026-10-26); rename later if it gets confusing.
+
+### Vyre tree (idea, 2026-10-26)
+
+| Class | Unlock | Perk |
+|---|---|---|
+| Vyre | Rare chance from any activity in Morytania | Unlocks the expedition "Plunder Tombs of the Barrow Brothers" |
+| Blood Mage | Vyre class advancement | Higher chance to succeed on the Barrows expedition |
+| Death Knight | Vyre class advancement | Finishes the Barrows expedition faster |
+| Shadow Lord | Vyre class advancement | Better chance at rare loot |
+
+Decided 2026-10-26:
+- **The Barrows expedition is end-game content for v1:** an intense Morytania raid that needs a Vyre to unlock. All three Vyre advancements have perks for it.
+- **Unlock:** XP gained while standing in Morytania has a chance to unlock a Vyre (the plugin can read the player's location, which is read-only and allowed). Suggest rolling per amount of XP, like the Generic Bundle, so training methods with many small XP drops don't get more rolls.
+
+Notes:
+- Perks that only work on one expedition do nothing the rest of the time. That's accepted for v1. If more Morytania expeditions come later, the perks could cover those too.
+- **Overlaps:** Death Knight's speed perk is like the Assassin's, and Blood Mage's success perk is like a stat boost. Fine, as long as each class has something of its own.
+- **Shadow Lord's rare loot** needs expedition loot tables, which don't exist yet (expeditions give a set bundle chance today).
+
+### Beast Master (idea, already in the Parking Lot)
+
+10% chance to unlock when you get a pet drop in OSRS (read from the game's drop message). Still to decide: class line, XP rules, perk.
+
+### Thief tree (idea, 2026-10-26)
+
+A rare, special character with a two-step advancement. Theme: Bandit is the melee branch, Assassin the ranged branch. Warlord stays at base, Night Blade goes into combat.
+
+```
+Thief ──┬── Bandit ──── Warlord
+        └── Assassin ── Night Blade
+```
+
+| Class | Unlock | 2x XP (*draft*) | Gear (*suggestion*) | Perk |
+|---|---|---|---|---|
+| Thief | Very rare chance from Thieving and Agility XP | Thieving, Agility | Generic only (like Skillers) | More coins from expeditions it goes on |
+| Bandit | Thief class advancement | Thieving, Agility, Attack, Strength | Borrows Knight gear | Chance to double coins from bundles and expeditions (see below) |
+| Warlord | Bandit at high level | Same as Bandit | Knight gear | Earns coins over time while it stays home |
+| Assassin | Thief class advancement | Thieving, Agility, Ranged | Borrows Archer gear | Chance to finish a dangerous expedition in half the time |
+| Night Blade | Assassin at high level | Same as Assassin | Archer gear | Can go on any dangerous expedition alone (decided 2026-10-26, see below) |
+
+What it would take to build:
+- **System: rare unlocks.** A chance to get a character from OSRS XP. Suggest rolling per amount of XP (e.g. a chance per 10,000 Thieving or Agility XP), like the Generic Bundle, so fast and slow training methods are treated the same. Rare characters don't use a Guild hire.
+- **System: second class advancement.** Today a class advancement happens once, at level 10. Thief needs caps per class and a second advancement.
+- **System: perks.** None exist yet, and each perk is its own bit of code. Five perks = five small build steps.
+- **System: gear borrowing.** Letting a class use another class's gear (Bandit uses Knight gear). Small change to the equip rule.
+- **Content:** the 2x XP skills.
+
+Things to watch:
+- **Advancement resets to level 1.** With a reset at each step, a deep tree takes a long time. On today's curve, level 20 is about 840k XP, level 30 about 2M and level 50 about 7M. A Thief at 30 plus a Bandit at 30 is about 4M XP before a Warlord.
+- **Night Blade solo (decided 2026-10-26):** it may ignore an expedition's party size and go alone. Everything else stays normal: the "party" power is just its own ATK and DEF, so it must be geared well enough by itself, and it can still fail and be injured. Going alone also means only one character earns the XP.
+- **Bandit coins (suggestion, not decided):** a *chance* (e.g. 25%) to double the coins from bundles and expeditions, rather than always doubling, so a Bandit is nice to have but not required. Salvage was dropped as not fitting the theme. Since this builds on the Thief's coin bonus, the tree could upgrade one perk as it goes: Thief = a bit more expedition coins, Bandit = a chance to double them (bundles too), Warlord = coins over time.
+
+Open questions:
+- Name: Thief or Rogue? (Rogue fits OSRS's Rogues' Den.)
+- Thief perk: does it make expeditions **shorter** ("get in, get out")? It was written as "increase the time". And does that overlap with the Assassin's speed perk?
+- Level caps for Thief, Bandit and Assassin (somewhere between 20 and 50).
+- Do perks work for the whole team (Bandit's bundle perk) or only when the character is involved (on the expedition, or at home for Warlord)?
+- Can you get more than one Thief, or does the rare chance stop once you have one?
 
 ## 3. Gear
 
 Wait for the Phase 5–6 playtest notes before redesigning gear.
 
-(Nothing yet.)
+### Class stat bonuses (needed before v1, noted 2026-10-26)
+
+Classes get flat power as they advance, e.g. a Paladin (tank) comes with extra DEF. This replaces the "stat tilt" idea in section 2 and is how normal classes (no perks) get their role.
+
+- **Changes an earlier rule:** Phase 5 said "power comes from gear only". This adds a second source: gear + class.
+- **Flat or multiplier?** Suggest flat (e.g. Paladin +3 DEF). It's easy to show on the card ("+3 DEF from class"), and it helps characters in weak gear. A multiplier (e.g. +20% DEF) does nothing without gear and helps rich players most.
+- **Scale with advancement:** a second advancement should give more than a first one (e.g. Knight +1 DEF, Paladin +4 DEF).
+- **Balance against threat levels:** Dorgeshuun is threat 8, and Rare gear gives 6. A class bonus of a few points matters a lot at these numbers, so pick them together with expedition threats.
+
+**Stat splits (example from the user, 2026-10-26):**
+
+| Class | Bonus |
+|---|---|
+| Paladin | +4 DEF |
+| Berserker | +4 ATK |
+| Rune Knight | +2 ATK, +2 MAG |
+
+Suggested rule: a **stat budget** per tier. Every class at the same advancement gets the same total (here 4), split differently. That keeps classes fair, so the choice is about role, not about which one is strongest.
+
+### Gear level requirements (idea, 2026-10-26)
+
+Gear needs a character level to wear it. This answers "what do character levels do?": higher levels let you wear better gear. Example (*draft*): Common 1, Uncommon 10, Rare 25, Epic 50, Legendary 75.
+
+**Problem: class advancement resets the level to 1.** A level 60 Knight wearing Epic gear would become a level 1 Paladin and could no longer wear it. Options:
+1. **Use total level** (*suggested*): all the levels a character has ever earned, added up across advancements. Adventurer 10 + Knight 60 + Paladin 3 = total level 73. Nothing is lost on advancing, and the card can show "Total level 73".
+2. Gear requirements by advancement instead of level (e.g. Epic needs a second advancement).
+3. Equipped gear stays on after advancing, but the character can't put on new gear above its level.
+
+A nice side effect: a Legendary that drops early sits in storage as a goal to work toward.
+
+**User's leaning (2026-10-26): keep the reset, and let it lock you out of some gear.** That makes advancing a real decision instead of an obvious upgrade. To make it feel fair, not punishing:
+- **Keep the lockout short.** Getting back to level 25 is about 1.4M XP (roughly 70 hours for a low-level player at 100%). Low requirements (e.g. Rare at 15, Legendary at 50) keep it to days, not weeks. Tune with the level curve.
+- **Caps must fit requirements.** If the Knight advances at 30 and Epic needs 50, a Knight can never wear Epic. Fine if on purpose.
+- **Still to decide: what happens to gear you can no longer wear.** Suggested: it stays on, but you can't put on new gear above your level. The harsher option (it goes back to storage) could overflow the 10-slot storage.
