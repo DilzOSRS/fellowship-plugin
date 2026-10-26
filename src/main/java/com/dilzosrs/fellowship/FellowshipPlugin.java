@@ -199,10 +199,16 @@ public class FellowshipPlugin extends Plugin
 		for (int i = 0; i < team.size(); i++)
 		{
 			FellowshipCharacter character = team.get(i);
-			if (character.isExpeditionDone(now) && announcedReturns.add(character))
+			if (character.isExpeditionDone(now) && !announcedReturns.contains(character))
 			{
-				sendChatMessage(team.getDisplayName(i) + " is back from " + character.getExpedition().getDisplayName()
-					+ "! Collect the rewards in the Fellowship panel.");
+				// Announce the whole party in one message.
+				List<Integer> party = team.partyOf(i);
+				for (int member : party)
+				{
+					announcedReturns.add(team.get(member));
+				}
+				sendChatMessage(joinNames(party) + (party.size() == 1 ? " is" : " are") + " back from "
+					+ character.getExpedition().getDisplayName() + "! Collect the rewards in the Fellowship panel.");
 			}
 		}
 	}
@@ -244,14 +250,14 @@ public class FellowshipPlugin extends Plugin
 	}
 
 	/**
-	 * Called from the panel (on the Swing thread) once the player confirms sending a character away.
+	 * Called from the panel (on the Swing thread) once the player confirms sending one character
+	 * or a whole party away.
 	 */
-	private void sendOnExpedition(int index, Expedition expedition)
+	private void sendOnExpedition(List<Integer> party, Expedition expedition)
 	{
 		clientThread.invokeLater(() ->
 		{
-			FellowshipCharacter character = characterAt(index);
-			if (character == null || !character.startExpedition(expedition, Instant.now()))
+			if (team == null || !team.sendParty(party, expedition, Instant.now()))
 			{
 				return;
 			}
@@ -262,40 +268,76 @@ public class FellowshipPlugin extends Plugin
 
 	/**
 	 * Called from the panel (on the Swing thread) when the player collects a finished expedition.
+	 * The whole party comes home: XP for each member, coins and the bonus bundle rolled once.
 	 */
 	private void collectExpedition(int index)
 	{
 		clientThread.invokeLater(() ->
 		{
 			FellowshipCharacter character = characterAt(index);
-			if (character == null)
+			if (character == null || !character.isExpeditionDone(Instant.now()))
 			{
 				return;
 			}
-			long xpBefore = character.getXp();
+			Expedition finished = character.getExpedition();
 			int[] levelsBefore = currentLevels();
-			Expedition finished = character.collectExpedition(Instant.now());
-			if (finished == null)
+			long[] xpBefore = new long[team.size()];
+			for (int i = 0; i < team.size(); i++)
+			{
+				xpBefore[i] = team.get(i).getXp();
+			}
+
+			List<Integer> party = team.collectParty(index, Instant.now());
+			if (party.isEmpty())
 			{
 				return;
 			}
-			announcedReturns.remove(character);
 			int coinsGained = finished.rollCoins(random);
 			coins += coinsGained;
-			long xpGained = character.getXp() - xpBefore;
-			sendChatMessage(team.getDisplayName(index) + " brought back "
-				+ (xpGained > 0 ? String.format("%,d XP and ", xpGained) : "")
-				+ coinsGained + " coins from " + finished.getDisplayName() + "!");
+			BundleType bonus = finished.rollBonusBundle(random);
+			if (bonus != null)
+			{
+				vault.addBundle(bonus);
+				saveVault();
+			}
+
+			long xpEach = finished.getXpReward();
+			sendChatMessage(joinNames(party) + " brought back "
+				+ String.format("%,d XP", xpEach) + (party.size() > 1 ? " each" : "") + " and "
+				+ coinsGained + " coins from " + finished.getDisplayName() + "!"
+				+ (bonus != null ? " They also found a " + bonus.getDisplayName() + "!" : ""));
 			announceLevelUps(levelsBefore);
+
+			int levelsGained = 0;
+			for (int member : party)
+			{
+				announcedReturns.remove(team.get(member));
+				levelsGained += team.get(member).getLevel() - levelsBefore[member];
+				long gained = team.get(member).getXp() - xpBefore[member];
+				SwingUtilities.invokeLater(() -> panel.showReward(member, gained, coinsGained));
+			}
 			// 1 Guild XP for the expedition, plus 1 for each level its XP reward gave.
-			addGuildXp(1 + character.getLevel() - levelsBefore[index]);
+			addGuildXp(1 + levelsGained);
 
 			saveTeam();
 			saveCoins();
-
-			SwingUtilities.invokeLater(() -> panel.showReward(index, xpGained, coinsGained));
 			updatePanel();
 		});
+	}
+
+	/** e.g. "Knight", "Knight and Archer 2", or "Knight, Archer 2 and Wizard 3". */
+	private String joinNames(List<Integer> indexes)
+	{
+		StringBuilder names = new StringBuilder();
+		for (int i = 0; i < indexes.size(); i++)
+		{
+			if (i > 0)
+			{
+				names.append(i == indexes.size() - 1 ? " and " : ", ");
+			}
+			names.append(team.getDisplayName(indexes.get(i)));
+		}
+		return names.toString();
 	}
 
 	/**

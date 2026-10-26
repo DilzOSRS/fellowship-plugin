@@ -2,6 +2,7 @@ package com.dilzosrs.fellowship;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -9,6 +10,7 @@ import java.util.function.IntConsumer;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -23,7 +25,7 @@ import net.runelite.client.ui.PluginPanel;
 public class FellowshipPanel extends PluginPanel
 {
 	private final BiConsumer<Integer, CharacterClass> onEvolve;
-	private final BiConsumer<Integer, Expedition> onSendExpedition;
+	private final BiConsumer<List<Integer>, Expedition> onSendExpedition;
 	private final IntConsumer onCollect;
 	private final IntConsumer onMakeActive;
 	private final Runnable onHire;
@@ -46,9 +48,9 @@ public class FellowshipPanel extends PluginPanel
 	/**
 	 * The callbacks are called on the Swing thread once the player confirms the action.
 	 * The first Integer/int is the character's position in the team; onEquip's second is the
-	 * item's position in storage.
+	 * item's position in storage. onSendExpedition gets everyone going (one character, or a party).
 	 */
-	public FellowshipPanel(BiConsumer<Integer, CharacterClass> onEvolve, BiConsumer<Integer, Expedition> onSendExpedition,
+	public FellowshipPanel(BiConsumer<Integer, CharacterClass> onEvolve, BiConsumer<List<Integer>, Expedition> onSendExpedition,
 		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onHire,
 		BiConsumer<Integer, Integer> onEquip, BiConsumer<Integer, GearType.Slot> onUnequip, VaultPanel vaultPanel)
 	{
@@ -165,7 +167,7 @@ public class FellowshipPanel extends PluginPanel
 		int index = cards.size();
 		CharacterCard card = new CharacterCard(
 			newClass -> onEvolve.accept(index, newClass),
-			expedition -> onSendExpedition.accept(index, expedition),
+			expedition -> send(index, expedition),
 			() -> onCollect.accept(index),
 			() -> onMakeActive.accept(index),
 			slot -> chooseGear(index, slot));
@@ -176,6 +178,76 @@ public class FellowshipPanel extends PluginPanel
 		}
 		cardsPanel.add(card);
 		cards.add(card);
+	}
+
+	/**
+	 * Send a character away. Solo expeditions were already confirmed on the card; party
+	 * expeditions need the player to pick the rest of the party first.
+	 */
+	private void send(int characterIndex, Expedition expedition)
+	{
+		if (expedition.getPartySize() <= 1)
+		{
+			onSendExpedition.accept(List.of(characterIndex), expedition);
+			return;
+		}
+		if (characterIndex >= shownTeam.size())
+		{
+			return;
+		}
+
+		int needed = expedition.getPartySize() - 1;
+		List<Integer> candidates = new ArrayList<>();
+		for (int i = 0; i < shownTeam.size(); i++)
+		{
+			if (i != characterIndex && shownTeam.get(i).expedition == null)
+			{
+				candidates.add(i);
+			}
+		}
+		if (candidates.size() < needed)
+		{
+			JOptionPane.showMessageDialog(this, expedition.getDisplayName() + " needs a party of "
+				+ expedition.getPartySize() + ", but only " + (candidates.size() + 1) + " of your characters are home.",
+				"Expedition", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+
+		JPanel picker = new JPanel(new GridLayout(0, 1, 0, 2));
+		picker.add(new JLabel("<html>" + shownTeam.get(characterIndex).name + " is going to "
+			+ expedition.getDisplayName() + " (threat " + expedition.getThreatLevel() + ").<br>"
+			+ "Pick " + needed + " more to go with them:</html>"));
+		List<JCheckBox> boxes = new ArrayList<>();
+		for (int index : candidates)
+		{
+			CharacterView view = shownTeam.get(index);
+			JCheckBox box = new JCheckBox(view.name + "  (ATK " + view.atk + ", DEF " + view.def + ", MAG " + view.mag + ")");
+			boxes.add(box);
+			picker.add(box);
+		}
+		picker.add(new JLabel("<html><br>They won't earn XP from your OSRS play while they're away.</html>"));
+
+		int choice = JOptionPane.showConfirmDialog(this, picker, "Choose a party", JOptionPane.OK_CANCEL_OPTION);
+		if (choice != JOptionPane.OK_OPTION)
+		{
+			return;
+		}
+		List<Integer> party = new ArrayList<>();
+		party.add(characterIndex);
+		for (int i = 0; i < boxes.size(); i++)
+		{
+			if (boxes.get(i).isSelected())
+			{
+				party.add(candidates.get(i));
+			}
+		}
+		if (party.size() != expedition.getPartySize())
+		{
+			JOptionPane.showMessageDialog(this, "Pick exactly " + needed + " more characters.", "Expedition",
+				JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		onSendExpedition.accept(party, expedition);
 	}
 
 	/**

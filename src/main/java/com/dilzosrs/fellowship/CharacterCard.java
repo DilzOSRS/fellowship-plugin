@@ -281,6 +281,13 @@ public class CharacterCard extends JPanel
 				JLabel name = new JLabel(option.getDisplayName());
 				name.setForeground(Color.WHITE);
 				row.add(name, BorderLayout.NORTH);
+				// Every row gets an info line, so all rows are the same height.
+				JLabel info = new JLabel(
+					(option.getThreatLevel() > 0 ? "Threat " + option.getThreatLevel() : "Safe") + ", "
+						+ (option.getPartySize() > 1 ? "party of " + option.getPartySize() : "solo"));
+				info.setFont(FontManager.getRunescapeSmallFont());
+				info.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+				row.add(info, BorderLayout.CENTER);
 				JButton button = new JButton("Send (" + formatDuration(option.getDuration()) + ")");
 				button.addActionListener(e -> confirmSend(option));
 				row.add(button, BorderLayout.SOUTH);
@@ -329,6 +336,12 @@ public class CharacterCard extends JPanel
 
 	private void confirmSend(Expedition expedition)
 	{
+		if (expedition.getPartySize() > 1)
+		{
+			// The panel shows a party picker instead, which has its own confirm step.
+			onSendExpedition.accept(expedition);
+			return;
+		}
 		int choice = JOptionPane.showConfirmDialog(
 			this,
 			"Send " + shownName + " to " + expedition.getDisplayName() + " for "

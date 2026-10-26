@@ -1,7 +1,9 @@
 package com.dilzosrs.fellowship;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import net.runelite.api.Skill;
 
@@ -100,10 +102,92 @@ public class Team
 		return levelsGained;
 	}
 
-	/** e.g. "Knight" for the first character, "Adventurer 2" and "Adventurer 3" for hires. */
+	/**
+	 * Send several characters on an expedition together. They share a start time, which is how
+	 * they're known to be one party later (even after a restart).
+	 *
+	 * @return false (and nobody is sent) if the party is the wrong size, has repeats, or anyone is away
+	 */
+	public boolean sendParty(List<Integer> indexes, Expedition expedition, Instant start)
+	{
+		if (indexes.size() != expedition.getPartySize() || new HashSet<>(indexes).size() != indexes.size())
+		{
+			return false;
+		}
+		for (int index : indexes)
+		{
+			if (index < 0 || index >= characters.size() || characters.get(index).isAway())
+			{
+				return false;
+			}
+		}
+		for (int index : indexes)
+		{
+			characters.get(index).startExpedition(expedition, start);
+		}
+		return true;
+	}
+
+	/**
+	 * Everyone on the same trip as this character (same expedition and start time), including it.
+	 *
+	 * @return their positions in the team, or an empty list if the character is home
+	 */
+	public List<Integer> partyOf(int index)
+	{
+		FellowshipCharacter character = characters.get(index);
+		if (!character.isAway())
+		{
+			return Collections.emptyList();
+		}
+		List<Integer> party = new ArrayList<>();
+		for (int i = 0; i < characters.size(); i++)
+		{
+			FellowshipCharacter other = characters.get(i);
+			if (other.getExpedition() == character.getExpedition()
+				&& character.getExpeditionStart().equals(other.getExpeditionStart()))
+			{
+				party.add(i);
+			}
+		}
+		return party;
+	}
+
+	/**
+	 * Bring a finished trip home: every party member gets the XP reward. The caller handles
+	 * the coins and bonus bundle, which are rolled once per party.
+	 *
+	 * @return the positions of the members who came home, or an empty list if it isn't finished
+	 */
+	public List<Integer> collectParty(int index, Instant now)
+	{
+		if (index < 0 || index >= characters.size() || !characters.get(index).isExpeditionDone(now))
+		{
+			return Collections.emptyList();
+		}
+		List<Integer> party = partyOf(index);
+		for (int member : party)
+		{
+			characters.get(member).collectExpedition(now);
+		}
+		return party;
+	}
+
+	/**
+	 * Characters are numbered within their class, in team order: the first Wizard is just
+	 * "Wizard", the second is "Wizard 2". Names can change when someone takes a class advancement.
+	 */
 	public String getDisplayName(int index)
 	{
-		String className = characters.get(index).getCharacterClass().getDisplayName();
-		return index == 0 ? className : className + " " + (index + 1);
+		CharacterClass characterClass = characters.get(index).getCharacterClass();
+		int number = 1;
+		for (int i = 0; i < index; i++)
+		{
+			if (characters.get(i).getCharacterClass() == characterClass)
+			{
+				number++;
+			}
+		}
+		return number == 1 ? characterClass.getDisplayName() : characterClass.getDisplayName() + " " + number;
 	}
 }

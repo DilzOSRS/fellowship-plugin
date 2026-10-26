@@ -47,9 +47,27 @@ public class TeamTest
 		Team team = new Team(List.of(new FellowshipCharacter(CharacterClass.KNIGHT, 0)));
 		team.hire();
 		team.hire();
+		// Numbered within each class: the first Adventurer has no number.
 		assertEquals("Knight", team.getDisplayName(0));
+		assertEquals("Adventurer", team.getDisplayName(1));
+		assertEquals("Adventurer 2", team.getDisplayName(2));
+	}
+
+	@Test
+	public void namesFollowClassAdvancement()
+	{
+		Team team = new Team(List.of(
+			new FellowshipCharacter(CharacterClass.ADVENTURER, LevelCurve.xpForLevel(10)),
+			new FellowshipCharacter(CharacterClass.ADVENTURER, LevelCurve.xpForLevel(10)),
+			new FellowshipCharacter(CharacterClass.WIZARD, 0)));
 		assertEquals("Adventurer 2", team.getDisplayName(1));
-		assertEquals("Adventurer 3", team.getDisplayName(2));
+		assertEquals("Wizard", team.getDisplayName(2));
+
+		// The second Adventurer becomes a Wizard: it's the first Wizard in team order.
+		team.get(1).evolve(CharacterClass.WIZARD);
+		assertEquals("Adventurer", team.getDisplayName(0));
+		assertEquals("Wizard", team.getDisplayName(1));
+		assertEquals("Wizard 2", team.getDisplayName(2));
 	}
 
 	@Test
