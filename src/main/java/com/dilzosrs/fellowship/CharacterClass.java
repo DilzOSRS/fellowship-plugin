@@ -17,7 +17,16 @@ public enum CharacterClass
 	ADVENTURER("Adventurer", 10),
 	KNIGHT("Knight", LevelCurve.MAX_LEVEL, Skill.ATTACK, Skill.STRENGTH),
 	ARCHER("Archer", LevelCurve.MAX_LEVEL, Skill.RANGED),
-	WIZARD("Wizard", LevelCurve.MAX_LEVEL, Skill.MAGIC);
+	WIZARD("Wizard", LevelCurve.MAX_LEVEL, Skill.MAGIC),
+	// The Skiller starts like the Adventurer (no bonus, cap 10) but advances into skilling paths.
+	// The paths' bonus skills are a first guess, to tune after playtesting.
+	SKILLER("Skiller", 10),
+	HARVESTER("Harvester", LevelCurve.MAX_LEVEL,
+		Skill.WOODCUTTING, Skill.MINING, Skill.FISHING, Skill.FARMING, Skill.HUNTER),
+	ARTISAN("Artisan", LevelCurve.MAX_LEVEL,
+		Skill.SMITHING, Skill.CRAFTING, Skill.FLETCHING, Skill.COOKING, Skill.HERBLORE, Skill.CONSTRUCTION, Skill.FIREMAKING),
+	EXPLORER("Explorer", LevelCurve.MAX_LEVEL,
+		Skill.AGILITY, Skill.THIEVING, Skill.RUNECRAFT, Skill.PRAYER, Skill.SLAYER);
 
 	/** XP from a class's bonus skills is multiplied by this. */
 	static final int BONUS_XP_MULTIPLIER = 2;
@@ -58,6 +67,10 @@ public enum CharacterClass
 		if (this == ADVENTURER)
 		{
 			return List.of(KNIGHT, ARCHER, WIZARD);
+		}
+		if (this == SKILLER)
+		{
+			return List.of(HARVESTER, ARTISAN, EXPLORER);
 		}
 		return Collections.emptyList();
 	}

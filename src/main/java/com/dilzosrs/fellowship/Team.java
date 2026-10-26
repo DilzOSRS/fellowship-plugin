@@ -61,7 +61,13 @@ public class Team
 	 */
 	public void hire()
 	{
-		characters.add(new FellowshipCharacter(CharacterClass.ADVENTURER, 0));
+		hire(CharacterClass.ADVENTURER);
+	}
+
+	/** Add a fresh level 1 character of a starting class (Adventurer or Skiller). */
+	public void hire(CharacterClass startingClass)
+	{
+		characters.add(new FellowshipCharacter(startingClass, 0));
 	}
 
 	/** Which character gets full XP. */

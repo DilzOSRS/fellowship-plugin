@@ -41,9 +41,13 @@ public class FellowshipPanel extends PluginPanel
 	private final JLabel guildLabel = new JLabel();
 	private final JPanel cardsPanel = new JPanel();
 	private final List<CharacterCard> cards = new ArrayList<>();
-	private final JPanel hireArea = new JPanel(new BorderLayout(0, 4));
+	private final JPanel hireArea = new JPanel(new GridLayout(0, 1, 0, 4));
 	private final JLabel hiresLabel = new JLabel();
 	private final JButton hireButton = new JButton("Hire Adventurer (" + Guild.HIRE_COST + " coins)");
+	private final JLabel skillersLabel = new JLabel();
+	private final JButton skillerButton = new JButton();
+	private final Runnable onHireSkiller;
+	private int shownSkillerCost;
 
 	/**
 	 * The callbacks are called on the Swing thread once the player confirms the action.
@@ -51,9 +55,10 @@ public class FellowshipPanel extends PluginPanel
 	 * item's position in storage. onSendExpedition gets everyone going (one character, or a party).
 	 */
 	public FellowshipPanel(BiConsumer<Integer, CharacterClass> onEvolve, BiConsumer<List<Integer>, Expedition> onSendExpedition,
-		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onHire,
+		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onHire, Runnable onHireSkiller,
 		BiConsumer<Integer, Integer> onEquip, BiConsumer<Integer, GearType.Slot> onUnequip, VaultPanel vaultPanel)
 	{
+		this.onHireSkiller = onHireSkiller;
 		this.onEquip = onEquip;
 		this.onUnequip = onUnequip;
 		this.onEvolve = onEvolve;
@@ -94,9 +99,14 @@ public class FellowshipPanel extends PluginPanel
 		hireArea.setOpaque(false);
 		hiresLabel.setFont(FontManager.getRunescapeSmallFont());
 		hiresLabel.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		hireArea.add(hiresLabel, BorderLayout.NORTH);
+		hireArea.add(hiresLabel);
 		hireButton.addActionListener(e -> confirmHire());
-		hireArea.add(hireButton, BorderLayout.SOUTH);
+		hireArea.add(hireButton);
+		skillersLabel.setFont(FontManager.getRunescapeSmallFont());
+		skillersLabel.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		hireArea.add(skillersLabel);
+		skillerButton.addActionListener(e -> confirmHireSkiller());
+		hireArea.add(skillerButton);
 		hireArea.setVisible(false);
 		add(hireArea, BorderLayout.SOUTH);
 	}
@@ -338,6 +348,33 @@ public class FellowshipPanel extends PluginPanel
 			return;
 		}
 		onEquip.accept(characterIndex, fittingIndexes.get(options.indexOf(choice)));
+	}
+
+	/**
+	 * Show how many Skillers are hired and what the next costs. Must be called on the Swing thread.
+	 */
+	public void showSkillerHiring(int skillersHired, int nextCost, boolean canHire)
+	{
+		shownSkillerCost = nextCost;
+		skillersLabel.setText("Skillers: " + skillersHired + "/" + Guild.MAX_SKILLERS);
+		boolean full = skillersHired >= Guild.MAX_SKILLERS;
+		skillerButton.setText(full ? "All Skillers hired" : String.format("Hire Skiller (%,d coins)", nextCost));
+		skillerButton.setEnabled(canHire);
+	}
+
+	private void confirmHireSkiller()
+	{
+		int choice = JOptionPane.showConfirmDialog(
+			this,
+			String.format("Hire a new Skiller for %,d coins?", shownSkillerCost) + "\n\n"
+				+ "Skillers don't need a Guild hire. They start at level 1 and, at level 10,\n"
+				+ "can become a Harvester, Artisan or Explorer. Each Skiller costs double the last.",
+			"Hire Skiller",
+			JOptionPane.YES_NO_OPTION);
+		if (choice == JOptionPane.YES_OPTION)
+		{
+			onHireSkiller.run();
+		}
 	}
 
 	private void confirmHire()

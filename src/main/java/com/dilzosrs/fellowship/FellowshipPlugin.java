@@ -34,6 +34,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
 
@@ -52,6 +53,7 @@ public class FellowshipPlugin extends Plugin
 	private static final String ACTIVE_INDEX_KEY = "activeIndex";
 	private static final String GUILD_XP_KEY = "guildXp";
 	private static final String HIRES_USED_KEY = "hiresUsed";
+	private static final String SKILLERS_HIRED_KEY = "skillersHired";
 	private static final String VAULT_KEY = "vault";
 
 	private static final Color CHAT_TAG_COLOR = new Color(255, 200, 0);
@@ -80,6 +82,11 @@ public class FellowshipPlugin extends Plugin
 	@Inject
 	private ChatMessageManager chatMessageManager;
 
+	@Inject
+	private OverlayManager overlayManager;
+
+	private final PopupOverlay popup = new PopupOverlay();
+
 	private final XpTracker xpTracker = new XpTracker();
 	private final Random random = new Random();
 	private FellowshipPanel panel;
@@ -103,7 +110,7 @@ public class FellowshipPlugin extends Plugin
 	{
 		vaultPanel = new VaultPanel(this::openBundle, this::salvage);
 		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::makeActive,
-			this::hire, this::equip, this::unequip, vaultPanel);
+			this::hire, this::hireSkiller, this::equip, this::unequip, vaultPanel);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -114,6 +121,7 @@ public class FellowshipPlugin extends Plugin
 			.build();
 
 		clientToolbar.addNavigation(navButton);
+		overlayManager.add(popup);
 
 		xpTracker.reset();
 		// If the plugin is turned on while already logged in, the account is already known
@@ -131,6 +139,7 @@ public class FellowshipPlugin extends Plugin
 	protected void shutDown() throws Exception
 	{
 		clientToolbar.removeNavigation(navButton);
+		overlayManager.remove(popup);
 		panel.stopTimers();
 		team = null;
 		log.debug("Fellowship stopped!");
@@ -161,7 +170,7 @@ public class FellowshipPlugin extends Plugin
 			int bundlesFound = vault.addXpForGenericBundles(gained, random);
 			for (int i = 0; i < bundlesFound; i++)
 			{
-				sendChatMessage("You found a " + BundleType.GENERIC.getDisplayName() + "! Open it in the Fellowship panel.");
+				announceBundle(BundleType.GENERIC);
 			}
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
@@ -186,7 +195,7 @@ public class FellowshipPlugin extends Plugin
 		}
 		vault.addBundle(bundle);
 		saveVault();
-		sendChatMessage("You found a " + bundle.getDisplayName() + "! Open it in the Fellowship panel.");
+		announceBundle(bundle);
 		updatePanel();
 	}
 
@@ -348,6 +357,10 @@ public class FellowshipPlugin extends Plugin
 				+ String.format("%,d XP", xpEach) + (party.size() > 1 ? " each" : "") + " and "
 				+ coinsGained + " coins from " + finished.getDisplayName() + "!"
 				+ (bonus != null ? " They also found a " + bonus.getDisplayName() + "!" : ""));
+			if (bonus != null)
+			{
+				popup.show("Your party found a " + bonus.getDisplayName() + "!");
+			}
 			announceInjuries(injured, rest);
 			announceLevelUps(levelsBefore);
 
@@ -366,6 +379,13 @@ public class FellowshipPlugin extends Plugin
 			saveCoins();
 			updatePanel();
 		});
+	}
+
+	/** Tell the player a bundle dropped: a chat message and an on-screen pop-up. */
+	private void announceBundle(BundleType bundle)
+	{
+		sendChatMessage("You found a " + bundle.getDisplayName() + "! Open it in the Fellowship panel.");
+		popup.show("You found a " + bundle.getDisplayName() + "!");
 	}
 
 	private void announceInjuries(List<Integer> injured, Duration rest)
@@ -406,6 +426,30 @@ public class FellowshipPlugin extends Plugin
 			}
 			coins -= Guild.HIRE_COST;
 			team.hire();
+			sendChatMessage(team.getDisplayName(team.size() - 1) + " joined your Fellowship!");
+			saveTeam();
+			saveCoins();
+			saveGuild();
+			updatePanel();
+		});
+	}
+
+	/**
+	 * Called from the panel (on the Swing thread) once the player confirms hiring a Skiller.
+	 * Skillers don't use a Guild hire, but there can only be 3, and each costs double the last.
+	 */
+	private void hireSkiller()
+	{
+		clientThread.invokeLater(() ->
+		{
+			if (team == null || !guild.canHireSkiller(coins))
+			{
+				return;
+			}
+			int cost = guild.getSkillerCost();
+			guild.useSkillerHire();
+			coins -= cost;
+			team.hire(CharacterClass.SKILLER);
 			sendChatMessage(team.getDisplayName(team.size() - 1) + " joined your Fellowship!");
 			saveTeam();
 			saveCoins();
@@ -638,7 +682,9 @@ public class FellowshipPlugin extends Plugin
 
 		Long savedGuildXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, Long.class);
 		Integer savedHiresUsed = configManager.getRSProfileConfiguration(CONFIG_GROUP, HIRES_USED_KEY, Integer.class);
-		guild = new Guild(savedGuildXp == null ? 0 : savedGuildXp, savedHiresUsed == null ? 0 : savedHiresUsed);
+		Integer savedSkillers = configManager.getRSProfileConfiguration(CONFIG_GROUP, SKILLERS_HIRED_KEY, Integer.class);
+		guild = new Guild(savedGuildXp == null ? 0 : savedGuildXp, savedHiresUsed == null ? 0 : savedHiresUsed,
+			savedSkillers == null ? 0 : savedSkillers);
 
 		String vaultJson = configManager.getRSProfileConfiguration(CONFIG_GROUP, VAULT_KEY);
 		vault = Vault.empty();
@@ -716,6 +762,7 @@ public class FellowshipPlugin extends Plugin
 	{
 		configManager.setRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, guild.getXp());
 		configManager.setRSProfileConfiguration(CONFIG_GROUP, HIRES_USED_KEY, guild.getHiresUsed());
+		configManager.setRSProfileConfiguration(CONFIG_GROUP, SKILLERS_HIRED_KEY, guild.getSkillersHired());
 	}
 
 	private void updatePanel()
@@ -730,12 +777,16 @@ public class FellowshipPlugin extends Plugin
 		long guildXp = guild.getXp();
 		int hiresAvailable = guild.getHiresAvailable();
 		boolean canHire = guild.canHire(coins);
+		int skillersHired = guild.getSkillersHired();
+		int skillerCost = guild.getSkillerCost();
+		boolean canHireSkiller = guild.canHireSkiller(coins);
 		List<BundleType> bundles = new ArrayList<>(vault.getBundles());
 		List<GearItem> items = new ArrayList<>(vault.getItems());
 		int capacity = vault.getCapacity();
 		SwingUtilities.invokeLater(() ->
 		{
 			panel.showTeam(views, coinsNow, guildXp, hiresAvailable, canHire, items, capacity);
+			panel.showSkillerHiring(skillersHired, skillerCost, canHireSkiller);
 			vaultPanel.show(bundles, items, capacity);
 			vaultPanel.setVisible(true);
 		});
