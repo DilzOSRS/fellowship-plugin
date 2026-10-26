@@ -12,9 +12,9 @@ import net.runelite.api.gameval.ItemID;
 public enum BundleType
 {
 	// Icon (a clue reward casket, fancier for better bundles), drop chance in percent
-	// (Generic: per 100,000 OSRS XP; the others: per completion or kill), coins, then rarity odds
+	// (Generic: per 10,000 OSRS XP; the others: per completion or kill), coins, then rarity odds
 	// in percent: Common, Uncommon, Rare, Epic, Legendary (must add up to 100).
-	GENERIC("Generic Bundle", ItemID.TRAIL_REWARD_CASKET_EASY, 10, 10, 30, 50, 30, 15, 4, 1),
+	GENERIC("Generic Bundle", ItemID.TRAIL_REWARD_CASKET_EASY, 25, 10, 30, 50, 30, 15, 4, 1),
 	SLAYER("Slayer Bundle", ItemID.TRAIL_REWARD_CASKET_MEDIUM, 10, 10, 30, 50, 30, 15, 4, 1),
 	RAID("Raid Bundle", ItemID.TRAIL_REWARD_CASKET_MASTER, 10, 30, 80, 0, 30, 40, 22, 8),
 	BOSS("Boss Bundle", ItemID.TRAIL_REWARD_CASKET_ELITE, 1, 10, 40, 30, 35, 25, 8, 2),

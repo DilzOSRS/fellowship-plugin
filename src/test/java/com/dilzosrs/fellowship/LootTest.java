@@ -155,11 +155,11 @@ public class LootTest
 	}
 
 	@Test
-	public void genericBundleRollsEveryHundredThousandXp()
+	public void genericBundleRollsEveryTenThousandXp()
 	{
 		Vault vault = Vault.empty();
-		// Always rolls 0, which is inside the 10% chance.
-		assertEquals(0, vault.addXpForGenericBundles(99_999, always(0)));
+		// Always rolls 0, which is inside the 25% chance.
+		assertEquals(0, vault.addXpForGenericBundles(9_999, always(0)));
 		assertEquals(1, vault.addXpForGenericBundles(1, always(0)));
 		assertEquals(0, vault.getGenericXpProgress());
 		assertEquals(1, vault.countBundles(BundleType.GENERIC));
@@ -169,8 +169,8 @@ public class LootTest
 	public void genericBundleCanMiss()
 	{
 		Vault vault = Vault.empty();
-		// Rolls 50, outside the 10% chance: the 100k XP is used up but no bundle is found.
-		assertEquals(0, vault.addXpForGenericBundles(100_000, always(50)));
+		// Rolls 50, outside the 25% chance: the 10k XP is used up but no bundle is found.
+		assertEquals(0, vault.addXpForGenericBundles(10_000, always(50)));
 		assertEquals(0, vault.countBundles(BundleType.GENERIC));
 	}
 
@@ -203,7 +203,7 @@ public class LootTest
 	public void bigXpDropsRollMoreThanOnce()
 	{
 		Vault vault = Vault.empty();
-		assertEquals(3, vault.addXpForGenericBundles(350_000, always(0)));
-		assertEquals(50_000, vault.getGenericXpProgress());
+		assertEquals(3, vault.addXpForGenericBundles(35_000, always(0)));
+		assertEquals(5_000, vault.getGenericXpProgress());
 	}
 }
