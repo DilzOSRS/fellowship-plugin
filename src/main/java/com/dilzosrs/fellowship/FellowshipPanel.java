@@ -27,6 +27,13 @@ public class FellowshipPanel extends PluginPanel
 	private final IntConsumer onCollect;
 	private final IntConsumer onMakeActive;
 	private final Runnable onHire;
+	private final BiConsumer<Integer, Integer> onEquip;
+	private final BiConsumer<Integer, GearType.Slot> onUnequip;
+
+	// The latest team and storage shown, so the gear dialog knows what can be picked.
+	private List<CharacterView> shownTeam = new ArrayList<>();
+	private List<GearItem> shownStorage = new ArrayList<>();
+	private int shownCapacity;
 
 	private final JLabel coinsLabel = new JLabel();
 	private final JLabel guildLabel = new JLabel();
@@ -38,11 +45,15 @@ public class FellowshipPanel extends PluginPanel
 
 	/**
 	 * The callbacks are called on the Swing thread once the player confirms the action.
-	 * The Integer/int is the character's position in the team.
+	 * The first Integer/int is the character's position in the team; onEquip's second is the
+	 * item's position in storage.
 	 */
 	public FellowshipPanel(BiConsumer<Integer, CharacterClass> onEvolve, BiConsumer<Integer, Expedition> onSendExpedition,
-		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onHire, VaultPanel vaultPanel)
+		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onHire,
+		BiConsumer<Integer, Integer> onEquip, BiConsumer<Integer, GearType.Slot> onUnequip, VaultPanel vaultPanel)
 	{
+		this.onEquip = onEquip;
+		this.onUnequip = onUnequip;
 		this.onEvolve = onEvolve;
 		this.onSendExpedition = onSendExpedition;
 		this.onCollect = onCollect;
@@ -99,8 +110,12 @@ public class FellowshipPanel extends PluginPanel
 	/**
 	 * Show the whole team, the coin balance, the Guild and hiring. Must be called on the Swing thread.
 	 */
-	public void showTeam(List<CharacterView> team, long coins, long guildXp, int hiresAvailable, boolean canHire)
+	public void showTeam(List<CharacterView> team, long coins, long guildXp, int hiresAvailable, boolean canHire,
+		List<GearItem> storage, int capacity)
 	{
+		shownTeam = team;
+		shownStorage = storage;
+		shownCapacity = capacity;
 		coinsLabel.setText(String.format("%,d coins", coins));
 		int guildLevel = Guild.levelForXp(guildXp);
 		long levelStart = Guild.xpForLevel(guildLevel);
@@ -152,7 +167,8 @@ public class FellowshipPanel extends PluginPanel
 			newClass -> onEvolve.accept(index, newClass),
 			expedition -> onSendExpedition.accept(index, expedition),
 			() -> onCollect.accept(index),
-			() -> onMakeActive.accept(index));
+			() -> onMakeActive.accept(index),
+			slot -> chooseGear(index, slot));
 		card.setAlignmentX(LEFT_ALIGNMENT);
 		if (index > 0)
 		{
@@ -160,6 +176,66 @@ public class FellowshipPanel extends PluginPanel
 		}
 		cardsPanel.add(card);
 		cards.add(card);
+	}
+
+	/**
+	 * Let the player pick what a character wears in a slot: any fitting item from storage,
+	 * or taking off what's there now.
+	 */
+	private void chooseGear(int characterIndex, GearType.Slot slot)
+	{
+		if (characterIndex >= shownTeam.size())
+		{
+			return;
+		}
+		CharacterView character = shownTeam.get(characterIndex);
+		GearItem equipped = character.getEquipped(slot);
+
+		// Storage items that go in this slot and that this character's class can use.
+		List<Integer> fittingIndexes = new ArrayList<>();
+		List<String> options = new ArrayList<>();
+		for (int i = 0; i < shownStorage.size(); i++)
+		{
+			GearItem item = shownStorage.get(i);
+			if (item.getType().getSlot() == slot && item.getType().canBeUsedBy(character.characterClass))
+			{
+				fittingIndexes.add(i);
+				options.add(item.getName() + " (" + item.getDescription() + ")");
+			}
+		}
+		String takeOff = equipped == null ? null : "Take off the " + equipped.getName();
+		if (takeOff != null)
+		{
+			options.add(takeOff);
+		}
+
+		if (options.isEmpty())
+		{
+			String reason = character.characterClass == CharacterClass.ADVENTURER && slot != GearType.Slot.TRINKET
+				? "Adventurers can only use Generic gear (trinkets) until their class advancement."
+				: "There's no " + CharacterCard.slotName(slot) + " in storage that " + character.name + " can use.";
+			JOptionPane.showMessageDialog(this, reason, "Gear", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+
+		Object choice = JOptionPane.showInputDialog(this, "Choose a " + CharacterCard.slotName(slot) + " for "
+			+ character.name + ":", "Gear", JOptionPane.QUESTION_MESSAGE, null, options.toArray(), options.get(0));
+		if (choice == null)
+		{
+			return;
+		}
+		if (choice.equals(takeOff))
+		{
+			if (shownStorage.size() >= shownCapacity)
+			{
+				JOptionPane.showMessageDialog(this, "Storage is full. Salvage something first.", "Gear",
+					JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			onUnequip.accept(characterIndex, slot);
+			return;
+		}
+		onEquip.accept(characterIndex, fittingIndexes.get(options.indexOf(choice)));
 	}
 
 	private void confirmHire()

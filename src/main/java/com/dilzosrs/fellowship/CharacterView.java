@@ -17,6 +17,13 @@ public class CharacterView
 	final Expedition expedition;
 	/** Null when the character is home. */
 	final Instant expeditionEnd;
+	/** Equipped gear; null for an empty slot. */
+	final GearItem weapon;
+	final GearItem armour;
+	final GearItem trinket;
+	final int atk;
+	final int def;
+	final int mag;
 
 	CharacterView(Team team, int index)
 	{
@@ -28,5 +35,25 @@ public class CharacterView
 		this.canEvolve = character.canEvolve();
 		this.expedition = character.getExpedition();
 		this.expeditionEnd = character.getExpeditionEnd();
+		this.weapon = character.getEquipped(GearType.Slot.WEAPON);
+		this.armour = character.getEquipped(GearType.Slot.ARMOUR);
+		this.trinket = character.getEquipped(GearType.Slot.TRINKET);
+		this.atk = character.getAtk();
+		this.def = character.getDef();
+		this.mag = character.getMag();
+	}
+
+	/** The gear in a slot, or null if it's empty. */
+	GearItem getEquipped(GearType.Slot slot)
+	{
+		switch (slot)
+		{
+			case WEAPON:
+				return weapon;
+			case ARMOUR:
+				return armour;
+			default:
+				return trinket;
+		}
 	}
 }

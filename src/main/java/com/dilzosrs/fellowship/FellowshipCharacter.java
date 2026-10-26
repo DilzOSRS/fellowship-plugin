@@ -2,6 +2,8 @@ package com.dilzosrs.fellowship;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.EnumMap;
+import java.util.Map;
 import net.runelite.api.Skill;
 
 /**
@@ -18,6 +20,9 @@ public class FellowshipCharacter
 	/** The expedition the character is on, or null when it's home. */
 	private Expedition expedition;
 	private Instant expeditionStart;
+
+	/** Gear worn in each slot. A missing slot is empty. */
+	private final Map<GearType.Slot, GearItem> equipment = new EnumMap<>(GearType.Slot.class);
 
 	public FellowshipCharacter(CharacterClass characterClass, long xp)
 	{
@@ -182,6 +187,66 @@ public class FellowshipCharacter
 		}
 		Duration left = Duration.between(now, getExpeditionEnd());
 		return left.isNegative() ? Duration.ZERO : left;
+	}
+
+	/** The gear worn in that slot, or null if it's empty. */
+	public GearItem getEquipped(GearType.Slot slot)
+	{
+		return equipment.get(slot);
+	}
+
+	public boolean canEquip(GearItem item)
+	{
+		return item.getType().canBeUsedBy(characterClass);
+	}
+
+	/**
+	 * Wear a piece of gear in its slot.
+	 *
+	 * @return the gear that was in that slot before (to go back to storage), or null
+	 * @throws IllegalArgumentException if this character's class can't use it
+	 */
+	public GearItem equip(GearItem item)
+	{
+		if (!canEquip(item))
+		{
+			throw new IllegalArgumentException(characterClass + " can't use " + item.getName());
+		}
+		return equipment.put(item.getType().getSlot(), item);
+	}
+
+	/**
+	 * Take off the gear in a slot.
+	 *
+	 * @return the gear that was there, or null if the slot was empty
+	 */
+	public GearItem unequip(GearType.Slot slot)
+	{
+		return equipment.remove(slot);
+	}
+
+	/** ATK Power from the equipped weapon. */
+	public int getAtk()
+	{
+		return powerIn(GearType.Slot.WEAPON);
+	}
+
+	/** DEF Power from the equipped armour. */
+	public int getDef()
+	{
+		return powerIn(GearType.Slot.ARMOUR);
+	}
+
+	/** MAG Power from the equipped trinket. */
+	public int getMag()
+	{
+		return powerIn(GearType.Slot.TRINKET);
+	}
+
+	private int powerIn(GearType.Slot slot)
+	{
+		GearItem item = equipment.get(slot);
+		return item == null ? 0 : item.getPower();
 	}
 
 	private long maxXp()

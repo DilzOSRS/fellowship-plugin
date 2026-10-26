@@ -42,8 +42,11 @@ public class CharacterCard extends JPanel
 	private final JLabel xpLabel = new JLabel();
 	// One button per row, because the sidebar is too narrow for the class names side by side.
 	private final JPanel evolveButtons = new JPanel(new GridLayout(0, 1, 0, 4));
+	private final JLabel statsLabel = new JLabel();
+	private final JPanel gearRows = new JPanel(new GridLayout(0, 1, 0, 2));
 	private final JLabel expeditionLabel = new JLabel();
 	private final JPanel expeditionButtons = new JPanel(new GridLayout(0, 1, 0, 4));
+	private final Consumer<GearType.Slot> onChangeGear;
 
 	// Ticks every second while the character is away, to update the countdown.
 	private final Timer countdownTimer = new Timer(1000, e -> updateCountdown());
@@ -57,11 +60,12 @@ public class CharacterCard extends JPanel
 	 * The callbacks are called on the Swing thread once the player confirms the action.
 	 */
 	public CharacterCard(Consumer<CharacterClass> onEvolve, Consumer<Expedition> onSendExpedition, Runnable onCollect,
-		Runnable onMakeActive)
+		Runnable onMakeActive, Consumer<GearType.Slot> onChangeGear)
 	{
 		this.onEvolve = onEvolve;
 		this.onSendExpedition = onSendExpedition;
 		this.onCollect = onCollect;
+		this.onChangeGear = onChangeGear;
 
 		setLayout(new BorderLayout(0, 6));
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
@@ -103,13 +107,26 @@ public class CharacterCard extends JPanel
 
 		add(body, BorderLayout.CENTER);
 
+		JPanel gearArea = new JPanel(new BorderLayout(0, 4));
+		gearArea.setOpaque(false);
+		gearArea.setBorder(new EmptyBorder(6, 0, 0, 0));
+		statsLabel.setForeground(Color.WHITE);
+		gearArea.add(statsLabel, BorderLayout.NORTH);
+		gearRows.setOpaque(false);
+		gearArea.add(gearRows, BorderLayout.CENTER);
+
 		JPanel expeditionArea = new JPanel(new BorderLayout(0, 4));
 		expeditionArea.setOpaque(false);
 		expeditionArea.setBorder(new EmptyBorder(6, 0, 0, 0));
 		expeditionArea.add(expeditionLabel, BorderLayout.NORTH);
 		expeditionButtons.setOpaque(false);
 		expeditionArea.add(expeditionButtons, BorderLayout.SOUTH);
-		add(expeditionArea, BorderLayout.SOUTH);
+
+		JPanel bottom = new JPanel(new BorderLayout());
+		bottom.setOpaque(false);
+		bottom.add(gearArea, BorderLayout.NORTH);
+		bottom.add(expeditionArea, BorderLayout.SOUTH);
+		add(bottom, BorderLayout.SOUTH);
 	}
 
 	/**
@@ -142,6 +159,7 @@ public class CharacterCard extends JPanel
 		makeActiveButton.setVisible(!view.active);
 		setBorder(view.active ? ACTIVE_BORDER : INACTIVE_BORDER);
 		showEvolveButtons(view.canEvolve ? view.characterClass : null);
+		showGear(view);
 		showExpedition(view.expedition, view.expeditionEnd);
 
 		if (level >= levelCap)
@@ -173,6 +191,37 @@ public class CharacterCard extends JPanel
 			? String.format("Back with +%,d XP<br>and +%d coins!", xpGained, coinsGained)
 			// An Adventurer at the level cap wastes the XP, like any other XP.
 			: String.format("Back with +%d coins!<br>(No XP: level cap reached.)", coinsGained);
+	}
+
+	/**
+	 * Show the character's stats and one row per gear slot, each with a button to change it.
+	 */
+	private void showGear(CharacterView view)
+	{
+		statsLabel.setText("ATK " + view.atk + "   DEF " + view.def + "   MAG " + view.mag);
+		gearRows.removeAll();
+		for (GearType.Slot slot : GearType.Slot.values())
+		{
+			GearItem item = view.getEquipped(slot);
+			JPanel row = new JPanel(new BorderLayout());
+			row.setOpaque(false);
+			JLabel label = new JLabel(item == null ? "No " + slotName(slot) : item.getName());
+			label.setFont(FontManager.getRunescapeSmallFont());
+			label.setForeground(item == null ? ColorScheme.LIGHT_GRAY_COLOR : Color.WHITE);
+			row.add(label, BorderLayout.CENTER);
+			JButton change = new JButton(item == null ? "Equip" : "Change");
+			change.addActionListener(e -> onChangeGear.accept(slot));
+			row.add(change, BorderLayout.EAST);
+			gearRows.add(row);
+		}
+		gearRows.revalidate();
+		gearRows.repaint();
+	}
+
+	/** e.g. "weapon", for "No weapon". */
+	static String slotName(GearType.Slot slot)
+	{
+		return slot.name().toLowerCase();
 	}
 
 	/**

@@ -110,6 +110,35 @@ public class Vault
 	}
 
 	/**
+	 * Take an item out of storage (to equip it).
+	 *
+	 * @return the item, or null if there's no item there
+	 */
+	public GearItem takeItem(int index)
+	{
+		if (index < 0 || index >= items.size())
+		{
+			return null;
+		}
+		return items.remove(index);
+	}
+
+	/**
+	 * Put an item into storage (e.g. after taking it off a character).
+	 *
+	 * @return false if storage is full
+	 */
+	public boolean storeItem(GearItem item)
+	{
+		if (isFull())
+		{
+			return false;
+		}
+		items.add(item);
+		return true;
+	}
+
+	/**
 	 * Remove an item from storage for coins.
 	 *
 	 * @return the coins it was worth, or 0 if there's no item there

@@ -18,10 +18,37 @@ public class SavedVault
 	int capacity = Vault.STARTING_CAPACITY;
 	long genericXpProgress;
 
+	/** One piece of gear in a save, used for storage and for what characters wear. */
 	static class SavedGear
 	{
 		String type;
 		String rarity;
+
+		static SavedGear from(GearItem item)
+		{
+			if (item == null)
+			{
+				return null;
+			}
+			SavedGear gear = new SavedGear();
+			gear.type = item.getType().name();
+			gear.rarity = item.getRarity().name();
+			return gear;
+		}
+
+		/** The item, or null if the save names gear that doesn't exist (any more). */
+		GearItem toItem()
+		{
+			try
+			{
+				return new GearItem(GearType.valueOf(type), Rarity.valueOf(rarity));
+			}
+			catch (IllegalArgumentException | NullPointerException e)
+			{
+				log.warn("Unknown saved gear {} {}, skipping it", rarity, type);
+				return null;
+			}
+		}
 	}
 
 	public static SavedVault from(Vault vault)
@@ -33,10 +60,7 @@ public class SavedVault
 		}
 		for (GearItem item : vault.getItems())
 		{
-			SavedGear gear = new SavedGear();
-			gear.type = item.getType().name();
-			gear.rarity = item.getRarity().name();
-			saved.items.add(gear);
+			saved.items.add(SavedGear.from(item));
 		}
 		saved.capacity = vault.getCapacity();
 		saved.genericXpProgress = vault.getGenericXpProgress();
@@ -65,13 +89,10 @@ public class SavedVault
 		{
 			for (SavedGear gear : items)
 			{
-				try
+				GearItem item = gear == null ? null : gear.toItem();
+				if (item != null)
 				{
-					loadedItems.add(new GearItem(GearType.valueOf(gear.type), Rarity.valueOf(gear.rarity)));
-				}
-				catch (IllegalArgumentException | NullPointerException e)
-				{
-					log.warn("Unknown saved gear {} {}, skipping it", gear.rarity, gear.type);
+					loadedItems.add(item);
 				}
 			}
 		}

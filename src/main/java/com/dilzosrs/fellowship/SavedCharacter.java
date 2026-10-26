@@ -18,6 +18,10 @@ public class SavedCharacter
 	String expedition;
 	/** Epoch milliseconds. Null when the character is home. */
 	Long expeditionStart;
+	/** What the character wears. Null for an empty slot. */
+	SavedVault.SavedGear weapon;
+	SavedVault.SavedGear armour;
+	SavedVault.SavedGear trinket;
 
 	public static SavedCharacter from(FellowshipCharacter character)
 	{
@@ -29,6 +33,9 @@ public class SavedCharacter
 			saved.expedition = character.getExpedition().name();
 			saved.expeditionStart = character.getExpeditionStart().toEpochMilli();
 		}
+		saved.weapon = SavedVault.SavedGear.from(character.getEquipped(GearType.Slot.WEAPON));
+		saved.armour = SavedVault.SavedGear.from(character.getEquipped(GearType.Slot.ARMOUR));
+		saved.trinket = SavedVault.SavedGear.from(character.getEquipped(GearType.Slot.TRINKET));
 		return saved;
 	}
 
@@ -40,6 +47,14 @@ public class SavedCharacter
 		{
 			// Timers run in real time, so an expedition can finish while logged out.
 			character.startExpedition(savedExpedition, Instant.ofEpochMilli(expeditionStart));
+		}
+		for (SavedVault.SavedGear gear : new SavedVault.SavedGear[]{weapon, armour, trinket})
+		{
+			GearItem item = gear == null ? null : gear.toItem();
+			if (item != null && character.canEquip(item))
+			{
+				character.equip(item);
+			}
 		}
 		return character;
 	}

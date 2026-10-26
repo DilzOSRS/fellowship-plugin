@@ -23,13 +23,13 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Before launch, all test saves get wiped. The one-time migration from the old single-character save (in `FellowshipPlugin.moveOldSaveIntoTeam`) can be deleted then, since no real player will have the old format.
 
 ## Roadmap
-**Current phase: Phase 5, in progress. Phases 1–4b are all done (tested in-game 2026-10-25; the last wording and colour tweaks to 4b's messages weren't re-tested in-game). 5.1 done (tested in-game 2026-10-26). Next step: 5.2 (equipping). The compact roster / UI redesign is also waiting.**
+**Current phase: Phase 5, in progress. Phases 1–4b are all done (tested in-game 2026-10-25; the last wording and colour tweaks to 4b's messages weren't re-tested in-game). 5.1 and 5.2 done (tested in-game 2026-10-26). Next step: 5.3 (Slayer and clue triggers). The compact roster / UI redesign is also waiting.**
 
 Phase 4b, done: **chat messages** (only the player sees them; nothing is sent to the server) for level-ups and class advancement being ready, class advancement, a character coming back from an expedition, the rewards collected, the Guild levelling up, and a new hire. E.g. "Adventurer 2 reached level 5!"
 
 Phase 5–6 plan (gear, loot and dangerous expeditions; structure decided 2026-10-25). Why: rare gear makes individual characters feel strong. **The full design, item table and draft numbers are in `docs/phase5-design.md`; keep it up to date.** In short:
 - **Phase 5 (gear and loot):** 35 items (Knight, Archer and Wizard weapons and armour, plus Generic trinkets; one per rarity). Kept super simple for the first playtest: weapons give ATK only, armour DEF only, trinkets MAG only, and power by rarity is 1 / 3 / 6 / 10 / 15 (MAG counts half to ATK, half to DEF in Phase 6). Power comes from gear only. Class gear plus "Generic" gear anyone can use (for now only trinkets are Generic, so Adventurers can only wear trinkets). Bundles: Slayer task 10%, any raid 10%, boss kill 1%, any clue 25%, each with coins plus one item. Storage starts at 10; from Guild level 4, +5 slots per purchase for 400 coins, doubling each time. Salvage for coins. Pop-ups when bundles drop. Stats are shown but don't matter until Phase 6.
-- **Phase 6 (dangerous expeditions):** Threat Level per expedition (separate from requirements). Each expedition sets its party size, and party power is the average of the members' effective ATK and DEF. ATK vs threat decides success (fail = no loot); DEF vs threat decides injuries (lower DEF more likely to be picked). Injured characters rest for 5× the expedition length with no XP. First one: Mory Raid (threat 8, exactly 3 characters, 2 hours).
+- **Phase 6 (dangerous expeditions):** Threat Level per expedition (separate from requirements). Each expedition sets its party size, and party power is the average of the members' effective ATK and DEF. ATK vs threat decides success (fail = no loot); DEF vs threat decides injuries (lower DEF more likely to be picked). Injured characters rest for 5× the expedition length with no XP. First one: Looting the Dorgeshuun Caves (threat 8, exactly 3 characters, 2 hours).
 - **Phase 5 steps** (the user wants items and bundles playable for testing on 2026-10-26; for testing, temporarily make bundles drop often):
   1. **5.1 Bundles and storage.** The 35 items, the 5 bundle types and their odds, a Generic Bundle trigger (10% per 100,000 OSRS XP), unopened bundles you can open for coins plus an item, 10-slot storage, salvage. Saved per account.
   2. **5.2 Equipping.** Weapon, Armour and Trinket slots on each card, equip from storage (class rules apply), unequip back to storage, and ATK/DEF/MAG shown on the card.
@@ -84,7 +84,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 | 4 | Fellowship Guild leveling and an unlimited roster. Guild levels give hires; hires still cost coins. | Done |
 | 4b | Chat messages for level-ups, class advancement, expeditions, Guild levels and hires. | Done |
 | 5 | Gear and loot: 35 items with ATK/DEF/MAG, bundles from Slayer tasks, raids, bosses and clues, storage with salvage, pop-ups. | In progress |
-| 6 | Dangerous expeditions: threat levels, parties, success or failure, injuries and resting. Mory Raid first. Unique gear perks later. | Designed, not started |
+| 6 | Dangerous expeditions: threat levels, parties, success or failure, injuries and resting. Looting the Dorgeshuun Caves first. Unique gear perks later. | Designed, not started |
 | Ongoing | More characters (some rare, with unique ways to unlock) and more expeditions, added once the systems exist. | Later |
 
 ## Decisions

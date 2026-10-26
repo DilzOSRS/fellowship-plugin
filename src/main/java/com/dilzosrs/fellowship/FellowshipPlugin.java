@@ -98,7 +98,7 @@ public class FellowshipPlugin extends Plugin
 	{
 		vaultPanel = new VaultPanel(this::openBundle, this::salvage);
 		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::makeActive,
-			this::hire, vaultPanel);
+			this::hire, this::equip, this::unequip, vaultPanel);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -361,6 +361,52 @@ public class FellowshipPlugin extends Plugin
 		});
 	}
 
+	/**
+	 * Called from the panel (on the Swing thread) when the player picks an item from storage
+	 * for a character. Whatever was in that slot goes back to storage.
+	 */
+	private void equip(int characterIndex, int storageIndex)
+	{
+		clientThread.invokeLater(() ->
+		{
+			FellowshipCharacter character = characterAt(characterIndex);
+			if (character == null || vault == null || storageIndex >= vault.getItems().size()
+				|| !character.canEquip(vault.getItems().get(storageIndex)))
+			{
+				return;
+			}
+			GearItem item = vault.takeItem(storageIndex);
+			GearItem old = character.equip(item);
+			if (old != null)
+			{
+				// Always fits: the new item just freed a storage slot.
+				vault.storeItem(old);
+			}
+			saveTeam();
+			saveVault();
+			updatePanel();
+		});
+	}
+
+	/**
+	 * Called from the panel (on the Swing thread) when the player takes off a character's gear.
+	 */
+	private void unequip(int characterIndex, GearType.Slot slot)
+	{
+		clientThread.invokeLater(() ->
+		{
+			FellowshipCharacter character = characterAt(characterIndex);
+			if (character == null || vault == null || vault.isFull() || character.getEquipped(slot) == null)
+			{
+				return;
+			}
+			vault.storeItem(character.unequip(slot));
+			saveTeam();
+			saveVault();
+			updatePanel();
+		});
+	}
+
 	/** Each character's level right now, to compare against after XP is added. */
 	private int[] currentLevels()
 	{
@@ -563,7 +609,7 @@ public class FellowshipPlugin extends Plugin
 		int capacity = vault.getCapacity();
 		SwingUtilities.invokeLater(() ->
 		{
-			panel.showTeam(views, coinsNow, guildXp, hiresAvailable, canHire);
+			panel.showTeam(views, coinsNow, guildXp, hiresAvailable, canHire, items, capacity);
 			vaultPanel.show(bundles, items, capacity);
 			vaultPanel.setVisible(true);
 		});

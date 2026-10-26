@@ -70,14 +70,14 @@ Every bundle gives some coins plus one item. Rarity is rolled first, then one it
 ## 6. Phase 6: dangerous expeditions (*draft*)
 
 - Every expedition has a **Threat Level** (how dangerous it is). This is separate from requirements: if you meet the requirements, you can send anyone, whatever the threat.
-- Each expedition sets its **party size** (some need several characters; the Mory Raid needs exactly 3). Party power is the **average** of the members' effective ATK and DEF.
+- Each expedition sets its **party size** (some need several characters; Looting the Dorgeshuun Caves needs exactly 3). Party power is the **average** of the members' effective ATK and DEF.
 - **Success:** if the party's ATK ≥ threat, it always succeeds. Below that, the chance of failing grows with the gap (*draft*: fail chance = (threat − ATK) ÷ threat). Failing means no loot.
 - **Injuries after a success:** if effective DEF ≥ threat, nobody is hurt. Below that, there's a chance someone is injured (*draft*: (threat − DEF) ÷ threat), and lower-DEF members are more likely to be the one.
 - **Injuries after a failure:** DEF ≥ threat means injuries are rare. DEF below threat means a high chance that several members are injured.
-- **Injured characters** rest for **5× the expedition's length** (Mory Raid: 2 hours, so 10 hours of rest). They earn **no XP** while resting and can't go on expeditions.
-- **First dangerous expedition: Mory Raid.** **Threat level 8**, needs **exactly 3 characters**, 2 hours. Rewards 3,000 XP, 40–100 coins and a 20% chance of a Boss Bundle.
+- **Injured characters** rest for **5× the expedition's length** (Looting the Dorgeshuun Caves: 2 hours, so 10 hours of rest). They earn **no XP** while resting and can't go on expeditions.
+- **First dangerous expedition: Looting the Dorgeshuun Caves** (renamed from "Mory Raid" on 2026-10-26). **Threat level 8**, needs **exactly 3 characters**, 2 hours. Rewards 3,000 XP, 40–100 coins and a 20% chance of a Boss Bundle.
 
-For scale: a character with a Rare weapon (ATK 6) and a Rare trinket (MAG 6, so +3 ATK) has effective ATK 9. So a party of three around that level clears the Mory Raid's threat 8 reliably, while a party in Common gear (about ATK 1.5 each) almost always fails.
+For scale: a character with a Rare weapon (ATK 6) and a Rare trinket (MAG 6, so +3 ATK) has effective ATK 9. So a party of three around that level clears its threat 8 reliably, while a party in Common gear (about ATK 1.5 each) almost always fails.
 
 ## 7. Open questions
 
