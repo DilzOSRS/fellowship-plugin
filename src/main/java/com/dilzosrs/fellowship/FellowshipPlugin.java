@@ -63,15 +63,15 @@ public class FellowshipPlugin extends Plugin
 	private final Random random = new Random();
 	private FellowshipPanel panel;
 	private NavigationButton navButton;
-	/** The account's characters, or null when no account is loaded. For now there is only one. */
-	private List<FellowshipCharacter> team;
+	/** The account's characters, or null when no account is loaded. */
+	private Team team;
 	/** Coins belong to the account, not to one character. */
 	private long coins;
 
 	@Override
 	protected void startUp() throws Exception
 	{
-		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition);
+		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::recruit);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -115,10 +115,9 @@ public class FellowshipPlugin extends Plugin
 	public void onStatChanged(StatChanged event)
 	{
 		int gained = xpTracker.update(event.getSkill(), event.getXp());
-		FellowshipCharacter character = mainCharacter();
-		if (gained > 0 && character != null)
+		if (gained > 0 && team != null)
 		{
-			character.gainXp(event.getSkill(), gained);
+			team.gainXp(event.getSkill(), gained);
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
 			saveTeam();
@@ -141,12 +140,12 @@ public class FellowshipPlugin extends Plugin
 	/**
 	 * Called from the panel (on the Swing thread) once the player confirms a class.
 	 */
-	private void evolve(CharacterClass newClass)
+	private void evolve(int index, CharacterClass newClass)
 	{
 		// Characters are only changed on the client thread, like everywhere else.
 		clientThread.invokeLater(() ->
 		{
-			FellowshipCharacter character = mainCharacter();
+			FellowshipCharacter character = characterAt(index);
 			if (character == null || !character.evolve(newClass))
 			{
 				return;
@@ -157,13 +156,13 @@ public class FellowshipPlugin extends Plugin
 	}
 
 	/**
-	 * Called from the panel (on the Swing thread) once the player confirms sending the character away.
+	 * Called from the panel (on the Swing thread) once the player confirms sending a character away.
 	 */
-	private void sendOnExpedition(Expedition expedition)
+	private void sendOnExpedition(int index, Expedition expedition)
 	{
 		clientThread.invokeLater(() ->
 		{
-			FellowshipCharacter character = mainCharacter();
+			FellowshipCharacter character = characterAt(index);
 			if (character == null || !character.startExpedition(expedition, Instant.now()))
 			{
 				return;
@@ -176,11 +175,11 @@ public class FellowshipPlugin extends Plugin
 	/**
 	 * Called from the panel (on the Swing thread) when the player collects a finished expedition.
 	 */
-	private void collectExpedition()
+	private void collectExpedition(int index)
 	{
 		clientThread.invokeLater(() ->
 		{
-			FellowshipCharacter character = mainCharacter();
+			FellowshipCharacter character = characterAt(index);
 			if (character == null)
 			{
 				return;
@@ -195,18 +194,36 @@ public class FellowshipPlugin extends Plugin
 			coins += coinsGained;
 
 			saveTeam();
-			configManager.setRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, coins);
+			saveCoins();
 
 			long xpGained = character.getXp() - xpBefore;
-			SwingUtilities.invokeLater(() -> panel.showReward(xpGained, coinsGained));
+			SwingUtilities.invokeLater(() -> panel.showReward(index, xpGained, coinsGained));
 			updatePanel();
 		});
 	}
 
-	/** The character shown in the panel, or null when no team is loaded. */
-	private FellowshipCharacter mainCharacter()
+	/**
+	 * Called from the panel (on the Swing thread) once the player confirms recruiting.
+	 */
+	private void recruit()
 	{
-		return team == null ? null : team.get(0);
+		clientThread.invokeLater(() ->
+		{
+			if (team == null || !team.canRecruit(coins) || !team.recruit())
+			{
+				return;
+			}
+			coins -= Team.RECRUIT_COST;
+			saveTeam();
+			saveCoins();
+			updatePanel();
+		});
+	}
+
+	/** The character at that position in the team, or null if there isn't one. */
+	private FellowshipCharacter characterAt(int index)
+	{
+		return team == null || index >= team.size() ? null : team.get(index);
 	}
 
 	private void loadTeam()
@@ -244,11 +261,7 @@ public class FellowshipPlugin extends Plugin
 					loaded.add(savedCharacter.toCharacter());
 				}
 			}
-			if (loaded.isEmpty())
-			{
-				loaded.add(new FellowshipCharacter(CharacterClass.ADVENTURER, 0));
-			}
-			team = loaded;
+			team = new Team(loaded);
 		}
 
 		Long savedCoins = configManager.getRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, Long.class);
@@ -261,7 +274,7 @@ public class FellowshipPlugin extends Plugin
 	 * Build a one-character team from the old single-character save (or a fresh Adventurer if
 	 * there isn't one), save it in the new format, then remove the old keys.
 	 */
-	private List<FellowshipCharacter> moveOldSaveIntoTeam()
+	private Team moveOldSaveIntoTeam()
 	{
 		SavedCharacter old = new SavedCharacter();
 		old.characterClass = configManager.getRSProfileConfiguration(CONFIG_GROUP, LEGACY_CLASS_KEY);
@@ -272,7 +285,7 @@ public class FellowshipPlugin extends Plugin
 
 		List<FellowshipCharacter> moved = new ArrayList<>();
 		moved.add(old.toCharacter());
-		team = moved;
+		team = new Team(moved);
 
 		// Save the new format first, so progress is never lost if something goes wrong in between.
 		saveTeam();
@@ -281,34 +294,37 @@ public class FellowshipPlugin extends Plugin
 		configManager.unsetRSProfileConfiguration(CONFIG_GROUP, LEGACY_EXPEDITION_KEY);
 		configManager.unsetRSProfileConfiguration(CONFIG_GROUP, LEGACY_EXPEDITION_START_KEY);
 		log.debug("Moved the old Fellowship save into the team format");
-		return moved;
+		return team;
 	}
 
 	private void saveTeam()
 	{
-		SavedCharacter[] saved = new SavedCharacter[team.size()];
-		for (int i = 0; i < team.size(); i++)
+		List<FellowshipCharacter> characters = team.getCharacters();
+		SavedCharacter[] saved = new SavedCharacter[characters.size()];
+		for (int i = 0; i < characters.size(); i++)
 		{
-			saved[i] = SavedCharacter.from(team.get(i));
+			saved[i] = SavedCharacter.from(characters.get(i));
 		}
 		configManager.setRSProfileConfiguration(CONFIG_GROUP, TEAM_KEY, gson.toJson(saved));
+	}
+
+	private void saveCoins()
+	{
+		configManager.setRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, coins);
 	}
 
 	private void updatePanel()
 	{
 		// Copy the values now, because the panel is updated later on the Swing thread.
-		FellowshipCharacter character = mainCharacter();
-		CharacterClass characterClass = character.getCharacterClass();
-		long xp = character.getXp();
-		boolean canEvolve = character.canEvolve();
-		Expedition expedition = character.getExpedition();
-		Instant expeditionEnd = character.getExpeditionEnd();
-		long coinsNow = coins;
-		SwingUtilities.invokeLater(() ->
+		List<CharacterView> views = new ArrayList<>();
+		for (int i = 0; i < team.size(); i++)
 		{
-			panel.showCharacter(characterClass, xp, canEvolve, expedition, expeditionEnd);
-			panel.showCoins(coinsNow);
-		});
+			views.add(new CharacterView(team, i));
+		}
+		long coinsNow = coins;
+		boolean canRecruit = team.canRecruit(coins);
+		boolean teamFull = team.isFull();
+		SwingUtilities.invokeLater(() -> panel.showTeam(views, coinsNow, canRecruit, teamFull));
 	}
 
 	private void snapshotXpIfLoggedIn()

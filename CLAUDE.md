@@ -23,7 +23,7 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Before launch, all test saves get wiped. The one-time migration from the old single-character save (in `FellowshipPlugin.moveOldSaveIntoTeam`) can be deleted then, since no real player will have the old format.
 
 ## Roadmap
-**Current phase: Phase 3b, in progress. Phases 1, 2 and 3a are done (all steps tested in-game 2026-10-25). 3b.1 done (migration tested in-game 2026-10-25). Next step: 3b.2.**
+**Current phase: Phase 3b, in progress. Phases 1, 2 and 3a are done (all steps tested in-game 2026-10-25). 3b.1 and 3b.2 done (tested in-game 2026-10-25). Next step: 3b.3.**
 
 Phase 3b steps (each one ends with the user testing it; for testing, temporarily make recruits cheap):
 1. **3b.1 Team save format.** Save the team as a list of characters (still just one) instead of single-character keys, and move the existing save into it once. Nothing visible changes; the current character must keep all its progress.

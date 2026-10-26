@@ -12,6 +12,8 @@ public class FellowshipCharacter
 {
 	private CharacterClass characterClass;
 	private long xp;
+	/** Hundredths of an XP not yet added. Kept in memory only, so under 1 XP can be lost on a restart. */
+	private long xpRemainder;
 
 	/** The expedition the character is on, or null when it's home. */
 	private Expedition expedition;
@@ -39,16 +41,28 @@ public class FellowshipCharacter
 	}
 
 	/**
-	 * Add Fellowship XP for OSRS XP gained in a skill, applying the class's bonus for that skill.
-	 * A character who is away on an expedition gets nothing.
+	 * Add Fellowship XP for OSRS XP gained in a skill, at full share.
 	 */
 	public void gainXp(Skill skill, long osrsXp)
+	{
+		gainXp(skill, osrsXp, 100);
+	}
+
+	/**
+	 * Add a percentage of the OSRS XP gained in a skill, applying the class's bonus for that skill.
+	 * Fractions of an XP are carried over to the next gain, so small drops still add up.
+	 * A character who is away on an expedition gets nothing.
+	 */
+	public void gainXp(Skill skill, long osrsXp, int percent)
 	{
 		if (isAway())
 		{
 			return;
 		}
-		addXp(osrsXp * characterClass.getXpMultiplier(skill));
+		// Work in hundredths of an XP so 10% of a small drop isn't rounded away.
+		long hundredths = osrsXp * characterClass.getXpMultiplier(skill) * percent + xpRemainder;
+		addXp(hundredths / 100);
+		xpRemainder = hundredths % 100;
 	}
 
 	public void addXp(long amount)
