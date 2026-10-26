@@ -1,6 +1,8 @@
 package com.dilzosrs.fellowship;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import java.util.Collections;
 import java.util.List;
 import net.runelite.api.Skill;
@@ -29,9 +31,51 @@ public class GuildTest
 	}
 
 	@Test
+	public void levelOneHasNoHires()
+	{
+		Guild guild = new Guild(0, 0);
+		assertEquals(0, guild.getHiresAvailable());
+		assertFalse(guild.canHire(1_000));
+		assertFalse(guild.useHire());
+	}
+
+	@Test
+	public void eachLevelAboveOneGivesAHire()
+	{
+		Guild guild = new Guild(Guild.xpForLevel(3), 0);
+		assertEquals(2, guild.getHiresAvailable());
+	}
+
+	@Test
+	public void hiringNeedsAHireAndOneHundredCoins()
+	{
+		Guild guild = new Guild(Guild.xpForLevel(2), 0);
+		assertFalse(guild.canHire(99));
+		assertTrue(guild.canHire(100));
+	}
+
+	@Test
+	public void usingAHireUsesItUp()
+	{
+		Guild guild = new Guild(Guild.xpForLevel(2), 0);
+		assertTrue(guild.useHire());
+		assertEquals(1, guild.getHiresUsed());
+		assertEquals(0, guild.getHiresAvailable());
+		assertFalse(guild.useHire());
+	}
+
+	@Test
+	public void unusedHiresAreBanked()
+	{
+		Guild guild = new Guild(Guild.xpForLevel(2), 0);
+		guild.addXp(Guild.xpForLevel(4) - Guild.xpForLevel(2));
+		assertEquals(3, guild.getHiresAvailable());
+	}
+
+	@Test
 	public void addingXpRaisesTheLevel()
 	{
-		Guild guild = new Guild(15);
+		Guild guild = new Guild(15, 0);
 		assertEquals(1, guild.getLevel());
 		guild.addXp(5);
 		assertEquals(20, guild.getXp());

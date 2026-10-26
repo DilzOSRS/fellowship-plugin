@@ -26,26 +26,28 @@ public class FellowshipPanel extends PluginPanel
 	private final BiConsumer<Integer, Expedition> onSendExpedition;
 	private final IntConsumer onCollect;
 	private final IntConsumer onMakeActive;
-	private final Runnable onRecruit;
+	private final Runnable onHire;
 
 	private final JLabel coinsLabel = new JLabel();
 	private final JLabel guildLabel = new JLabel();
 	private final JPanel cardsPanel = new JPanel();
 	private final List<CharacterCard> cards = new ArrayList<>();
-	private final JButton recruitButton = new JButton();
+	private final JPanel hireArea = new JPanel(new BorderLayout(0, 4));
+	private final JLabel hiresLabel = new JLabel();
+	private final JButton hireButton = new JButton("Hire Adventurer (" + Guild.HIRE_COST + " coins)");
 
 	/**
 	 * The callbacks are called on the Swing thread once the player confirms the action.
 	 * The Integer/int is the character's position in the team.
 	 */
 	public FellowshipPanel(BiConsumer<Integer, CharacterClass> onEvolve, BiConsumer<Integer, Expedition> onSendExpedition,
-		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onRecruit)
+		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onHire)
 	{
 		this.onEvolve = onEvolve;
 		this.onSendExpedition = onSendExpedition;
 		this.onCollect = onCollect;
 		this.onMakeActive = onMakeActive;
-		this.onRecruit = onRecruit;
+		this.onHire = onHire;
 
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 		setLayout(new BorderLayout(0, 10));
@@ -69,9 +71,14 @@ public class FellowshipPanel extends PluginPanel
 		cardsPanel.add(new JLabel("Log in to begin"));
 		add(cardsPanel, BorderLayout.CENTER);
 
-		recruitButton.addActionListener(e -> confirmRecruit());
-		recruitButton.setVisible(false);
-		add(recruitButton, BorderLayout.SOUTH);
+		hireArea.setOpaque(false);
+		hiresLabel.setFont(FontManager.getRunescapeSmallFont());
+		hiresLabel.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		hireArea.add(hiresLabel, BorderLayout.NORTH);
+		hireButton.addActionListener(e -> confirmHire());
+		hireArea.add(hireButton, BorderLayout.SOUTH);
+		hireArea.setVisible(false);
+		add(hireArea, BorderLayout.SOUTH);
 	}
 
 	/**
@@ -83,9 +90,9 @@ public class FellowshipPanel extends PluginPanel
 	}
 
 	/**
-	 * Show the whole team, the coin balance, the Guild and the recruit button. Must be called on the Swing thread.
+	 * Show the whole team, the coin balance, the Guild and hiring. Must be called on the Swing thread.
 	 */
-	public void showTeam(List<CharacterView> team, long coins, boolean canRecruit, boolean teamFull, long guildXp)
+	public void showTeam(List<CharacterView> team, long coins, long guildXp, int hiresAvailable, boolean canHire)
 	{
 		coinsLabel.setText(String.format("%,d coins", coins));
 		int guildLevel = Guild.levelForXp(guildXp);
@@ -110,11 +117,11 @@ public class FellowshipPanel extends PluginPanel
 			cards.get(i).show(team.get(i));
 		}
 
-		recruitButton.setText(teamFull
-			? "Team full (" + Team.MAX_SIZE + "/" + Team.MAX_SIZE + ")"
-			: "Recruit (" + Team.RECRUIT_COST + " coins)");
-		recruitButton.setEnabled(canRecruit);
-		recruitButton.setVisible(true);
+		hiresLabel.setText(hiresAvailable > 0
+			? "Hires available: " + hiresAvailable
+			: "Next hire at Guild level " + (guildLevel + 1));
+		hireButton.setEnabled(canHire);
+		hireArea.setVisible(true);
 
 		cardsPanel.revalidate();
 		cardsPanel.repaint();
@@ -148,17 +155,17 @@ public class FellowshipPanel extends PluginPanel
 		cards.add(card);
 	}
 
-	private void confirmRecruit()
+	private void confirmHire()
 	{
 		int choice = JOptionPane.showConfirmDialog(
 			this,
-			"Recruit a new Adventurer for " + Team.RECRUIT_COST + " coins?\n\n"
+			"Hire a new Adventurer for " + Guild.HIRE_COST + " coins? This uses one of your hires.\n\n"
 				+ "It starts at level 1 and gets 10% of your XP while another character is active.",
-			"Recruit",
+			"Hire",
 			JOptionPane.YES_NO_OPTION);
 		if (choice == JOptionPane.YES_OPTION)
 		{
-			onRecruit.run();
+			onHire.run();
 		}
 	}
 }

@@ -20,41 +20,33 @@ public class TeamTest
 	}
 
 	@Test
-	public void recruitingNeedsOneHundredCoins()
-	{
-		Team team = new Team(Collections.emptyList());
-		assertFalse(team.canRecruit(99));
-		assertTrue(team.canRecruit(100));
-	}
-
-	@Test
-	public void recruitsAreFreshAdventurers()
+	public void hiresAreFreshAdventurers()
 	{
 		Team team = new Team(List.of(new FellowshipCharacter(CharacterClass.KNIGHT, 5_000)));
-		assertTrue(team.recruit());
+		team.hire();
 		assertEquals(2, team.size());
 		assertEquals(CharacterClass.ADVENTURER, team.get(1).getCharacterClass());
 		assertEquals(0, team.get(1).getXp());
 	}
 
 	@Test
-	public void teamIsCappedAtThree()
+	public void teamHasNoSizeLimit()
 	{
 		Team team = new Team(Collections.emptyList());
-		assertTrue(team.recruit());
-		assertTrue(team.recruit());
-		assertTrue(team.isFull());
-		assertFalse(team.canRecruit(1_000));
-		assertFalse(team.recruit());
-		assertEquals(3, team.size());
+		for (int i = 0; i < 9; i++)
+		{
+			team.hire();
+		}
+		assertEquals(10, team.size());
+		assertEquals("Adventurer 10", team.getDisplayName(9));
 	}
 
 	@Test
-	public void recruitsAreNumbered()
+	public void hiresAreNumbered()
 	{
 		Team team = new Team(List.of(new FellowshipCharacter(CharacterClass.KNIGHT, 0)));
-		team.recruit();
-		team.recruit();
+		team.hire();
+		team.hire();
 		assertEquals("Knight", team.getDisplayName(0));
 		assertEquals("Adventurer 2", team.getDisplayName(1));
 		assertEquals("Adventurer 3", team.getDisplayName(2));
@@ -64,7 +56,7 @@ public class TeamTest
 	public void activeGetsFullXpAndTheRestGetTenPercent()
 	{
 		Team team = new Team(Collections.emptyList());
-		team.recruit();
+		team.hire();
 		team.gainXp(Skill.WOODCUTTING, 500);
 		assertEquals(500, team.get(0).getXp());
 		assertEquals(50, team.get(1).getXp());
@@ -85,7 +77,7 @@ public class TeamTest
 	public void smallDropsStillAddUpForInactiveCharacters()
 	{
 		Team team = new Team(Collections.emptyList());
-		team.recruit();
+		team.hire();
 		// 10% of 7 XP is 0.7, so nothing yet...
 		team.gainXp(Skill.MINING, 7);
 		assertEquals(0, team.get(1).getXp());
@@ -101,7 +93,7 @@ public class TeamTest
 	public void switchingActiveMovesTheFullShare()
 	{
 		Team team = new Team(Collections.emptyList());
-		team.recruit();
+		team.hire();
 		assertTrue(team.setActive(1));
 		assertEquals(1, team.getActiveIndex());
 		team.gainXp(Skill.WOODCUTTING, 500);
@@ -139,7 +131,7 @@ public class TeamTest
 	public void activeAwayMeansNobodyGetsFullXp()
 	{
 		Team team = new Team(Collections.emptyList());
-		team.recruit();
+		team.hire();
 		team.get(0).startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, Instant.now());
 		team.gainXp(Skill.WOODCUTTING, 500);
 		assertEquals(0, team.get(0).getXp());
@@ -150,7 +142,7 @@ public class TeamTest
 	public void awayCharactersGetNothing()
 	{
 		Team team = new Team(Collections.emptyList());
-		team.recruit();
+		team.hire();
 		team.get(1).startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, Instant.now());
 		team.gainXp(Skill.WOODCUTTING, 500);
 		assertEquals(500, team.get(0).getXp());

@@ -10,8 +10,6 @@ import net.runelite.api.Skill;
  */
 public class Team
 {
-	public static final int MAX_SIZE = 3;
-	public static final int RECRUIT_COST = 100;
 	static final int ACTIVE_XP_PERCENT = 100;
 	static final int INACTIVE_XP_PERCENT = 10;
 
@@ -55,29 +53,13 @@ public class Team
 		return characters.size();
 	}
 
-	public boolean isFull()
-	{
-		return characters.size() >= MAX_SIZE;
-	}
-
-	public boolean canRecruit(long coins)
-	{
-		return !isFull() && coins >= RECRUIT_COST;
-	}
-
 	/**
-	 * Add a fresh Adventurer to the team. The caller takes the coins.
-	 *
-	 * @return false if the team is already full
+	 * Add a fresh Adventurer to the team. There's no team size limit; the Guild decides
+	 * when a hire is allowed, and the caller takes the hire and the coins.
 	 */
-	public boolean recruit()
+	public void hire()
 	{
-		if (isFull())
-		{
-			return false;
-		}
 		characters.add(new FellowshipCharacter(CharacterClass.ADVENTURER, 0));
-		return true;
 	}
 
 	/** Which character gets full XP. */
@@ -118,7 +100,7 @@ public class Team
 		return levelsGained;
 	}
 
-	/** e.g. "Knight" for the first character, "Adventurer 2" and "Adventurer 3" for recruits. */
+	/** e.g. "Knight" for the first character, "Adventurer 2" and "Adventurer 3" for hires. */
 	public String getDisplayName(int index)
 	{
 		String className = characters.get(index).getCharacterClass().getDisplayName();

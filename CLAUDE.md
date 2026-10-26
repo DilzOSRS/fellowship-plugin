@@ -23,9 +23,9 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Before launch, all test saves get wiped. The one-time migration from the old single-character save (in `FellowshipPlugin.moveOldSaveIntoTeam`) can be deleted then, since no real player will have the old format.
 
 ## Roadmap
-**Current phase: Phase 4, in progress. Phases 1–3b are all done (every step tested in-game 2026-10-25). 4.1 done (tested in-game 2026-10-25). Next step: 4.2.**
+**Current phase: none. Phases 1–4 are all done (every step tested in-game 2026-10-25). Next: playtest, then design Phase 5 (gear and loot) before building it. The compact roster / UI redesign is also waiting.**
 
-Phase 4 steps (each one ends with the user testing it; for testing, temporarily make Guild levels cheap):
+Phase 4 steps, all done (for in-game testing, Guild levels and hires were temporarily made cheap):
 1. **4.1 Guild XP and level.** +1 Guild XP whenever any character levels up, and +1 per expedition collected. The panel shows "Fellowship Guild: Level 1 (5 / 20 XP)". Saved per account. Unit tests for the Guild curve.
 2. **4.2 Hire through the Guild.** Remove the team cap of 3. Each Guild level above 1 gives one hire, and each hire still costs 100 coins. The Recruit button becomes "Hire Adventurer (100 coins)" and shows how many hires are available. Hires can be banked.
 
@@ -68,7 +68,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 | 2 | Level cap 10. At 10, evolve Adventurer into Knight, Archer or Wizard. | Done |
 | 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: 1,000 XP + 10–50 coins. | Done |
 | 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | Done |
-| 4 | Fellowship Guild leveling and an unlimited roster. Guild levels give hires; hires still cost coins. | In progress |
+| 4 | Fellowship Guild leveling and an unlimited roster. Guild levels give hires; hires still cost coins. | Done |
 | 5 | Gear and loot, designed together before any building. Loot comes from varied OSRS achievements (e.g. finishing a Slayer task: 10% chance of a loot box), not from grinding XP. Gear should make playing one character for a long time worthwhile. | Needs design |
 | Ongoing | More characters (some rare, with unique ways to unlock) and more expeditions, added once the systems exist. | Later |
 

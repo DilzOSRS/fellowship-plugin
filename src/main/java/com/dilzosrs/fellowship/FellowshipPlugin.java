@@ -39,6 +39,7 @@ public class FellowshipPlugin extends Plugin
 	private static final String COINS_KEY = "coins";
 	private static final String ACTIVE_INDEX_KEY = "activeIndex";
 	private static final String GUILD_XP_KEY = "guildXp";
+	private static final String HIRES_USED_KEY = "hiresUsed";
 
 	// The old single-character save. Only read once, to move it into the team list.
 	private static final String LEGACY_XP_KEY = "adventurerXp";
@@ -76,7 +77,7 @@ public class FellowshipPlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::makeActive,
-			this::recruit);
+			this::hire);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -218,19 +219,21 @@ public class FellowshipPlugin extends Plugin
 	}
 
 	/**
-	 * Called from the panel (on the Swing thread) once the player confirms recruiting.
+	 * Called from the panel (on the Swing thread) once the player confirms hiring.
 	 */
-	private void recruit()
+	private void hire()
 	{
 		clientThread.invokeLater(() ->
 		{
-			if (team == null || !team.canRecruit(coins) || !team.recruit())
+			if (team == null || !guild.canHire(coins) || !guild.useHire())
 			{
 				return;
 			}
-			coins -= Team.RECRUIT_COST;
+			coins -= Guild.HIRE_COST;
+			team.hire();
 			saveTeam();
 			saveCoins();
+			saveGuild();
 			updatePanel();
 		});
 	}
@@ -300,7 +303,8 @@ public class FellowshipPlugin extends Plugin
 		coins = savedCoins == null ? 0 : savedCoins;
 
 		Long savedGuildXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, Long.class);
-		guild = new Guild(savedGuildXp == null ? 0 : savedGuildXp);
+		Integer savedHiresUsed = configManager.getRSProfileConfiguration(CONFIG_GROUP, HIRES_USED_KEY, Integer.class);
+		guild = new Guild(savedGuildXp == null ? 0 : savedGuildXp, savedHiresUsed == null ? 0 : savedHiresUsed);
 
 		updatePanel();
 	}
@@ -351,6 +355,7 @@ public class FellowshipPlugin extends Plugin
 	private void saveGuild()
 	{
 		configManager.setRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, guild.getXp());
+		configManager.setRSProfileConfiguration(CONFIG_GROUP, HIRES_USED_KEY, guild.getHiresUsed());
 	}
 
 	private void updatePanel()
@@ -362,10 +367,10 @@ public class FellowshipPlugin extends Plugin
 			views.add(new CharacterView(team, i));
 		}
 		long coinsNow = coins;
-		boolean canRecruit = team.canRecruit(coins);
-		boolean teamFull = team.isFull();
 		long guildXp = guild.getXp();
-		SwingUtilities.invokeLater(() -> panel.showTeam(views, coinsNow, canRecruit, teamFull, guildXp));
+		int hiresAvailable = guild.getHiresAvailable();
+		boolean canHire = guild.canHire(coins);
+		SwingUtilities.invokeLater(() -> panel.showTeam(views, coinsNow, guildXp, hiresAvailable, canHire));
 	}
 
 	private void snapshotXpIfLoggedIn()
