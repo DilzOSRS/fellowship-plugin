@@ -259,3 +259,16 @@ A nice side effect: a Legendary that drops early sits in storage as a goal to wo
 - **Keep the lockout short.** Getting back to level 25 is about 1.4M XP (roughly 70 hours for a low-level player at 100%). Low requirements (e.g. Rare at 15, Legendary at 50) keep it to days, not weeks. Tune with the level curve.
 - **Caps must fit requirements.** If the Knight advances at 30 and Epic needs 50, a Knight can never wear Epic. Fine if on purpose.
 - **Still to decide: what happens to gear you can no longer wear.** Suggested: it stays on, but you can't put on new gear above your level. The harsher option (it goes back to storage) could overflow the 10-slot storage.
+
+### Bundle loot pools (idea, 2026-10-26)
+
+Today every bundle can roll any item; only the rarity odds and coins differ. Once there are more items, each bundle type gets its own **loot pool**, so where you got a bundle matters. Examples from the user:
+- **Raid Bundle:** the best weapons.
+- **Slayer Bundle:** a good mix of everything.
+- **Clue Bundle:** only magic armour.
+
+Notes:
+- **Wait for more items.** With 35 items (one per rarity per type), narrow pools would leave each bundle only a handful of possible drops. Pools make sense once each type has several items per rarity.
+- **Keep one "anything" bundle** (the Generic Bundle), so every item can still drop from normal play and nobody is forced into raids for one item.
+- Easy to build when the time comes: each `BundleType` gets a list of allowed gear types (and maybe a minimum rarity), and `rollItem` only picks from those.
+- Each bundle already has its own icon: a clue reward casket, fancier for better bundles (Generic = easy, Slayer = medium, Clue = hard, Boss = elite, Raid = master).
