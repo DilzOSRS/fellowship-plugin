@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
@@ -48,6 +49,8 @@ public class FellowshipPanel extends PluginPanel
 	private final JButton skillerButton = new JButton();
 	private final Runnable onHireSkiller;
 	private int shownSkillerCost;
+	/** Draws the in-game item icons the cards use for each class. */
+	private final ItemManager itemManager;
 
 	/**
 	 * The callbacks are called on the Swing thread once the player confirms the action.
@@ -56,8 +59,10 @@ public class FellowshipPanel extends PluginPanel
 	 */
 	public FellowshipPanel(BiConsumer<Integer, CharacterClass> onEvolve, BiConsumer<List<Integer>, Expedition> onSendExpedition,
 		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onHire, Runnable onHireSkiller,
-		BiConsumer<Integer, Integer> onEquip, BiConsumer<Integer, GearType.Slot> onUnequip, VaultPanel vaultPanel)
+		BiConsumer<Integer, Integer> onEquip, BiConsumer<Integer, GearType.Slot> onUnequip, VaultPanel vaultPanel,
+		ItemManager itemManager)
 	{
+		this.itemManager = itemManager;
 		this.onHireSkiller = onHireSkiller;
 		this.onEquip = onEquip;
 		this.onUnequip = onUnequip;
@@ -187,6 +192,7 @@ public class FellowshipPanel extends PluginPanel
 	{
 		int index = cards.size();
 		CharacterCard card = new CharacterCard(
+			itemManager,
 			newClass -> onEvolve.accept(index, newClass),
 			expedition -> send(index, expedition),
 			() -> onCollect.accept(index),

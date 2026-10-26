@@ -30,6 +30,7 @@ import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.RuneScapeProfileChanged;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -85,6 +86,9 @@ public class FellowshipPlugin extends Plugin
 	@Inject
 	private OverlayManager overlayManager;
 
+	@Inject
+	private ItemManager itemManager;
+
 	private final PopupOverlay popup = new PopupOverlay();
 
 	private final XpTracker xpTracker = new XpTracker();
@@ -110,7 +114,7 @@ public class FellowshipPlugin extends Plugin
 	{
 		vaultPanel = new VaultPanel(this::openBundle, this::salvage);
 		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::makeActive,
-			this::hire, this::hireSkiller, this::equip, this::unequip, vaultPanel);
+			this::hire, this::hireSkiller, this::equip, this::unequip, vaultPanel, itemManager);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()

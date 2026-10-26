@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import net.runelite.api.Skill;
+import net.runelite.api.gameval.ItemID;
 
 /**
  * The classes a Fellowship character can be. Every character starts as an Adventurer.
@@ -14,18 +15,18 @@ import net.runelite.api.Skill;
  */
 public enum CharacterClass
 {
-	ADVENTURER("Adventurer", 10),
-	KNIGHT("Knight", LevelCurve.MAX_LEVEL, Skill.ATTACK, Skill.STRENGTH),
-	ARCHER("Archer", LevelCurve.MAX_LEVEL, Skill.RANGED),
-	WIZARD("Wizard", LevelCurve.MAX_LEVEL, Skill.MAGIC),
+	ADVENTURER("Adventurer", 10, ItemID.FEDORA),
+	KNIGHT("Knight", LevelCurve.MAX_LEVEL, ItemID.RUNE_FULL_HELM, Skill.ATTACK, Skill.STRENGTH),
+	ARCHER("Archer", LevelCurve.MAX_LEVEL, ItemID.COIF, Skill.RANGED),
+	WIZARD("Wizard", LevelCurve.MAX_LEVEL, ItemID.BLUEWIZHAT, Skill.MAGIC),
 	// The Skiller starts like the Adventurer (no bonus, cap 10) but advances into skilling paths.
 	// The paths' bonus skills are a first guess, to tune after playtesting.
-	SKILLER("Skiller", 10),
-	HARVESTER("Harvester", LevelCurve.MAX_LEVEL,
+	SKILLER("Skiller", 10, ItemID.KNIFE),
+	HARVESTER("Harvester", LevelCurve.MAX_LEVEL, ItemID.RUNE_AXE,
 		Skill.WOODCUTTING, Skill.MINING, Skill.FISHING, Skill.FARMING, Skill.HUNTER),
-	ARTISAN("Artisan", LevelCurve.MAX_LEVEL,
+	ARTISAN("Artisan", LevelCurve.MAX_LEVEL, ItemID.HAMMER,
 		Skill.SMITHING, Skill.CRAFTING, Skill.FLETCHING, Skill.COOKING, Skill.HERBLORE, Skill.CONSTRUCTION, Skill.FIREMAKING),
-	EXPLORER("Explorer", LevelCurve.MAX_LEVEL,
+	EXPLORER("Explorer", LevelCurve.MAX_LEVEL, ItemID.LEATHER_BOOTS,
 		Skill.AGILITY, Skill.THIEVING, Skill.RUNECRAFT, Skill.PRAYER, Skill.SLAYER);
 
 	/** XP from a class's bonus skills is multiplied by this. */
@@ -33,12 +34,14 @@ public enum CharacterClass
 
 	private final String displayName;
 	private final int levelCap;
+	private final int iconItemId;
 	private final Set<Skill> bonusSkills;
 
-	CharacterClass(String displayName, int levelCap, Skill... bonusSkills)
+	CharacterClass(String displayName, int levelCap, int iconItemId, Skill... bonusSkills)
 	{
 		this.displayName = displayName;
 		this.levelCap = levelCap;
+		this.iconItemId = iconItemId;
 		this.bonusSkills = bonusSkills.length == 0
 			? EnumSet.noneOf(Skill.class)
 			: EnumSet.of(bonusSkills[0], bonusSkills);
@@ -47,6 +50,12 @@ public enum CharacterClass
 	public String getDisplayName()
 	{
 		return displayName;
+	}
+
+	/** The OSRS item whose icon stands for this class on its card, until there's custom art. */
+	public int getIconItemId()
+	{
+		return iconItemId;
 	}
 
 	/** A character of this class can't go past this level. XP earned at the cap is wasted. */

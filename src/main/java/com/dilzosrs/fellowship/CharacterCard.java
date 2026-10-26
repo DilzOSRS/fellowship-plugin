@@ -3,6 +3,7 @@ package com.dilzosrs.fellowship;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.time.Duration;
 import java.time.Instant;
@@ -16,43 +17,62 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.ProgressBar;
+import net.runelite.client.ui.components.materialtabs.MaterialTab;
+import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 
 /**
- * One character's card in the sidebar: name, level, XP bar, evolving and expeditions.
+ * One character's card in the sidebar. A header that's always visible (class icon, name, level,
+ * status, and the Make active / Collect buttons), then three tabs: Info (XP, class advancement and
+ * stats), Gear (stats and gear slots) and Expedition.
  */
 public class CharacterCard extends JPanel
 {
+	private final ItemManager itemManager;
 	private final Consumer<CharacterClass> onEvolve;
 	private final Consumer<Expedition> onSendExpedition;
-	private final Runnable onCollect;
+	private final Consumer<GearType.Slot> onChangeGear;
 
 	// The active card gets a green stripe down its left side; the others get plain padding.
 	private static final Border ACTIVE_BORDER = new CompoundBorder(
 		new MatteBorder(0, 3, 0, 0, ColorScheme.PROGRESS_COMPLETE_COLOR), new EmptyBorder(8, 5, 8, 8));
 	private static final Border INACTIVE_BORDER = new EmptyBorder(8, 8, 8, 8);
 
+	/** Width and height of the class icon box. Item icons are 36x32, so this leaves a small margin. */
+	private static final int ICON_SIZE = 40;
+
+	private final JLabel iconLabel = new JLabel();
 	private final JLabel nameLabel = new JLabel();
 	private final JLabel levelLabel = new JLabel();
 	private final JLabel roleLabel = new JLabel();
+	// Make active and Collect live in the header, so they're on hand whichever tab is open.
+	private final JPanel headerButtons = new JPanel(new GridLayout(1, 0, 4, 0));
 	private final JButton makeActiveButton = new JButton("Make active");
+	private final JButton collectButton = new JButton("Collect");
 	private final ProgressBar xpBar = new ProgressBar();
 	private final JLabel xpLabel = new JLabel();
 	// One button per row, because the sidebar is too narrow for the class names side by side.
 	private final JPanel evolveButtons = new JPanel(new GridLayout(0, 1, 0, 4));
-	private final JLabel statsLabel = new JLabel();
+	// The stats show on both the Info and the Gear tab, and a label can only be in one place.
+	private final JLabel infoStatsLabel = new JLabel();
+	private final JLabel gearStatsLabel = new JLabel();
 	private final JPanel gearRows = new JPanel(new GridLayout(0, 1, 0, 2));
 	private final JLabel expeditionLabel = new JLabel();
 	private final JPanel expeditionButtons = new JPanel(new GridLayout(0, 1, 0, 4));
-	private final Consumer<GearType.Slot> onChangeGear;
 
 	// Ticks every second while the character is away, to update the countdown.
 	private final Timer countdownTimer = new Timer(1000, e -> updateCountdown());
 	private String shownName;
+	/** The class whose icon is showing, so the icon is only loaded again when the class changes. */
+	private CharacterClass shownClass;
+	private boolean shownActive;
 	private Expedition shownExpedition;
 	private Instant shownExpeditionEnd;
+	/** True once the shown expedition's time is up and the rewards are waiting. */
+	private boolean expeditionDone;
 	/** When the shown character's injury heals, or null if it isn't resting. */
 	private Instant shownRestingUntil;
 	/** What the last collected expedition gave, or null. */
@@ -61,74 +81,100 @@ public class CharacterCard extends JPanel
 	/**
 	 * The callbacks are called on the Swing thread once the player confirms the action.
 	 */
-	public CharacterCard(Consumer<CharacterClass> onEvolve, Consumer<Expedition> onSendExpedition, Runnable onCollect,
-		Runnable onMakeActive, Consumer<GearType.Slot> onChangeGear)
+	public CharacterCard(ItemManager itemManager, Consumer<CharacterClass> onEvolve, Consumer<Expedition> onSendExpedition,
+		Runnable onCollect, Runnable onMakeActive, Consumer<GearType.Slot> onChangeGear)
 	{
+		this.itemManager = itemManager;
 		this.onEvolve = onEvolve;
 		this.onSendExpedition = onSendExpedition;
-		this.onCollect = onCollect;
 		this.onChangeGear = onChangeGear;
 
 		setLayout(new BorderLayout(0, 6));
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		setBorder(INACTIVE_BORDER);
 
-		JPanel header = new JPanel(new BorderLayout());
-		header.setOpaque(false);
+		// Header: the class icon, with the name, level and status beside it.
+		iconLabel.setPreferredSize(new Dimension(ICON_SIZE, ICON_SIZE));
+		iconLabel.setHorizontalAlignment(JLabel.CENTER);
+		iconLabel.setOpaque(true);
+		iconLabel.setBackground(ColorScheme.DARK_GRAY_COLOR);
+
+		JPanel nameRow = new JPanel(new BorderLayout());
+		nameRow.setOpaque(false);
 		nameLabel.setFont(FontManager.getRunescapeBoldFont());
 		nameLabel.setForeground(Color.WHITE);
-		header.add(nameLabel, BorderLayout.WEST);
-		header.add(levelLabel, BorderLayout.EAST);
+		nameRow.add(nameLabel, BorderLayout.WEST);
+		nameRow.add(levelLabel, BorderLayout.EAST);
 
-		JPanel roleRow = new JPanel(new BorderLayout(0, 4));
-		roleRow.setOpaque(false);
+		JPanel identity = new JPanel(new BorderLayout(0, 2));
+		identity.setOpaque(false);
+		identity.add(nameRow, BorderLayout.NORTH);
 		roleLabel.setFont(FontManager.getRunescapeSmallFont());
-		roleRow.add(roleLabel, BorderLayout.NORTH);
+		identity.add(roleLabel, BorderLayout.CENTER);
+
+		JPanel header = new JPanel(new BorderLayout(8, 6));
+		header.setOpaque(false);
+		header.add(iconLabel, BorderLayout.WEST);
+		header.add(identity, BorderLayout.CENTER);
+		headerButtons.setOpaque(false);
 		// Switching is free and easy to undo, so there's no confirm step.
 		makeActiveButton.addActionListener(e -> onMakeActive.run());
-		roleRow.add(makeActiveButton, BorderLayout.SOUTH);
-		header.add(roleRow, BorderLayout.SOUTH);
+		collectButton.addActionListener(e -> onCollect.run());
+		header.add(headerButtons, BorderLayout.SOUTH);
 		add(header, BorderLayout.NORTH);
 
-		JPanel body = new JPanel(new BorderLayout(0, 4));
-		body.setOpaque(false);
-
+		// Info tab: the XP bar, then class advancement and stats underneath.
+		JPanel infoTab = new JPanel(new BorderLayout(0, 4));
+		infoTab.setOpaque(false);
 		xpBar.setPreferredSize(new Dimension(0, 16));
 		xpBar.setBackground(ColorScheme.DARK_GRAY_COLOR);
 		xpBar.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
-		body.add(xpBar, BorderLayout.NORTH);
-
+		infoTab.add(xpBar, BorderLayout.NORTH);
 		// The XP numbers go under the bar, because the bar's own labels are too narrow for them.
 		xpLabel.setFont(FontManager.getRunescapeSmallFont());
-		body.add(xpLabel, BorderLayout.CENTER);
-
+		infoTab.add(xpLabel, BorderLayout.CENTER);
+		JPanel infoBottom = new JPanel(new BorderLayout(0, 6));
+		infoBottom.setOpaque(false);
 		// Only shown when the character can evolve.
 		evolveButtons.setOpaque(false);
 		evolveButtons.setVisible(false);
-		body.add(evolveButtons, BorderLayout.SOUTH);
+		infoBottom.add(evolveButtons, BorderLayout.NORTH);
+		infoStatsLabel.setForeground(Color.WHITE);
+		infoBottom.add(infoStatsLabel, BorderLayout.SOUTH);
+		infoTab.add(infoBottom, BorderLayout.SOUTH);
 
-		add(body, BorderLayout.CENTER);
-
-		JPanel gearArea = new JPanel(new BorderLayout(0, 4));
-		gearArea.setOpaque(false);
-		gearArea.setBorder(new EmptyBorder(6, 0, 0, 0));
-		statsLabel.setForeground(Color.WHITE);
-		gearArea.add(statsLabel, BorderLayout.NORTH);
+		// Gear tab: the stats, then one row per slot.
+		JPanel gearTab = new JPanel(new BorderLayout(0, 4));
+		gearTab.setOpaque(false);
+		gearStatsLabel.setForeground(Color.WHITE);
+		gearTab.add(gearStatsLabel, BorderLayout.NORTH);
 		gearRows.setOpaque(false);
-		gearArea.add(gearRows, BorderLayout.CENTER);
+		gearTab.add(gearRows, BorderLayout.CENTER);
 
-		JPanel expeditionArea = new JPanel(new BorderLayout(0, 4));
-		expeditionArea.setOpaque(false);
-		expeditionArea.setBorder(new EmptyBorder(6, 0, 0, 0));
-		expeditionArea.add(expeditionLabel, BorderLayout.NORTH);
+		// Expedition tab: where the character is, or the expeditions it can go on.
+		JPanel expeditionTab = new JPanel(new BorderLayout(0, 4));
+		expeditionTab.setOpaque(false);
+		expeditionTab.add(expeditionLabel, BorderLayout.NORTH);
 		expeditionButtons.setOpaque(false);
-		expeditionArea.add(expeditionButtons, BorderLayout.SOUTH);
+		expeditionTab.add(expeditionButtons, BorderLayout.CENTER);
 
-		JPanel bottom = new JPanel(new BorderLayout());
-		bottom.setOpaque(false);
-		bottom.add(gearArea, BorderLayout.NORTH);
-		bottom.add(expeditionArea, BorderLayout.SOUTH);
-		add(bottom, BorderLayout.SOUTH);
+		// The tab group swaps the selected tab's content into this panel.
+		JPanel tabContent = new JPanel();
+		tabContent.setOpaque(false);
+		MaterialTabGroup tabs = new MaterialTabGroup(tabContent);
+		// Tighter gaps than the default, so all three tabs fit on one line in the narrow sidebar.
+		tabs.setLayout(new FlowLayout(FlowLayout.CENTER, 2, 0));
+		MaterialTab infoTabButton = new MaterialTab("Info", tabs, infoTab);
+		tabs.addTab(infoTabButton);
+		tabs.addTab(new MaterialTab("Gear", tabs, gearTab));
+		tabs.addTab(new MaterialTab("Expedition", tabs, expeditionTab));
+		tabs.select(infoTabButton);
+
+		JPanel tabArea = new JPanel(new BorderLayout(0, 6));
+		tabArea.setOpaque(false);
+		tabArea.add(tabs, BorderLayout.NORTH);
+		tabArea.add(tabContent, BorderLayout.CENTER);
+		add(tabArea, BorderLayout.CENTER);
 	}
 
 	/**
@@ -147,8 +193,15 @@ public class CharacterCard extends JPanel
 		int level = LevelCurve.levelForXp(view.xp);
 		int levelCap = view.characterClass.getLevelCap();
 		shownName = view.name;
+		shownActive = view.active;
+		if (view.characterClass != shownClass)
+		{
+			shownClass = view.characterClass;
+			// The icon loads in the background, and the label repaints itself once it's ready.
+			itemManager.getImage(view.characterClass.getIconItemId()).addTo(iconLabel);
+		}
 		nameLabel.setText(view.name);
-		levelLabel.setText("Level " + level);
+		levelLabel.setText("Lvl " + level);
 		if (view.expedition != null)
 		{
 			roleLabel.setText(view.active ? "Active, but away: no XP" : "Away: no XP");
@@ -163,7 +216,6 @@ public class CharacterCard extends JPanel
 		}
 		roleLabel.setForeground(view.restingUntil != null ? ColorScheme.PROGRESS_ERROR_COLOR
 			: view.active ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.LIGHT_GRAY_COLOR);
-		makeActiveButton.setVisible(!view.active);
 		setBorder(view.active ? ACTIVE_BORDER : INACTIVE_BORDER);
 		showEvolveButtons(view.canEvolve ? view.characterClass : null);
 		showGear(view);
@@ -210,12 +262,31 @@ public class CharacterCard extends JPanel
 		lastReward = "Failed to clear<br>" + expedition.getDisplayName() + ".<br>No rewards.";
 	}
 
+	/** Show only the header buttons that apply right now, or hide the row if none do. */
+	private void updateHeaderButtons()
+	{
+		headerButtons.removeAll();
+		if (expeditionDone)
+		{
+			headerButtons.add(collectButton);
+		}
+		if (!shownActive)
+		{
+			headerButtons.add(makeActiveButton);
+		}
+		headerButtons.setVisible(headerButtons.getComponentCount() > 0);
+		headerButtons.revalidate();
+		headerButtons.repaint();
+	}
+
 	/**
 	 * Show the character's stats and one row per gear slot, each with a button to change it.
 	 */
 	private void showGear(CharacterView view)
 	{
-		statsLabel.setText("ATK " + view.atk + "   DEF " + view.def + "   MAG " + view.mag);
+		String stats = "ATK " + view.atk + "   DEF " + view.def + "   MAG " + view.mag;
+		infoStatsLabel.setText(stats);
+		gearStatsLabel.setText(stats);
 		gearRows.removeAll();
 		for (GearType.Slot slot : GearType.Slot.values())
 		{
@@ -282,6 +353,7 @@ public class CharacterCard extends JPanel
 	{
 		shownExpedition = expedition;
 		shownExpeditionEnd = expeditionEnd;
+		expeditionDone = false;
 
 		expeditionButtons.removeAll();
 		if (expedition == null && shownRestingUntil != null)
@@ -329,6 +401,7 @@ public class CharacterCard extends JPanel
 		}
 		expeditionButtons.revalidate();
 		expeditionButtons.repaint();
+		updateHeaderButtons();
 	}
 
 	private void updateCountdown()
@@ -355,14 +428,12 @@ public class CharacterCard extends JPanel
 		{
 			countdownTimer.stop();
 			expeditionLabel.setText("<html>Back from<br>" + shownExpedition.getDisplayName() + "!</html>");
-			if (expeditionButtons.getComponentCount() == 0)
+			roleLabel.setText("Back! Rewards waiting");
+			roleLabel.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
+			if (!expeditionDone)
 			{
-				JButton collect = new JButton("Collect");
-				collect.addActionListener(e -> onCollect.run());
-				expeditionButtons.add(collect);
-				expeditionButtons.setVisible(true);
-				expeditionButtons.revalidate();
-				expeditionButtons.repaint();
+				expeditionDone = true;
+				updateHeaderButtons();
 			}
 			return;
 		}
