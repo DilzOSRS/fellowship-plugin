@@ -287,9 +287,24 @@ public class FellowshipPlugin extends Plugin
 				xpBefore[i] = team.get(i).getXp();
 			}
 
-			List<Integer> party = team.collectParty(index, Instant.now());
+			// Dangerous expeditions can fail: the party's average ATK against the threat level.
+			boolean success = Danger.rollSuccess(finished.getThreatLevel(), team.averageAtk(team.partyOf(index)), random);
+			List<Integer> party = team.collectParty(index, Instant.now(), success);
 			if (party.isEmpty())
 			{
+				return;
+			}
+			if (!success)
+			{
+				sendChatMessage(joinNames(party) + (party.size() == 1 ? " was" : " were") + " overwhelmed in "
+					+ finished.getDisplayName() + " and came back empty-handed.");
+				for (int member : party)
+				{
+					announcedReturns.remove(team.get(member));
+					SwingUtilities.invokeLater(() -> panel.showFailure(member, finished));
+				}
+				saveTeam();
+				updatePanel();
 				return;
 			}
 			int coinsGained = finished.rollCoins(random);
@@ -434,7 +449,7 @@ public class FellowshipPlugin extends Plugin
 		{
 			FellowshipCharacter character = characterAt(characterIndex);
 			if (character == null || vault == null || storageIndex >= vault.getItems().size()
-				|| !character.canEquip(vault.getItems().get(storageIndex)))
+				|| !character.canChangeGear() || !character.canEquip(vault.getItems().get(storageIndex)))
 			{
 				return;
 			}
@@ -459,7 +474,8 @@ public class FellowshipPlugin extends Plugin
 		clientThread.invokeLater(() ->
 		{
 			FellowshipCharacter character = characterAt(characterIndex);
-			if (character == null || vault == null || vault.isFull() || character.getEquipped(slot) == null)
+			if (character == null || vault == null || vault.isFull() || !character.canChangeGear()
+				|| character.getEquipped(slot) == null)
 			{
 				return;
 			}

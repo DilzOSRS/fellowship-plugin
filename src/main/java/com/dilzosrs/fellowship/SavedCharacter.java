@@ -42,12 +42,7 @@ public class SavedCharacter
 	public FellowshipCharacter toCharacter()
 	{
 		FellowshipCharacter character = new FellowshipCharacter(parseClass(characterClass), xp);
-		Expedition savedExpedition = parseExpedition(expedition);
-		if (savedExpedition != null && expeditionStart != null)
-		{
-			// Timers run in real time, so an expedition can finish while logged out.
-			character.startExpedition(savedExpedition, Instant.ofEpochMilli(expeditionStart));
-		}
+		// Gear first: it can't be put on once the character is away.
 		for (SavedVault.SavedGear gear : new SavedVault.SavedGear[]{weapon, armour, trinket})
 		{
 			GearItem item = gear == null ? null : gear.toItem();
@@ -55,6 +50,12 @@ public class SavedCharacter
 			{
 				character.equip(item);
 			}
+		}
+		Expedition savedExpedition = parseExpedition(expedition);
+		if (savedExpedition != null && expeditionStart != null)
+		{
+			// Timers run in real time, so an expedition can finish while logged out.
+			character.startExpedition(savedExpedition, Instant.ofEpochMilli(expeditionStart));
 		}
 		return character;
 	}

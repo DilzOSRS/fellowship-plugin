@@ -154,12 +154,13 @@ public class Team
 	}
 
 	/**
-	 * Bring a finished trip home: every party member gets the XP reward. The caller handles
-	 * the coins and bonus bundle, which are rolled once per party.
+	 * Bring a finished trip home. On a success every party member gets the XP reward; on a
+	 * failure they come back with nothing. The caller handles the coins and bonus bundle,
+	 * which are rolled once per party.
 	 *
 	 * @return the positions of the members who came home, or an empty list if it isn't finished
 	 */
-	public List<Integer> collectParty(int index, Instant now)
+	public List<Integer> collectParty(int index, Instant now, boolean success)
 	{
 		if (index < 0 || index >= characters.size() || !characters.get(index).isExpeditionDone(now))
 		{
@@ -168,9 +169,21 @@ public class Team
 		List<Integer> party = partyOf(index);
 		for (int member : party)
 		{
-			characters.get(member).collectExpedition(now);
+			characters.get(member).collectExpedition(now, success);
 		}
 		return party;
+	}
+
+	/** The party's ATK against a threat: the average of its members' effective ATK. */
+	public double averageAtk(List<Integer> party)
+	{
+		return party.stream().mapToDouble(i -> characters.get(i).getEffectiveAtk()).average().orElse(0);
+	}
+
+	/** The party's DEF against a threat: the average of its members' effective DEF. */
+	public double averageDef(List<Integer> party)
+	{
+		return party.stream().mapToDouble(i -> characters.get(i).getEffectiveDef()).average().orElse(0);
 	}
 
 	/**

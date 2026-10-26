@@ -167,6 +167,16 @@ public class FellowshipCharacter
 	 */
 	public Expedition collectExpedition(Instant now)
 	{
+		return collectExpedition(now, true);
+	}
+
+	/**
+	 * Bring the character home from a finished expedition. Only a successful one gives its XP reward.
+	 *
+	 * @return the expedition that was collected, or null if there's nothing to collect yet
+	 */
+	public Expedition collectExpedition(Instant now, boolean success)
+	{
 		if (!isExpeditionDone(now))
 		{
 			return null;
@@ -174,7 +184,10 @@ public class FellowshipCharacter
 		Expedition finished = expedition;
 		expedition = null;
 		expeditionStart = null;
-		addXp(finished.getXpReward());
+		if (success)
+		{
+			addXp(finished.getXpReward());
+		}
 		return finished;
 	}
 
@@ -195,9 +208,16 @@ public class FellowshipCharacter
 		return equipment.get(slot);
 	}
 
+	/** Whether this character's class can use the item (ignores whether it's away). */
 	public boolean canEquip(GearItem item)
 	{
 		return item.getType().canBeUsedBy(characterClass);
+	}
+
+	/** Gear can't be changed while away, so a party's power is fixed once it sets off. */
+	public boolean canChangeGear()
+	{
+		return !isAway();
 	}
 
 	/**
@@ -205,6 +225,7 @@ public class FellowshipCharacter
 	 *
 	 * @return the gear that was in that slot before (to go back to storage), or null
 	 * @throws IllegalArgumentException if this character's class can't use it
+	 * @throws IllegalStateException if the character is away
 	 */
 	public GearItem equip(GearItem item)
 	{
@@ -212,17 +233,21 @@ public class FellowshipCharacter
 		{
 			throw new IllegalArgumentException(characterClass + " can't use " + item.getName());
 		}
+		if (!canChangeGear())
+		{
+			throw new IllegalStateException("Can't change gear while away");
+		}
 		return equipment.put(item.getType().getSlot(), item);
 	}
 
 	/**
 	 * Take off the gear in a slot.
 	 *
-	 * @return the gear that was there, or null if the slot was empty
+	 * @return the gear that was there, or null if the slot was empty or the character is away
 	 */
 	public GearItem unequip(GearType.Slot slot)
 	{
-		return equipment.remove(slot);
+		return canChangeGear() ? equipment.remove(slot) : null;
 	}
 
 	/** ATK Power from the equipped weapon. */
@@ -241,6 +266,18 @@ public class FellowshipCharacter
 	public int getMag()
 	{
 		return powerIn(GearType.Slot.TRINKET);
+	}
+
+	/** ATK plus half of MAG, used against an expedition's threat. */
+	public double getEffectiveAtk()
+	{
+		return getAtk() + getMag() / 2.0;
+	}
+
+	/** DEF plus half of MAG, used against an expedition's threat. */
+	public double getEffectiveDef()
+	{
+		return getDef() + getMag() / 2.0;
 	}
 
 	private int powerIn(GearType.Slot slot)

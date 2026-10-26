@@ -152,6 +152,17 @@ public class FellowshipPanel extends PluginPanel
 	}
 
 	/**
+	 * Show on one character's card that its last expedition failed. Must be called on the Swing thread.
+	 */
+	public void showFailure(int index, Expedition expedition)
+	{
+		if (index < cards.size())
+		{
+			cards.get(index).showFailure(expedition);
+		}
+	}
+
+	/**
 	 * Show what the last expedition gave on one character's card. Must be called on the Swing thread.
 	 */
 	public void showReward(int index, long xpGained, int coinsGained)
@@ -247,6 +258,18 @@ public class FellowshipPanel extends PluginPanel
 				JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
+
+		// Show the odds before they go: party ATK is the average of each member's ATK + half their MAG.
+		double partyAtk = party.stream().mapToDouble(i -> shownTeam.get(i).atk + shownTeam.get(i).mag / 2.0)
+			.average().orElse(0);
+		int failPercent = (int) Math.round(Danger.failChance(expedition.getThreatLevel(), partyAtk) * 100);
+		String odds = String.format("Party ATK %.1f vs threat %d: ", partyAtk, expedition.getThreatLevel())
+			+ (failPercent == 0 ? "they'll clear it." : failPercent + "% chance of failing.\nA failed expedition gives no XP or loot.");
+		int go = JOptionPane.showConfirmDialog(this, odds + "\n\nSend them?", "Expedition", JOptionPane.YES_NO_OPTION);
+		if (go != JOptionPane.YES_OPTION)
+		{
+			return;
+		}
 		onSendExpedition.accept(party, expedition);
 	}
 
@@ -261,6 +284,12 @@ public class FellowshipPanel extends PluginPanel
 			return;
 		}
 		CharacterView character = shownTeam.get(characterIndex);
+		if (character.expedition != null)
+		{
+			JOptionPane.showMessageDialog(this, character.name + " is away. Gear can't be changed until they're back.",
+				"Gear", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
 		GearItem equipped = character.getEquipped(slot);
 
 		// Storage items that go in this slot and that this character's class can use.

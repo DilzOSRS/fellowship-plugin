@@ -194,6 +194,15 @@ public class CharacterCard extends JPanel
 	}
 
 	/**
+	 * Show that the last expedition failed. Must be called on the Swing thread, before the
+	 * character is shown at home again.
+	 */
+	public void showFailure(Expedition expedition)
+	{
+		lastReward = "Failed to clear<br>" + expedition.getDisplayName() + ".<br>No rewards.";
+	}
+
+	/**
 	 * Show the character's stats and one row per gear slot, each with a button to change it.
 	 */
 	private void showGear(CharacterView view)

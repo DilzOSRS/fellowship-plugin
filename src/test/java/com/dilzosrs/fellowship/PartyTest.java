@@ -85,8 +85,8 @@ public class PartyTest
 	{
 		Team team = teamOf(3);
 		team.sendParty(List.of(0, 1, 2), Expedition.DORGESHUUN_CAVES, START);
-		assertTrue(team.collectParty(1, BACK.minusSeconds(1)).isEmpty());
-		assertEquals(List.of(0, 1, 2), team.collectParty(1, BACK));
+		assertTrue(team.collectParty(1, BACK.minusSeconds(1), true).isEmpty());
+		assertEquals(List.of(0, 1, 2), team.collectParty(1, BACK, true));
 		for (int i = 0; i < 3; i++)
 		{
 			assertFalse(team.get(i).isAway());

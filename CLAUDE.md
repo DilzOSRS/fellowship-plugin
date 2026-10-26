@@ -23,7 +23,7 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Before launch, all test saves get wiped. The one-time migration from the old single-character save (in `FellowshipPlugin.moveOldSaveIntoTeam`) can be deleted then, since no real player will have the old format.
 
 ## Roadmap
-**Current phase: Phase 6, starting (the user chose to move on before finishing Phase 5). Phases 1–4b are all done (tested in-game 2026-10-25; the last wording and colour tweaks to 4b's messages weren't re-tested in-game). 5.1 and 5.2 done (tested in-game 2026-10-26). 5.3 built but NOT tested in-game: the user will test Slayer on 2026-10-27 (turn the Slayer chance up to 100% temporarily for it) and clues later. 5.4 not started. 6.1 done (tested in-game 2026-10-26). Next step: 6.2.**
+**Current phase: Phase 6, starting (the user chose to move on before finishing Phase 5). Phases 1–4b are all done (tested in-game 2026-10-25; the last wording and colour tweaks to 4b's messages weren't re-tested in-game). 5.1 and 5.2 done (tested in-game 2026-10-26). 5.3 built but NOT tested in-game: the user will test Slayer on 2026-10-27 (turn the Slayer chance up to 100% temporarily for it) and clues later. 5.4 not started. 6.1 and 6.2 done (tested in-game 2026-10-26). Next step: 6.3 (injuries). The user plans a big playtest on 2026-10-27, including the Slayer trigger test.**
 
 Phase 6 steps (each one ends with the user testing it; for testing, temporarily make the expedition short):
 1. **6.1 Party expedition.** Add "Looting the Dorgeshuun Caves" (threat 8, exactly 3 characters, 2 hours). A dialog picks 3 characters who are home; they all go away together and come back together. On return: 3,000 XP each, coins and the Boss Bundle chance once. No success/fail yet.
