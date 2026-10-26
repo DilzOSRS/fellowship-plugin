@@ -34,6 +34,12 @@ Phase 6 steps (each one ends with the user testing it; for testing, temporarily 
 
 The compact roster / UI redesign is also waiting.
 
+**UI tabs (decided 2026-10-26, build after the playtest notes are collected and urgent fixes are done):**
+1. **Card tabs.** Each character card gets two tabs: **Info** (level, XP bar, class advancement, expeditions) and **Gear** (the 3 slots and ATK/DEF/MAG). Use RuneLite's `MaterialTabGroup`, not Swing's `JTabbedPane`.
+2. **Later:** expeditions move off the cards into an Expedition Board under the Fellowship card (see `docs/future-design.md`), and the compact roster (one row per character, click to open its tabbed card).
+
+**Future designs** (more expeditions, classes and gear, planned during the playtest but not scheduled) are in `docs/future-design.md`. One-line ideas still go in the Ideas Parking Lot.
+
 Phase 4b, done: **chat messages** (only the player sees them; nothing is sent to the server) for level-ups and class advancement being ready, class advancement, a character coming back from an expedition, the rewards collected, the Guild levelling up, and a new hire. E.g. "Adventurer 2 reached level 5!"
 
 Phase 5–6 plan (gear, loot and dangerous expeditions; structure decided 2026-10-25). Why: rare gear makes individual characters feel strong. **The full design, item table and draft numbers are in `docs/phase5-design.md`; keep it up to date.** In short:
