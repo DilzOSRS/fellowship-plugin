@@ -241,6 +241,12 @@ public class FellowshipPlugin extends Plugin
 			xpTracker.reset();
 			team = null;
 		}
+		// Logging back into the same account doesn't count as a profile change, so
+		// onRuneScapeProfileChanged won't load the team again. Load it here instead.
+		else if (event.getGameState() == GameState.LOGGED_IN && team == null)
+		{
+			loadTeam();
+		}
 	}
 
 	/**
