@@ -272,6 +272,7 @@ public class FellowshipPlugin extends Plugin
 				return;
 			}
 			sendChatMessage(oldName + " has been trained in the ways of the " + newClass.getDisplayName() + "!");
+			showClassPopup(newClass, "Unlocked " + newClass.getDisplayName() + "!");
 			saveTeam();
 			updatePanel();
 		});
@@ -436,12 +437,27 @@ public class FellowshipPlugin extends Plugin
 			}
 			coins -= Guild.HIRE_COST;
 			team.hire();
-			sendChatMessage(team.getDisplayName(team.size() - 1) + " joined your Fellowship!");
+			announceHire();
 			saveTeam();
 			saveCoins();
 			saveGuild();
 			updatePanel();
 		});
+	}
+
+	/** Announce the newest team member in chat and with a pop-up. Call on the client thread. */
+	private void announceHire()
+	{
+		int index = team.size() - 1;
+		String message = team.getDisplayName(index) + " joined your Fellowship!";
+		sendChatMessage(message);
+		showClassPopup(team.get(index).getCharacterClass(), message);
+	}
+
+	/** Show a pop-up on the game screen with the class's icon beside the message. */
+	private void showClassPopup(CharacterClass characterClass, String message)
+	{
+		popup.show(message, itemManager.getImage(characterClass.getIconItemId()));
 	}
 
 	/**
@@ -460,7 +476,7 @@ public class FellowshipPlugin extends Plugin
 			guild.useSkillerHire();
 			coins -= cost;
 			team.hire(CharacterClass.SKILLER);
-			sendChatMessage(team.getDisplayName(team.size() - 1) + " joined your Fellowship!");
+			announceHire();
 			saveTeam();
 			saveCoins();
 			saveGuild();
