@@ -41,7 +41,7 @@ public class FellowshipPanel extends PluginPanel
 	 * The Integer/int is the character's position in the team.
 	 */
 	public FellowshipPanel(BiConsumer<Integer, CharacterClass> onEvolve, BiConsumer<Integer, Expedition> onSendExpedition,
-		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onHire)
+		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onHire, VaultPanel vaultPanel)
 	{
 		this.onEvolve = onEvolve;
 		this.onSendExpedition = onSendExpedition;
@@ -69,7 +69,14 @@ public class FellowshipPanel extends PluginPanel
 		cardsPanel.setOpaque(false);
 		// Shown until an account's team is loaded.
 		cardsPanel.add(new JLabel("Log in to begin"));
-		add(cardsPanel, BorderLayout.CENTER);
+
+		// The cards, then bundles and storage underneath. Storage stays hidden until an account is loaded.
+		JPanel middle = new JPanel(new BorderLayout(0, 10));
+		middle.setOpaque(false);
+		middle.add(cardsPanel, BorderLayout.CENTER);
+		vaultPanel.setVisible(false);
+		middle.add(vaultPanel, BorderLayout.SOUTH);
+		add(middle, BorderLayout.CENTER);
 
 		hireArea.setOpaque(false);
 		hiresLabel.setFont(FontManager.getRunescapeSmallFont());

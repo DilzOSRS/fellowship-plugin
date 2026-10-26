@@ -49,6 +49,7 @@ public class FellowshipPlugin extends Plugin
 	private static final String ACTIVE_INDEX_KEY = "activeIndex";
 	private static final String GUILD_XP_KEY = "guildXp";
 	private static final String HIRES_USED_KEY = "hiresUsed";
+	private static final String VAULT_KEY = "vault";
 
 	private static final Color CHAT_TAG_COLOR = new Color(255, 200, 0);
 
@@ -79,6 +80,7 @@ public class FellowshipPlugin extends Plugin
 	private final XpTracker xpTracker = new XpTracker();
 	private final Random random = new Random();
 	private FellowshipPanel panel;
+	private VaultPanel vaultPanel;
 	private NavigationButton navButton;
 	/** The account's characters, or null when no account is loaded. */
 	private Team team;
@@ -86,14 +88,17 @@ public class FellowshipPlugin extends Plugin
 	private long coins;
 	/** The account's Fellowship Guild, loaded with the team. */
 	private Guild guild;
+	/** The account's unopened bundles and gear storage, loaded with the team. */
+	private Vault vault;
 	/** Characters whose finished expedition has already been announced in chat, so it's said only once. */
 	private final Set<FellowshipCharacter> announcedReturns = new HashSet<>();
 
 	@Override
 	protected void startUp() throws Exception
 	{
+		vaultPanel = new VaultPanel(this::openBundle, this::salvage);
 		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::makeActive,
-			this::hire);
+			this::hire, vaultPanel);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -147,9 +152,16 @@ public class FellowshipPlugin extends Plugin
 				// Every character level-up is worth 1 Guild XP.
 				addGuildXp(levelsGained);
 			}
+			// Every 100,000 OSRS XP (all skills together) gives a chance of a Generic Bundle.
+			int bundlesFound = vault.addXpForGenericBundles(gained, random);
+			for (int i = 0; i < bundlesFound; i++)
+			{
+				sendChatMessage("You found a " + BundleType.GENERIC.getDisplayName() + "! Open it in the Fellowship panel.");
+			}
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
 			saveTeam();
+			saveVault();
 			updatePanel();
 		}
 	}
@@ -302,6 +314,53 @@ public class FellowshipPlugin extends Plugin
 		});
 	}
 
+	/**
+	 * Called from the panel (on the Swing thread) when the player opens a bundle.
+	 */
+	private void openBundle(BundleType bundle)
+	{
+		clientThread.invokeLater(() ->
+		{
+			if (vault == null)
+			{
+				return;
+			}
+			Vault.Opened opened = vault.open(bundle, random);
+			if (opened == null)
+			{
+				return;
+			}
+			coins += opened.coins;
+			saveVault();
+			saveCoins();
+			sendChatMessage("You opened a " + bundle.getDisplayName() + ": " + opened.item.getName()
+				+ " (" + opened.item.getDescription() + ") and " + opened.coins + " coins!");
+			SwingUtilities.invokeLater(() -> vaultPanel.showOpened(bundle, opened.item, opened.coins));
+			updatePanel();
+		});
+	}
+
+	/**
+	 * Called from the panel (on the Swing thread) once the player confirms salvaging an item.
+	 */
+	private void salvage(int index)
+	{
+		clientThread.invokeLater(() ->
+		{
+			if (vault == null || index >= vault.getItems().size())
+			{
+				return;
+			}
+			GearItem item = vault.getItems().get(index);
+			int coinsGained = vault.salvage(index);
+			coins += coinsGained;
+			saveVault();
+			saveCoins();
+			sendChatMessage("You salvaged the " + item.getName() + " for " + coinsGained + " coins.");
+			updatePanel();
+		});
+	}
+
 	/** Each character's level right now, to compare against after XP is added. */
 	private int[] currentLevels()
 	{
@@ -409,6 +468,27 @@ public class FellowshipPlugin extends Plugin
 		Integer savedHiresUsed = configManager.getRSProfileConfiguration(CONFIG_GROUP, HIRES_USED_KEY, Integer.class);
 		guild = new Guild(savedGuildXp == null ? 0 : savedGuildXp, savedHiresUsed == null ? 0 : savedHiresUsed);
 
+		String vaultJson = configManager.getRSProfileConfiguration(CONFIG_GROUP, VAULT_KEY);
+		vault = Vault.empty();
+		if (vaultJson != null)
+		{
+			try
+			{
+				SavedVault savedVault = gson.fromJson(vaultJson, SavedVault.class);
+				if (savedVault != null)
+				{
+					vault = savedVault.toVault();
+				}
+			}
+			catch (JsonSyntaxException e)
+			{
+				// Leave the whole account unloaded, so the broken save is never overwritten.
+				log.warn("Couldn't read the saved Fellowship storage", e);
+				team = null;
+				return;
+			}
+		}
+
 		updatePanel();
 	}
 
@@ -455,6 +535,11 @@ public class FellowshipPlugin extends Plugin
 		configManager.setRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, coins);
 	}
 
+	private void saveVault()
+	{
+		configManager.setRSProfileConfiguration(CONFIG_GROUP, VAULT_KEY, gson.toJson(SavedVault.from(vault)));
+	}
+
 	private void saveGuild()
 	{
 		configManager.setRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, guild.getXp());
@@ -473,7 +558,15 @@ public class FellowshipPlugin extends Plugin
 		long guildXp = guild.getXp();
 		int hiresAvailable = guild.getHiresAvailable();
 		boolean canHire = guild.canHire(coins);
-		SwingUtilities.invokeLater(() -> panel.showTeam(views, coinsNow, guildXp, hiresAvailable, canHire));
+		List<BundleType> bundles = new ArrayList<>(vault.getBundles());
+		List<GearItem> items = new ArrayList<>(vault.getItems());
+		int capacity = vault.getCapacity();
+		SwingUtilities.invokeLater(() ->
+		{
+			panel.showTeam(views, coinsNow, guildXp, hiresAvailable, canHire);
+			vaultPanel.show(bundles, items, capacity);
+			vaultPanel.setVisible(true);
+		});
 	}
 
 	private void snapshotXpIfLoggedIn()
