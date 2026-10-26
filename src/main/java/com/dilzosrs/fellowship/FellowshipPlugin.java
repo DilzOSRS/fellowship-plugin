@@ -38,6 +38,7 @@ public class FellowshipPlugin extends Plugin
 	private static final String TEAM_KEY = "team";
 	private static final String COINS_KEY = "coins";
 	private static final String ACTIVE_INDEX_KEY = "activeIndex";
+	private static final String GUILD_XP_KEY = "guildXp";
 
 	// The old single-character save. Only read once, to move it into the team list.
 	private static final String LEGACY_XP_KEY = "adventurerXp";
@@ -68,6 +69,8 @@ public class FellowshipPlugin extends Plugin
 	private Team team;
 	/** Coins belong to the account, not to one character. */
 	private long coins;
+	/** The account's Fellowship Guild, loaded with the team. */
+	private Guild guild;
 
 	@Override
 	protected void startUp() throws Exception
@@ -119,7 +122,13 @@ public class FellowshipPlugin extends Plugin
 		int gained = xpTracker.update(event.getSkill(), event.getXp());
 		if (gained > 0 && team != null)
 		{
-			team.gainXp(event.getSkill(), gained);
+			int levelsGained = team.gainXp(event.getSkill(), gained);
+			if (levelsGained > 0)
+			{
+				// Every character level-up is worth 1 Guild XP.
+				guild.addXp(levelsGained);
+				saveGuild();
+			}
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
 			saveTeam();
@@ -187,6 +196,7 @@ public class FellowshipPlugin extends Plugin
 				return;
 			}
 			long xpBefore = character.getXp();
+			int levelBefore = character.getLevel();
 			Expedition finished = character.collectExpedition(Instant.now());
 			if (finished == null)
 			{
@@ -194,9 +204,12 @@ public class FellowshipPlugin extends Plugin
 			}
 			int coinsGained = finished.rollCoins(random);
 			coins += coinsGained;
+			// 1 Guild XP for the expedition, plus 1 for each level its XP reward gave.
+			guild.addXp(1 + character.getLevel() - levelBefore);
 
 			saveTeam();
 			saveCoins();
+			saveGuild();
 
 			long xpGained = character.getXp() - xpBefore;
 			SwingUtilities.invokeLater(() -> panel.showReward(index, xpGained, coinsGained));
@@ -286,6 +299,9 @@ public class FellowshipPlugin extends Plugin
 		Long savedCoins = configManager.getRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, Long.class);
 		coins = savedCoins == null ? 0 : savedCoins;
 
+		Long savedGuildXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, Long.class);
+		guild = new Guild(savedGuildXp == null ? 0 : savedGuildXp);
+
 		updatePanel();
 	}
 
@@ -332,6 +348,11 @@ public class FellowshipPlugin extends Plugin
 		configManager.setRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, coins);
 	}
 
+	private void saveGuild()
+	{
+		configManager.setRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, guild.getXp());
+	}
+
 	private void updatePanel()
 	{
 		// Copy the values now, because the panel is updated later on the Swing thread.
@@ -343,7 +364,8 @@ public class FellowshipPlugin extends Plugin
 		long coinsNow = coins;
 		boolean canRecruit = team.canRecruit(coins);
 		boolean teamFull = team.isFull();
-		SwingUtilities.invokeLater(() -> panel.showTeam(views, coinsNow, canRecruit, teamFull));
+		long guildXp = guild.getXp();
+		SwingUtilities.invokeLater(() -> panel.showTeam(views, coinsNow, canRecruit, teamFull, guildXp));
 	}
 
 	private void snapshotXpIfLoggedIn()

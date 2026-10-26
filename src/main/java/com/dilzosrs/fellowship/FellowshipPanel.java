@@ -29,6 +29,7 @@ public class FellowshipPanel extends PluginPanel
 	private final Runnable onRecruit;
 
 	private final JLabel coinsLabel = new JLabel();
+	private final JLabel guildLabel = new JLabel();
 	private final JPanel cardsPanel = new JPanel();
 	private final List<CharacterCard> cards = new ArrayList<>();
 	private final JButton recruitButton = new JButton();
@@ -57,6 +58,9 @@ public class FellowshipPanel extends PluginPanel
 		titleRow.add(title, BorderLayout.WEST);
 		coinsLabel.setForeground(ColorScheme.GRAND_EXCHANGE_PRICE);
 		titleRow.add(coinsLabel, BorderLayout.EAST);
+		guildLabel.setFont(FontManager.getRunescapeSmallFont());
+		guildLabel.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		titleRow.add(guildLabel, BorderLayout.SOUTH);
 		add(titleRow, BorderLayout.NORTH);
 
 		cardsPanel.setLayout(new BoxLayout(cardsPanel, BoxLayout.Y_AXIS));
@@ -79,11 +83,16 @@ public class FellowshipPanel extends PluginPanel
 	}
 
 	/**
-	 * Show the whole team, the coin balance and the recruit button. Must be called on the Swing thread.
+	 * Show the whole team, the coin balance, the Guild and the recruit button. Must be called on the Swing thread.
 	 */
-	public void showTeam(List<CharacterView> team, long coins, boolean canRecruit, boolean teamFull)
+	public void showTeam(List<CharacterView> team, long coins, boolean canRecruit, boolean teamFull, long guildXp)
 	{
 		coinsLabel.setText(String.format("%,d coins", coins));
+		int guildLevel = Guild.levelForXp(guildXp);
+		long levelStart = Guild.xpForLevel(guildLevel);
+		long levelEnd = Guild.xpForLevel(guildLevel + 1);
+		guildLabel.setText(String.format("Guild level %d (%d / %d XP)",
+			guildLevel, guildXp - levelStart, levelEnd - levelStart));
 
 		if (cards.size() > team.size() || cards.isEmpty())
 		{

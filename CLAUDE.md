@@ -23,7 +23,13 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Before launch, all test saves get wiped. The one-time migration from the old single-character save (in `FellowshipPlugin.moveOldSaveIntoTeam`) can be deleted then, since no real player will have the old format.
 
 ## Roadmap
-**Current phase: none. Phases 1, 2, 3a and 3b are all done (every step tested in-game 2026-10-25). Next: playtest, then redesign Phases 4–5 (see the Ideas Parking Lot) before building anything new.**
+**Current phase: Phase 4, in progress. Phases 1–3b are all done (every step tested in-game 2026-10-25). 4.1 done (tested in-game 2026-10-25). Next step: 4.2.**
+
+Phase 4 steps (each one ends with the user testing it; for testing, temporarily make Guild levels cheap):
+1. **4.1 Guild XP and level.** +1 Guild XP whenever any character levels up, and +1 per expedition collected. The panel shows "Fellowship Guild: Level 1 (5 / 20 XP)". Saved per account. Unit tests for the Guild curve.
+2. **4.2 Hire through the Guild.** Remove the team cap of 3. Each Guild level above 1 gives one hire, and each hire still costs 100 coins. The Recruit button becomes "Hire Adventurer (100 coins)" and shows how many hires are available. Hires can be banked.
+
+Before teams grow past about 4, the panel needs a compact roster (big cards won't fit in the narrow sidebar). Do it in the UI redesign pass, or as its own step when needed.
 
 Phase 3b steps, all done (for in-game testing, recruits were temporarily made cheap):
 1. **3b.1 Team save format.** Save the team as a list of characters (still just one) instead of single-character keys, and move the existing save into it once. Nothing visible changes; the current character must keep all its progress.
@@ -62,7 +68,9 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 | 2 | Level cap 10. At 10, evolve Adventurer into Knight, Archer or Wizard. | Done |
 | 3a | One timed expedition. A character who is away earns no OSRS-based XP. On completion: 1,000 XP + 10–50 coins. | Done |
 | 3b | Recruit Adventurers for 100 coins each. Team cap of 3. Active character gets 100% XP, inactive characters get 10%. | Done |
-| 4–5 | Parked, to be redesigned after 3b ships. | Parked |
+| 4 | Fellowship Guild leveling and an unlimited roster. Guild levels give hires; hires still cost coins. | In progress |
+| 5 | Gear and loot, designed together before any building. Loot comes from varied OSRS achievements (e.g. finishing a Slayer task: 10% chance of a loot box), not from grinding XP. Gear should make playing one character for a long time worthwhile. | Needs design |
+| Ongoing | More characters (some rare, with unique ways to unlock) and more expeditions, added once the systems exist. | Later |
 
 ## Decisions
 - **XP tracking:** count only XP gained while RuneLite is running. On login RuneLite reports *total* XP, so only count gains after that first snapshot.
@@ -70,8 +78,10 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - **Expedition timers:** real time, same speed online and offline. Store the start time, so expeditions finish even while logged out.
 - **Expedition 1 (decided 2026-10-25):** "Explore Lumbridge Swamp Caves". 30 minutes. Rewards 1,000 XP (fixed for now; the level cap still applies, and class bonuses don't) plus a random 10–50 coins, about 3–4 runs per 100-coin recruit. The player clicks Collect when it's done. Early expeditions should be short.
 - **Coins:** shown as "coins", not "GP", so nobody mistakes them for real gold.
-- **Team (decided 2026-10-25):** the first character counts toward the team cap of 3 (so 2 recruits, 200 coins). Recruits are numbered ("Adventurer 2"); custom names can come later. Coins belong to the account and are shared.
-- **Inactive XP:** 10% of OSRS XP, and class bonuses stack on top (an inactive Wizard gets 20% of Magic XP). Fractions of an XP are carried over in memory so small drops still count; at most under 1 XP per character is lost on a restart.
+- **Team (decided 2026-10-25, Phase 3b):** a cap of 3 in total. Recruits are numbered ("Adventurer 2"); custom names can come later. Coins belong to the account and are shared. Phase 4 replaces the cap (see Roster below).
+- **Inactive XP:** 10% of OSRS XP for every inactive character, however big the team (the user's choice for Phase 4; watch in playtesting whether big teams level too fast). Class bonuses stack on top (an inactive Wizard gets 20% of Magic XP). Fractions of an XP are carried over in memory so small drops still count; at most under 1 XP per character is lost on a restart.
+- **Roster (Phase 4, decided 2026-10-25):** no slot limit, but getting characters is hard: building a big team should be a big grind, and every new character should feel meaningful (which also makes choosing classes matter). Each Guild level above 1 gives one hire; hiring still costs coins (100 for now), so coins stay useful. Special unlocks later (e.g. Beast Master from a pet drop) are extra and don't use hires.
+- **Fellowship Guild (Phase 4, decided 2026-10-25):** +1 Guild XP per character level-up (re-leveling after evolving counts again, which rewards job advancing) and +1 per expedition collected. Level 2 needs 20 XP and level 3 needs 50; each level after costs 10 more XP than the one before (level 4 at 90, level 5 at 140). Tune after playtesting.
 - **Active character on an expedition:** allowed. Until a new active character is picked, nobody gets 100% XP and everyone else stays at 10%.
 - **Evolving (Phase 2), decided 2026-10-25:** a job advancement resets the character to level 1 (XP back to 0), with a higher level cap. Why: a fresh start feels exciting, and with many characters it keeps an even spread of levels instead of a pile of high-level ones. (This replaced an earlier Pokémon-style "keep your level" plan. Don't switch again until it has been playtested.)
 - **Level cap:** the Adventurer is capped at 10. XP earned at the cap is wasted until it evolves (the user's choice, to push players to evolve). Evolved classes go up to 99. There's no reason for a lower cap while levels don't unlock anything yet.
@@ -88,11 +98,10 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - Expedition XP that scales with level (e.g. half a level) instead of a fixed 1,000, if fixed XP stops mattering at high levels.
 - Second class advancement, MapleStory-style (e.g. Wizard → Battle Mage / Cleric / Arcane Wizard). Possible answer to "what happens after level 10".
 - Many unlockable characters, some hard or rare, each with its own unique way to unlock.
-- Gear (weapons etc.) from expeditions and other sources. Design not figured out yet.
-- Fellowship Guild level, built from all characters' levels, so switching characters still feels like progress. It could gate expeditions and characters.
-- Guild perks for job advancing (which resets a character to level 1). Lifetime XP could keep counting toward the Guild, so a reset never feels like lost progress. Revisit after 3a.
+- Gear (weapons etc.) from expeditions and other sources. Now Phase 5.
+- Guild levels could also gate expeditions and rare characters, not just hires.
 - Character art: a picture or model for each class instead of text only.
+- UI redesign pass: the panel works but looks plain. Do it once the core concepts settle, so it isn't redone for every new feature. Game logic is already separate from the panel code (`Team`/`FellowshipCharacter` vs `FellowshipPanel`/`CharacterCard`), so a redesign shouldn't touch the rules. Limits: the sidebar is narrow (about 225px) and built with Swing.
 - Custom names for recruits (typed in when recruiting).
 - Beast Master: a 10% chance to unlock when you get a pet drop in OSRS (read the drop message only). Example of unlocks from rare game events, like an advancement from a rare raid item.
-- Phases 4–5 redesign.
 - Online features (leaderboards, trading). Risky under the rules, so maybe never.

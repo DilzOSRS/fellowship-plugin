@@ -104,14 +104,18 @@ public class Team
 	/**
 	 * Share OSRS XP gained in a skill out to the team: full XP for the active character, 10% for the rest.
 	 * Characters who are away get nothing, so if the active one is away, nobody gets full XP.
+	 *
+	 * @return how many levels the whole team gained (for Guild XP)
 	 */
-	public void gainXp(Skill skill, long osrsXp)
+	public int gainXp(Skill skill, long osrsXp)
 	{
+		int levelsGained = 0;
 		for (int i = 0; i < characters.size(); i++)
 		{
 			int percent = i == getActiveIndex() ? ACTIVE_XP_PERCENT : INACTIVE_XP_PERCENT;
-			characters.get(i).gainXp(skill, osrsXp, percent);
+			levelsGained += characters.get(i).gainXp(skill, osrsXp, percent);
 		}
+		return levelsGained;
 	}
 
 	/** e.g. "Knight" for the first character, "Adventurer 2" and "Adventurer 3" for recruits. */

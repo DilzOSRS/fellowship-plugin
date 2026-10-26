@@ -42,32 +42,41 @@ public class FellowshipCharacter
 
 	/**
 	 * Add Fellowship XP for OSRS XP gained in a skill, at full share.
+	 *
+	 * @return how many levels the character gained
 	 */
-	public void gainXp(Skill skill, long osrsXp)
+	public int gainXp(Skill skill, long osrsXp)
 	{
-		gainXp(skill, osrsXp, 100);
+		return gainXp(skill, osrsXp, 100);
 	}
 
 	/**
 	 * Add a percentage of the OSRS XP gained in a skill, applying the class's bonus for that skill.
 	 * Fractions of an XP are carried over to the next gain, so small drops still add up.
 	 * A character who is away on an expedition gets nothing.
+	 *
+	 * @return how many levels the character gained
 	 */
-	public void gainXp(Skill skill, long osrsXp, int percent)
+	public int gainXp(Skill skill, long osrsXp, int percent)
 	{
 		if (isAway())
 		{
-			return;
+			return 0;
 		}
 		// Work in hundredths of an XP so 10% of a small drop isn't rounded away.
 		long hundredths = osrsXp * characterClass.getXpMultiplier(skill) * percent + xpRemainder;
-		addXp(hundredths / 100);
 		xpRemainder = hundredths % 100;
+		return addXp(hundredths / 100);
 	}
 
-	public void addXp(long amount)
+	/**
+	 * @return how many levels the character gained
+	 */
+	public int addXp(long amount)
 	{
+		int levelBefore = getLevel();
 		xp = Math.min(xp + amount, maxXp());
+		return getLevel() - levelBefore;
 	}
 
 	public int getLevel()
