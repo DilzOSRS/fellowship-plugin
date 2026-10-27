@@ -43,6 +43,7 @@ public class CharacterCard extends JPanel
 
 	/** Width and height of the class icon box. Item icons are 36x32, so this leaves a small margin. */
 	private static final int ICON_SIZE = 40;
+	private static final int HEADER_XP_BAR_HEIGHT = 4;
 
 	private final JLabel iconLabel = new JLabel();
 	private final JLabel nameLabel = new JLabel();
@@ -53,6 +54,8 @@ public class CharacterCard extends JPanel
 	private final JButton makeActiveButton = new JButton("Make active");
 	private final JButton collectButton = new JButton("Collect");
 	private final ProgressBar xpBar = new ProgressBar();
+	// A thin copy of the XP bar in the header, for the tabs that don't show the big one.
+	private final ProgressBar headerXpBar = new ProgressBar();
 	private final JLabel xpLabel = new JLabel();
 	// One button per row, because the sidebar is too narrow for the class names side by side.
 	private final JPanel evolveButtons = new JPanel(new GridLayout(0, 1, 0, 4));
@@ -111,6 +114,15 @@ public class CharacterCard extends JPanel
 		identity.add(nameRow, BorderLayout.NORTH);
 		roleLabel.setFont(FontManager.getRunescapeSmallFont());
 		identity.add(roleLabel, BorderLayout.CENTER);
+		// The thin XP bar sits in a holder of fixed height, so hiding it on the Info tab
+		// leaves its space behind and the card doesn't jump when switching tabs.
+		headerXpBar.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		headerXpBar.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
+		JPanel headerXpBarHolder = new JPanel(new BorderLayout());
+		headerXpBarHolder.setOpaque(false);
+		headerXpBarHolder.setPreferredSize(new Dimension(0, HEADER_XP_BAR_HEIGHT));
+		headerXpBarHolder.add(headerXpBar, BorderLayout.CENTER);
+		identity.add(headerXpBarHolder, BorderLayout.SOUTH);
 
 		JPanel header = new JPanel(new BorderLayout(8, 6));
 		header.setOpaque(false);
@@ -165,9 +177,15 @@ public class CharacterCard extends JPanel
 		// Tighter gaps than the default, so all three tabs fit on one line in the narrow sidebar.
 		tabs.setLayout(new FlowLayout(FlowLayout.CENTER, 2, 0));
 		MaterialTab infoTabButton = new MaterialTab("Info", tabs, infoTab);
+		MaterialTab gearTabButton = new MaterialTab("Gear", tabs, gearTab);
+		MaterialTab expeditionTabButton = new MaterialTab("Expedition", tabs, expeditionTab);
+		// The Info tab has the big XP bar, so the thin one only shows on the other tabs.
+		infoTabButton.setOnSelectEvent(() -> showHeaderXpBar(false));
+		gearTabButton.setOnSelectEvent(() -> showHeaderXpBar(true));
+		expeditionTabButton.setOnSelectEvent(() -> showHeaderXpBar(true));
 		tabs.addTab(infoTabButton);
-		tabs.addTab(new MaterialTab("Gear", tabs, gearTab));
-		tabs.addTab(new MaterialTab("Expedition", tabs, expeditionTab));
+		tabs.addTab(gearTabButton);
+		tabs.addTab(expeditionTabButton);
 		tabs.select(infoTabButton);
 
 		JPanel tabArea = new JPanel(new BorderLayout(0, 6));
@@ -175,6 +193,13 @@ public class CharacterCard extends JPanel
 		tabArea.add(tabs, BorderLayout.NORTH);
 		tabArea.add(tabContent, BorderLayout.CENTER);
 		add(tabArea, BorderLayout.CENTER);
+	}
+
+	/** Show or hide the thin header XP bar. Returns true so the tab switch goes ahead. */
+	private boolean showHeaderXpBar(boolean visible)
+	{
+		headerXpBar.setVisible(visible);
+		return true;
 	}
 
 	/**
@@ -227,6 +252,8 @@ public class CharacterCard extends JPanel
 			xpBar.setMaximumValue(1);
 			xpBar.setValue(1);
 			xpBar.setCenterLabel("Max");
+			headerXpBar.setMaximumValue(1);
+			headerXpBar.setValue(1);
 			xpLabel.setText(view.canEvolve
 				? "<html>Class advancement ready!<br>Choose a path:</html>"
 				: String.format("Max level (%,d XP)", view.xp));
@@ -235,10 +262,14 @@ public class CharacterCard extends JPanel
 
 		long levelStart = LevelCurve.xpForLevel(level);
 		long levelEnd = LevelCurve.xpForLevel(level + 1);
-		xpBar.setMaximumValue((int) (levelEnd - levelStart));
-		xpBar.setValue((int) (view.xp - levelStart));
+		int levelSize = (int) (levelEnd - levelStart);
+		int progress = (int) (view.xp - levelStart);
+		xpBar.setMaximumValue(levelSize);
+		xpBar.setValue(progress);
 		xpBar.setCenterLabel(xpBar.getPercentage() + "%");
-		xpLabel.setText(String.format("%,d / %,d XP", view.xp - levelStart, levelEnd - levelStart));
+		headerXpBar.setMaximumValue(levelSize);
+		headerXpBar.setValue(progress);
+		xpLabel.setText(String.format("%,d / %,d XP", progress, levelSize));
 	}
 
 	/**
