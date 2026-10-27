@@ -254,7 +254,7 @@ Armour comes in three types, **Plate, Leather and Robe** (heavy, medium, light),
 - **A class can wear more than one type** (the Vyre wears Leather and Robe).
 - **No save migration needed:** the saved names `PLATE`, `LEATHER` and `ROBE` already exist. In code, each `CharacterClass` gets a list of allowed armour types instead of each `GearType` naming one class.
 - **Still to decide:**
-  - **Weapons:** suggested the same idea (Sword / Bow / Staff, or Melee / Ranged / Magic, with each class listing what it can wield).
+  - **Weapons (decided 2026-10-27): the same idea.** Sword = Melee, Bow = Ranged, Staff = Magic, and each class lists what it can wield. More weapon types can come later. Most classes are obvious (Knights swords, Archers bows, Wizards staves); the ones to confirm when building: Thief (sword or bow?), Bandit (sword), Assassin (bow?), Vyre (sword and staff?), Acolyte (staff?).
   - Adventurers and Skillers: still trinkets only, or Light armour?
   - Bandit and Assassin "borrowing" gear becomes just "can wear Plate" / "can wear Leather", so the gear-borrowing system is no longer needed.
 
