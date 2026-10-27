@@ -131,6 +131,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - Characters with different XP rules: combat-only, skilling-only, or skill multipliers.
 - Area-based XP, e.g. a vampire who only gains XP in Morytania.
 - More expeditions, item rewards, and RNG-based unlocks. Expeditions should get RNG item loot at some point.
+- Every expedition should have some bundle chance (user, 2026-10-27). Today only Dorgeshuun has one (20% Boss Bundle); Swamp Caves has none. Decide each expedition's bundle type and chance as part of the expedition ladder.
 - Expedition speed: 100% while playing, 50% while logged out. Parked because it's complex and punishes sending characters off before logging out.
 - Expedition XP that scales with level (e.g. half a level) instead of a fixed 1,000, if fixed XP stops mattering at high levels.
 - Second class advancement, MapleStory-style (e.g. Wizard → Battle Mage / Cleric / Arcane Wizard). Possible answer to "what happens after level 10".
