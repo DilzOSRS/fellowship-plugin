@@ -47,7 +47,7 @@ Gear gets better along the way:
 - UI: card tabs, Expedition Board, compact roster.
 
 **Expeditions:**
-- **The first four (decided 2026-10-27, numbers in `docs/future-design.md`):** Scout the Encampment Perimeter, Explore Lumbridge Swamp Caves (threat 3), Looting the Dorgeshuun Caves (threat 8, first clear gives a free Skiller), Securing and Fortifying the Encampment (Skillers only). Each one has a bundle chance.
+- **The first four (decided 2026-10-27, numbers in `docs/future-design.md`):** Scout the Encampment Perimeter, Explore Lumbridge Swamp Caves (threat 3), Looting the Dorgeshuun Caves (threat 8, first clear gives a free Skiller and unlocks hiring more with coins), Securing and Fortifying the Encampment (Skillers only). Each one has a bundle chance.
 - Built so far: Swamp Caves (as a safe trip) and Dorgeshuun, both with older numbers.
 - End-game: Plunder Tombs of the Barrow Brothers (needs a Vyre).
 - **Gap:** more expeditions between Dorgeshuun (threat 8) and Barrows, so there's a ladder to climb. To design.

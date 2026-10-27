@@ -40,7 +40,7 @@ The early game has a small story: the Fellowship has set up camp. First you scou
 | 4 | Securing and Fortifying the Encampment | 1–3 Skillers | 1.5 h, −30 min per extra Skiller | 0 | 5,000 | none | *draft* 25% Generic | 3,333 (solo) to 10,000 (3 Skillers) |
 
 - **Bundles are a chance per run for now**, not guaranteed. Once the bundle loot tables exist (mostly cheap Generic items to salvage), they could become guaranteed. Storage (10 slots) is the limit to watch.
-- **Completing Dorgeshuun for the first time gives one free Skiller.** The other two are still hired with coins. *Open:* whether coin hiring of Skillers is locked until then (today you can hire them from the start).
+- **Completing Dorgeshuun for the first time gives one free Skiller (decided 2026-10-27).** Skillers can't be hired with coins until then. After that, the other two are hired with coins as today (up to 3 Skillers in total). This changes 6.4, where Skillers could be hired from the start. Fortifying (#4) is therefore only reachable after the first Dorgeshuun clear. *To decide when building:* whether the hire prices for the other two stay at 1,000 and 2,000.
 - **XP per hour isn't a ladder (user's choice, 2026-10-27).** Claude pointed out that Dorgeshuun pays less per hour than Swamp Caves, and that Fortifying with 3 Skillers pays the most of all, and suggested Dorgeshuun 8,000 XP and a flat 1.5 h Fortifying at 4,500 XP. The user kept these numbers: longer trips need fewer clicks. Watch in playtesting whether players skip Dorgeshuun or only run Fortifying.
 - **Still to decide:** coins for Swamp Caves (draft above), the Fortifying bundle, and Guild unlock levels for #2 and #3.
 
@@ -59,7 +59,7 @@ Coding note: keep the Swamp Caves' saved key (`LUMBRIDGE_SWAMP_CAVES`) and add t
 
 ### Securing and Fortifying the Encampment (idea, 2026-10-26)
 
-- **Unlock (decided 2026-10-26):** hidden until you hire your first Skiller.
+- **Unlock (decided 2026-10-26):** hidden until you have your first Skiller (from 2026-10-27, that's the free one from the first Dorgeshuun clear).
 - **Who can go (decided 2026-10-26):** advanced Skillers only (Harvester, Artisan, Explorer). A plain Skiller can't be sent until it takes its class advancement.
 - **Party:** 1 to 3 characters.
 - **Length:** 1.5 hours, minus 30 minutes for each extra Skiller. 1 Skiller = 1.5 h, 2 = 1 h, 3 = 30 min.
