@@ -245,6 +245,7 @@ public class FellowshipPlugin extends Plugin
 		{
 			xpTracker.reset();
 			team = null;
+			SwingUtilities.invokeLater(panel::showLoggedOut);
 		}
 		// Logging back into the same account doesn't count as a profile change, so
 		// onRuneScapeProfileChanged won't load the team again. Load it here instead.

@@ -25,6 +25,8 @@ import net.runelite.client.ui.PluginPanel;
  */
 public class FellowshipPanel extends PluginPanel
 {
+	private static final String LOGGED_OUT_TEXT = "Log in to see your Fellowship";
+
 	private final BiConsumer<Integer, CharacterClass> onEvolve;
 	private final BiConsumer<List<Integer>, Expedition> onSendExpedition;
 	private final IntConsumer onCollect;
@@ -49,6 +51,7 @@ public class FellowshipPanel extends PluginPanel
 	private final JButton skillerButton = new JButton();
 	private final Runnable onHireSkiller;
 	private int shownSkillerCost;
+	private final VaultPanel vaultPanel;
 	/** Draws the in-game item icons the cards use for each class. */
 	private final ItemManager itemManager;
 
@@ -63,6 +66,7 @@ public class FellowshipPanel extends PluginPanel
 		ItemManager itemManager)
 	{
 		this.itemManager = itemManager;
+		this.vaultPanel = vaultPanel;
 		this.onHireSkiller = onHireSkiller;
 		this.onEquip = onEquip;
 		this.onUnequip = onUnequip;
@@ -91,7 +95,7 @@ public class FellowshipPanel extends PluginPanel
 		cardsPanel.setLayout(new BoxLayout(cardsPanel, BoxLayout.Y_AXIS));
 		cardsPanel.setOpaque(false);
 		// Shown until an account's team is loaded.
-		cardsPanel.add(new JLabel("Log in to begin"));
+		cardsPanel.add(new JLabel(LOGGED_OUT_TEXT));
 
 		// The cards, then bundles and storage underneath. Storage stays hidden until an account is loaded.
 		JPanel middle = new JPanel(new BorderLayout(0, 10));
@@ -164,6 +168,26 @@ public class FellowshipPanel extends PluginPanel
 
 		cardsPanel.revalidate();
 		cardsPanel.repaint();
+	}
+
+	/**
+	 * Hide the team while logged out, since the next login might be another account and
+	 * the buttons would do nothing. Must be called on the Swing thread.
+	 */
+	public void showLoggedOut()
+	{
+		stopTimers();
+		cards.clear();
+		cardsPanel.removeAll();
+		cardsPanel.add(new JLabel(LOGGED_OUT_TEXT));
+		shownTeam = new ArrayList<>();
+		shownStorage = new ArrayList<>();
+		coinsLabel.setText("");
+		guildLabel.setText("");
+		hireArea.setVisible(false);
+		vaultPanel.setVisible(false);
+		revalidate();
+		repaint();
 	}
 
 	/**
