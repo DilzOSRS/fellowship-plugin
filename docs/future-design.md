@@ -30,9 +30,19 @@ The early game has a small story: the Fellowship has set up camp. First you scou
 | 3 | ~13 | **needed** | |
 | 4 | ~20 | Plunder Tombs of the Barrow Brothers | Idea, end-game, needs a Vyre |
 
-Draft numbers for the changed ones:
-- **Scout the Encampment Perimeter:** solo, 30 min, safe, 1,000 XP and 10–50 coins (what the Swamp Caves give today).
-- **Explore Lumbridge Swamp Caves (tier 1):** *draft* party of 1–2, threat 3, 1 hour, 1,500 XP each, 20–60 coins, small Generic Bundle chance.
+**The first four (decided by the user 2026-10-27; replaces the earlier drafts):**
+
+| # | Expedition | Party | Length | Threat | XP each | Coins | Bundle chance | XP/hour |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Scout the Encampment Perimeter | 1 | 30 min | 0 | 1,000 | none | 25% Generic | 2,000 |
+| 2 | Explore Lumbridge Swamp Caves | *draft* 1–2 | 1 h | 3 | 3,000 | *draft* 20–60 | 40% Generic | 3,000 |
+| 3 | Looting the Dorgeshuun Caves | exactly 3 | 2 h | 8 | 5,000 | 40–100 | 50% Boss | 2,500 |
+| 4 | Securing and Fortifying the Encampment | 1–3 Skillers | 1.5 h, −30 min per extra Skiller | 0 | 5,000 | none | *draft* 25% Generic | 3,333 (solo) to 10,000 (3 Skillers) |
+
+- **Bundles are a chance per run for now**, not guaranteed. Once the bundle loot tables exist (mostly cheap Generic items to salvage), they could become guaranteed. Storage (10 slots) is the limit to watch.
+- **Completing Dorgeshuun for the first time gives one free Skiller.** The other two are still hired with coins. *Open:* whether coin hiring of Skillers is locked until then (today you can hire them from the start).
+- **XP per hour isn't a ladder (user's choice, 2026-10-27).** Claude pointed out that Dorgeshuun pays less per hour than Swamp Caves, and that Fortifying with 3 Skillers pays the most of all, and suggested Dorgeshuun 8,000 XP and a flat 1.5 h Fortifying at 4,500 XP. The user kept these numbers: longer trips need fewer clicks. Watch in playtesting whether players skip Dorgeshuun or only run Fortifying.
+- **Still to decide:** coins for Swamp Caves (draft above), the Fortifying bundle, and Guild unlock levels for #2 and #3.
 
 **Unlocks (decided 2026-10-26):**
 - **Scout the Encampment Perimeter is locked at the start** and unlocks at **Guild level 2**.
@@ -54,7 +64,7 @@ Coding note: keep the Swamp Caves' saved key (`LUMBRIDGE_SWAMP_CAVES`) and add t
 - **Party:** 1 to 3 characters.
 - **Length:** 1.5 hours, minus 30 minutes for each extra Skiller. 1 Skiller = 1.5 h, 2 = 1 h, 3 = 30 min.
 - **Threat:** none. It's a safe expedition, which suits Skillers since they can only wear trinkets for now.
-- **Rewards:** XP only, more than other expeditions. No coins or bundles (for now). *Draft:* 1,500 XP each, whatever the party size.
+- **Rewards (changed 2026-10-27):** 5,000 XP each, whatever the party size, no coins, and a bundle chance. See the table above.
 
 What it would take to build:
 - **System:** an unlock rule ("you've hired a Skiller"). The first expedition unlock of any kind.

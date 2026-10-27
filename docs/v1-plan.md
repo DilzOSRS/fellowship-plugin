@@ -47,8 +47,8 @@ Gear gets better along the way:
 - UI: card tabs, Expedition Board, compact roster.
 
 **Expeditions:**
-- Built: Explore Lumbridge Swamp Caves, Looting the Dorgeshuun Caves.
-- Designed: Securing and Fortifying the Encampment.
+- **The first four (decided 2026-10-27, numbers in `docs/future-design.md`):** Scout the Encampment Perimeter, Explore Lumbridge Swamp Caves (threat 3), Looting the Dorgeshuun Caves (threat 8, first clear gives a free Skiller), Securing and Fortifying the Encampment (Skillers only). Each one has a bundle chance.
+- Built so far: Swamp Caves (as a safe trip) and Dorgeshuun, both with older numbers.
 - End-game: Plunder Tombs of the Barrow Brothers (needs a Vyre).
 - **Gap:** more expeditions between Dorgeshuun (threat 8) and Barrows, so there's a ladder to climb. To design.
 
@@ -68,7 +68,7 @@ This is a big v1: about 25 classes, 8 perks and around 8 new systems. That's fin
 
 ## Still to design before building
 
-1. The expedition ladder (how many, what threat levels, what rewards).
+1. The expedition ladder: the first four are decided (2026-10-27). Still open: a tier between Dorgeshuun (threat 8) and Barrows, Guild unlock levels, and a few draft numbers.
 2. The gear list and its numbers.
 3. Stat bonuses for every class.
 4. Level caps for each advancement.
