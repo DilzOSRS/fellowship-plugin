@@ -34,6 +34,7 @@ Gear gets better along the way:
 - Built: Adventurer, Knight, Archer, Wizard, Skiller, Harvester, Artisan, Explorer.
 - Second advancements: Paladin, Rune Knight, Berserker / Scout, Hunter, Trickster / Battle Mage, Cleric, Arcane Wizard.
 - Special trees with perks: Thief → Bandit / Assassin → Warlord / Night Blade, and Vyre → Blood Mage / Death Knight / Shadow Lord.
+- **Acolyte (added 2026-10-27):** a rare unlock linked to Prayer. Maybe: choose a god as the first advancement, then 3 classes per god (e.g. Guthix → Guardian of Guthix / Guthixian Dryad / Void Knight). See `docs/future-design.md`.
 
 **Systems:**
 - Second class advancement.
@@ -41,7 +42,7 @@ Gear gets better along the way:
 - Gear level requirements.
 - Perks (special classes only).
 - Rare unlocks (Thief from Thieving/Agility XP, Vyre from XP in Morytania).
-- Gear borrowing (Bandit uses Knight gear, Assassin uses Archer gear).
+- Armour types (Plate / Leather / Robe): each class lists what it can wear. Replaces gear borrowing (decided 2026-10-27).
 - Expedition rules: unlocks, class requirements, party size ranges.
 - UI: card tabs, Expedition Board, compact roster.
 

@@ -105,6 +105,10 @@ Thief (rare) ─┬─ Bandit ──── Warlord
 
 Vyre (rare) ── Blood Mage / Death Knight / Shadow Lord
 
+Acolyte (rare) ─┬─ Guthix Acolyte ──── Guardian of Guthix / Guthixian Dryad / Void Knight
+                ├─ (other gods, e.g. Saradomin, Zamorak) ── 3 classes each
+                └─ ...
+
 Beast Master (rare, from a pet drop)
 ```
 
@@ -181,6 +185,17 @@ Notes:
 - **Overlaps:** Death Knight's speed perk is like the Assassin's, and Blood Mage's success perk is like a stat boost. Fine, as long as each class has something of its own.
 - **Shadow Lord's rare loot** needs expedition loot tables, which don't exist yet (expeditions give a set bundle chance today).
 
+### Acolyte tree (in v1 from 2026-10-27; the god layer is "maybe")
+
+- **Unlock:** linked to Prayer, e.g. a rare chance per amount of Prayer XP (the shared rare-unlock system, like Thief and Vyre). Prayer was kept free from the Skiller paths for a class like this.
+- **First advancement: choose a god to worship** instead of a class. Same system as a normal class advancement, with in-world wording ("Choose your god"). E.g. Acolyte → Guthix Acolyte.
+- **Second advancement:** each god has 3 unique classes. Guthix: **Guardian of Guthix, Guthixian Dryad, Void Knight**. Other gods to design (Saradomin and Zamorak are the obvious ones; Armadyl, Bandos, Zaros, Seren could come later).
+- **Size:** with 3 gods, it's 1 + 3 + 9 = 13 classes to build, each needing stats. First suggested for v1.1; **the user added the Acolyte to v1 on 2026-10-27, with the god layer as a "maybe"**. Gear is no longer a cost: Acolytes wear Robes (see "Armour types" in section 3).
+  - **User's view (2026-10-27):** players won't see 13 classes. It's a rare unlock and they'll be happy to get one, so it doesn't flood the game. (The build cost is still all 13, since any of them can be picked.)
+  - **Making it cheap to build (suggested):** one gear set per god, shared by its 3 classes. The classes then differ only by XP skills and stat split, so each is mostly a line of data, and the real work is 3 god gear sets instead of 9 class sets.
+- **Systems needed:** rare unlocks, second class advancement (both already planned for v1). Perks would be up to the user (it's a rare class, so by the current rule it would get them).
+- Still to decide: which gods, the XP skills (Prayer for sure), gear (one god set, or per class?), and roles for the 9 final classes.
+
 ### Beast Master (idea, already in the Parking Lot)
 
 10% chance to unlock when you get a pet drop in OSRS (read from the game's drop message). Still to decide: class line, XP rules, perk.
@@ -224,6 +239,24 @@ Open questions:
 ## 3. Gear
 
 Wait for the Phase 5–6 playtest notes before redesigning gear.
+
+### Armour types instead of class gear (decided 2026-10-27, for v1)
+
+Armour comes in three types, **Plate, Leather and Robe** (heavy, medium, light), and each class lists which types it can wear. Draft from the user:
+
+| Armour | Who can wear it |
+|---|---|
+| Plate | Knights (and their second advancements) |
+| Leather | Thieves, Archers, Vyres |
+| Robe | Acolytes, Vyres, Wizards |
+
+- **Why:** the number of armour types stays at 3 however many classes are added, so bundle drops stay useful (no loot dilution), and a new class only needs a line saying what it wears. It also solves second advancements (a Paladin can wear plate) without a separate "gear family" system.
+- **A class can wear more than one type** (the Vyre wears Leather and Robe).
+- **No save migration needed:** the saved names `PLATE`, `LEATHER` and `ROBE` already exist. In code, each `CharacterClass` gets a list of allowed armour types instead of each `GearType` naming one class.
+- **Still to decide:**
+  - **Weapons:** suggested the same idea (Sword / Bow / Staff, or Melee / Ranged / Magic, with each class listing what it can wield).
+  - Adventurers and Skillers: still trinkets only, or Light armour?
+  - Bandit and Assassin "borrowing" gear becomes just "can wear Plate" / "can wear Leather", so the gear-borrowing system is no longer needed.
 
 ### Class stat bonuses (needed before v1, noted 2026-10-26)
 
