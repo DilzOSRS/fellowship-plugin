@@ -16,6 +16,7 @@ import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.Experience;
 import net.runelite.api.GameState;
 import net.runelite.api.Skill;
 import net.runelite.api.events.ChatMessage;
@@ -94,6 +95,7 @@ public class FellowshipPlugin extends Plugin
 
 	private final XpTracker xpTracker = new XpTracker();
 	private final Random random = new Random();
+	private final ThiefUnlock thiefUnlock = new ThiefUnlock();
 	private FellowshipPanel panel;
 	private VaultPanel vaultPanel;
 	private NavigationButton navButton;
@@ -176,6 +178,17 @@ public class FellowshipPlugin extends Plugin
 			for (int i = 0; i < bundlesFound; i++)
 			{
 				announceBundle(BundleType.GENERIC);
+			}
+			// Thieving and Agility XP and level-ups give a rare chance of a Thief joining.
+			int osrsLevelsGained = Experience.getLevelForXp(event.getXp())
+				- Experience.getLevelForXp(event.getXp() - gained);
+			if (thiefUnlock.roll(event.getSkill(), gained, osrsLevelsGained, team.count(CharacterClass.THIEF), random))
+			{
+				team.hire(CharacterClass.THIEF);
+				int index = team.size() - 1;
+				String message = team.getDisplayName(index) + " snuck into your Fellowship!";
+				sendChatMessage(message);
+				showClassPopup(CharacterClass.THIEF, message);
 			}
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.

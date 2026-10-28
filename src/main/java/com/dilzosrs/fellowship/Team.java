@@ -64,10 +64,24 @@ public class Team
 		hire(CharacterClass.ADVENTURER);
 	}
 
-	/** Add a fresh level 1 character of a starting class (Adventurer or Skiller). */
+	/** Add a fresh level 1 character of a starting class (Adventurer, Skiller or Thief). */
 	public void hire(CharacterClass startingClass)
 	{
 		characters.add(new FellowshipCharacter(startingClass, 0));
+	}
+
+	/** How many characters of a class are on the team. */
+	public int count(CharacterClass characterClass)
+	{
+		int count = 0;
+		for (FellowshipCharacter character : characters)
+		{
+			if (character.getCharacterClass() == characterClass)
+			{
+				count++;
+			}
+		}
+		return count;
 	}
 
 	/** Which character gets full XP. */

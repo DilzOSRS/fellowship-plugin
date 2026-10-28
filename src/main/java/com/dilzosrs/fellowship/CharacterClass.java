@@ -27,7 +27,10 @@ public enum CharacterClass
 	ARTISAN("Artisan", LevelCurve.MAX_LEVEL, ItemID.HAMMER,
 		Skill.SMITHING, Skill.CRAFTING, Skill.FLETCHING, Skill.COOKING, Skill.HERBLORE, Skill.CONSTRUCTION, Skill.FIREMAKING),
 	EXPLORER("Explorer", LevelCurve.MAX_LEVEL, ItemID.LEATHER_BOOTS,
-		Skill.AGILITY, Skill.THIEVING, Skill.RUNECRAFT, Skill.PRAYER, Skill.SLAYER);
+		Skill.AGILITY, Skill.THIEVING, Skill.RUNECRAFT, Skill.PRAYER, Skill.SLAYER),
+	// A rare character that joins from Thieving and Agility (see ThiefUnlock), not hired.
+	// Its class advancement (Bandit or Assassin) comes in a later step.
+	THIEF("Thief", 10, ItemID.HIGHWAYMAN_MASK, Skill.THIEVING, Skill.AGILITY);
 
 	/** XP from a class's bonus skills is multiplied by this. */
 	static final int BONUS_XP_MULTIPLIER = 2;
