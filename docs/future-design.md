@@ -229,7 +229,9 @@ Thief ──┬── Bandit ──── Warlord
 | Assassin | Thief class advancement | Thieving, Agility, Ranged | Borrows Archer gear | Chance to finish a dangerous expedition in half the time |
 | Night Blade | Assassin at high level | Same as Assassin | Archer gear | Can go on any dangerous expedition alone (decided 2026-10-26, see below) |
 
-**Unlock rules (decided 2026-10-28; built and tested in-game 2026-10-28 as `RareUnlock`, shared with the Acolyte, with a cap of 10 and no class advancement yet):**
+**Built and tested in-game 2026-10-28:** the unlock and both class advancements. Every step is at level 10 for now (the user wants the Thief at about 20 later, and the second step higher still); Warlord and Night Blade cap at 99. Perks and gear borrowing aren't built yet.
+
+**Unlock rules (decided 2026-10-28; built as `RareUnlock`, shared with the Acolyte):**
 - **Two triggers, from Thieving and Agility:** a chance per 1,000 XP (*draft* 1%) and a chance per level-up (*draft* 3%) in either skill. The XP roll is fair to fast and slow training methods (unlike rolling per XP drop, where pickpocketing would unlock it in minutes); the level-up roll keeps it fair to low-level players, who earn XP slowly but level often. Same idea as the bundle launch plan in `docs/playtest-notes.md`.
 - **Each extra Thief is 10× harder (user's idea):** both chances are divided by 10 for every Thief you already have. The first Thief at 1% / 3%, the second at 0.1% / 0.3%, the third at 0.01% / 0.03%. So more than one is possible, but each one is a real event.
 - Rough feel at these numbers: a new account training Thieving from 1 to 50 gets about 50 level-up rolls, and a high-level player at about 200k XP an hour expects one in about an hour of Thieving or Agility (less with both).
