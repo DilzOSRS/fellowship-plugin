@@ -14,6 +14,9 @@ Notes from playing, to sort into fixes and tuning after each playtest.
 - **Coins and hiring pace (user, 2026-10-27).** After two days of play: 178 coins. Skiller prices (1,000 and 2,000 for the two coin hires) are probably fine, since characters shouldn't pour in.
   - **Direction:** a quick spike of new characters early is fun, but after that, every new character should feel earned and special.
   - Watch out: in the new expedition plan (`docs/future-design.md`), the Perimeter scout gives no coins. So early coins only come from Swamp Caves and bundles, and the first two Adventurer hires (100 coins each) are needed before Dorgeshuun. Check that the early spike still happens.
+- **Cap Adventurers at 3 for now (user, 2026-10-27).** A 4th Adventurer is too much early on. More could unlock later (e.g. at a high Guild level). Today, Guild hires are unlimited (one per Guild level above 1).
+  - Fits the new expedition plan: Dorgeshuun needs exactly 3 characters, so 3 Adventurers is just enough, and Skillers (up to 3) come after it.
+  - Not built yet. To decide when building: what Guild levels give once all 3 Adventurers are hired, since hires would have nothing to spend on.
 - **Bundles feel too rare (user, 2026-10-26).** Not a single bundle all day; opening things should happen more often. Idea: make bundles drop more often, but make the good loot inside rarer.
   - Why it's dry: the Generic Bundle is the only one that drops from normal play (10% per 100,000 OSRS XP, so about one per million XP). Slayer, clue, boss and raid bundles only drop from those activities.
   - Fix options: raise the Generic chance (e.g. 1 per 50,000–100,000 XP), and shift the rarity odds towards Common so a full set of good gear still takes time. Salvaging the extra Commons for coins gives them a use.
