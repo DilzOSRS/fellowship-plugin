@@ -85,6 +85,17 @@ That's about 20 classes and drops the "second class advancement" system from v1.
 
 **User's response:** might be good, but saved for now. The user definitely wants a second advancement for *some* characters, and really likes **Warlord and Night Blade**. One option to consider: keep the second advancement only for the Thief tree in v1 (still builds the system, but with 2 classes instead of 20).
 
+## Idea: every character comes from OSRS activity (user, 2026-10-28, not decided)
+
+- **All characters are unlocked by doing things in OSRS**, not bought. E.g. Adventurers from combat XP, Skillers from skilling XP, Acolytes from Prayer, Thieves from Thieving and Agility (being built).
+- **Coins pay for class advancements** instead of hires.
+- **The Guild costs coins to level up:** when it has enough Guild XP it waits until you pay (e.g. 100 coins for level 2).
+- **To work out before deciding:**
+  - Guild levels mostly give hires today; without hiring, what does a Guild level give? (Storage, expedition unlocks, maybe a raised cap on characters.)
+  - The first character: does the game still start you with one Adventurer?
+  - The Dorgeshuun free Skiller and the 3-Adventurer cap were decided on 2026-10-27/28 assuming hiring. They'd need rethinking.
+  - Coin sinks need to stay balanced with coin income (178 coins in two days of playtesting).
+
 ## Still to design before building
 
 1. The expedition ladder: the first four are decided (2026-10-27). Still open: a tier between Dorgeshuun (threat 8) and Barrows, Guild unlock levels, and a few draft numbers.
