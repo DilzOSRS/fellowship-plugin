@@ -53,7 +53,9 @@ Gear gets better along the way:
 - **Gap:** more expeditions between Dorgeshuun (threat 8) and Barrows, so there's a ladder to climb. To design.
 
 **Gear:**
-- **Gap:** more items. To design: gear for the second advancements, real item names, maybe Skiller gear, and how rarity, level requirements and stat bonuses fit together.
+- **System 1 (decided 2026-10-28):** real OSRS tiers as base items (Bronze, Iron, Steel Common; Mithril, Adamant, Rune Uncommon; Dragon Rare) plus named uniques for Epic and Legendary (e.g. Abyssal whip, Scythe of Vitur). Details in `docs/future-design.md`.
+- **To design:** the tier ladders for bows, staves, leather, robes and trinkets, the list of uniques, and the numbers (power, level requirements).
+- **Not in v1:** System 2 (any rarity on any item, plus random perks). It comes after v1.
 
 ## Not in v1
 
@@ -69,7 +71,7 @@ This is a big v1: about 25 classes, 8 perks and around 8 new systems. That's fin
 ## Still to design before building
 
 1. The expedition ladder: the first four are decided (2026-10-27). Still open: a tier between Dorgeshuun (threat 8) and Barrows, Guild unlock levels, and a few draft numbers.
-2. The gear list and its numbers.
+2. The gear list and its numbers: System 1 is decided (2026-10-28). Still open: the ladders for bows, staves, leather, robes and trinkets, the uniques, and the numbers.
 3. Stat bonuses for every class.
 4. Level caps for each advancement.
 5. Build order for all of the above.

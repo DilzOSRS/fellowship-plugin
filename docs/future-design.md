@@ -250,6 +250,31 @@ Open questions:
 
 Wait for the Phase 5–6 playtest notes before redesigning gear.
 
+### The gear plan: two systems, in order (decided 2026-10-28)
+
+**System 1 (v1): OSRS tiers and named uniques.** Replaces the "one generic item per rarity" list.
+- Every base item is a real OSRS tier: Bronze, Iron and Steel are Common; Mithril, Adamant and Rune are Uncommon; Dragon is Rare.
+- Epic and Legendary are **named uniques**, e.g. Abyssal whip (Epic), Scythe of Vitur (Legendary).
+- Why: any OSRS player reads it instantly (bronze is weak, a whip is exciting), and it fills v1's "gear list and its numbers" gap.
+- *Draft* power by tier (to fit threat levels later): Bronze 1, Iron 2, Steel 3, Mithril 4, Adamant 6, Rune 8, Dragon 10, Epic unique 12, Legendary unique 15.
+- *Draft* level requirements: OSRS's own (Bronze/Iron 1, Steel 5, Mithril 20, Adamant 30, Rune 40, Dragon 60), so players already know them. This replaces the per-rarity requirements in "Gear level requirements" below; the class advancement reset problem there still applies.
+- **Open: "Bronze to Dragon" only fits swords and plate.** Bows, staves, leather and robes need their own ladders. *Drafts* to pick from:
+  - Bow: Normal, Oak, Willow (Common), Maple, Yew (Uncommon), Magic (Rare).
+  - Leather: Leather, Hard leather, Studded (Common), Green, Blue, Red d'hide (Uncommon), Black d'hide (Rare).
+  - Staff and Robe: to design (e.g. plain staff → battlestaves → mystic staves; Wizard robes → Mystic).
+  - Trinkets: to design (e.g. amulets: Strength → Power → Glory → Fury).
+- **Open:** the list of uniques for each weapon and armour type.
+- **Saving:** items are saved by type and rarity today. Moving to named items changes the save format, which is fine since test saves are wiped before launch.
+
+**System 2 (after v1): any rarity on any item, plus random perks.** Diablo/Destiny-style.
+- Every base item (Bronze dagger to Abyssal whip) can drop as Common up to Legendary. Higher rarities are rarer and stronger.
+- **Perks:** Epic items roll 1 random perk, Legendary items roll 2. So you can grind the same whip for an Epic one with good perks, and a Legendary bronze dagger is a fun collectable.
+- **Suggested balance:** the base item sets the power, rarity adds a small bonus, and perks carry the real value. A Legendary bronze dagger stays weak in a fight but could have a perk worth wearing (e.g. +15% XP). Otherwise either metal tiers stop mattering, or low items are only trophies.
+- **First perks should use systems that already exist** (no HP needed): +expedition XP, shorter expedition time, +coins, +bundle chance, lower injury chance, 2× XP in one extra skill. More perks can come as new systems arrive (e.g. HP; see the Parking Lot).
+- Uniques could keep fixed signature perks.
+- **Costs:** items save their rarity and perks (another save change), and Diablo-style loot means many more items, so storage size and salvaging matter more.
+- Build order: rarity roll on any item first, then perks.
+
 ### Armour types instead of class gear (decided 2026-10-27, for v1)
 
 Armour comes in three types, **Plate, Leather and Robe** (heavy, medium, light), and each class lists which types it can wear. Draft from the user:
