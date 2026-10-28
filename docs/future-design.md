@@ -253,16 +253,26 @@ Wait for the Phase 5–6 playtest notes before redesigning gear.
 ### The gear plan: two systems, in order (decided 2026-10-28)
 
 **System 1 (v1): OSRS tiers and named uniques.** Replaces the "one generic item per rarity" list.
-- Every base item is a real OSRS tier: Bronze, Iron and Steel are Common; Mithril, Adamant and Rune are Uncommon; Dragon is Rare.
+- **Every type has 7 tiers (decided 2026-10-28):** the first 3 are Common, the next 2 Uncommon, and the last 2 Rare. No Black tier.
 - Epic and Legendary are **named uniques**, e.g. Abyssal whip (Epic), Scythe of Vitur (Legendary).
 - Why: any OSRS player reads it instantly (bronze is weak, a whip is exciting), and it fills v1's "gear list and its numbers" gap.
-- *Draft* power by tier (to fit threat levels later): Bronze 1, Iron 2, Steel 3, Mithril 4, Adamant 6, Rune 8, Dragon 10, Epic unique 12, Legendary unique 15.
-- *Draft* level requirements: OSRS's own (Bronze/Iron 1, Steel 5, Mithril 20, Adamant 30, Rune 40, Dragon 60), so players already know them. This replaces the per-rarity requirements in "Gear level requirements" below; the class advancement reset problem there still applies.
-- **Open: "Bronze to Dragon" only fits swords and plate.** Bows, staves, leather and robes need their own ladders. *Drafts* to pick from:
-  - Bow: Normal, Oak, Willow (Common), Maple, Yew (Uncommon), Magic (Rare).
-  - Leather: Leather, Hard leather, Studded (Common), Green, Blue, Red d'hide (Uncommon), Black d'hide (Rare).
-  - Staff and Robe: to design (e.g. plain staff → battlestaves → mystic staves; Wizard robes → Mystic).
-  - Trinkets: to design (e.g. amulets: Strength → Power → Glory → Fury).
+
+| Type | Common (1–3) | Uncommon (4–5) | Rare (6–7) |
+|---|---|---|---|
+| Sword (assumed, same metals as plate) | Bronze, Iron, Steel | Mithril, Adamant | Rune, Dragon |
+| Plate | Bronze, Iron, Steel | Mithril, Adamant | Rune, Dragon |
+| Bow | Normal, Oak, Willow | Maple, Yew | Magic, Redwood |
+| Leather (Claude's draft, user to confirm) | Leather, Hard leather, Studded | Green d'hide, Blue d'hide | Red d'hide, Black d'hide |
+| Staff | Wood, Oak, Willow | Maple, Yew | Magic, Redwood |
+| Robe | Robes, Splitbark, Mystic | Enchanted, Infinity | Virtus, Ancestral |
+| Trinket | Sapphire, Emerald, Ruby | Diamond, Dragonstone | Onyx, Zenyte |
+
+- 7 types × 7 tiers = 49 base items, plus the uniques.
+- **Watch:** Virtus and Ancestral are OSRS end-game robes but only Rare here, below the Epic uniques (e.g. the whip). Fine if the uniques are clearly special, but check it doesn't feel odd to OSRS players.
+- Wooden staves past Oak (Willow to Redwood staff) aren't real OSRS items. That's fine, they're fictional and read clearly.
+- *Draft* power by tier (to fit threat levels later): 1, 2, 3, 4, 6, 8, 10 for tiers 1–7, then Epic unique 12, Legendary unique 15.
+- **Level requirements: adjust later (user, 2026-10-28).** OSRS's own (Mithril 20, Adamant 30, Rune 40, Dragon 60) would make Mithril quite decent early. Decide with the level curve. Whatever the numbers, the class advancement reset problem in "Gear level requirements" below still applies.
+- **Open:** sword types (melee could later split into swords, scimitars, etc.) and trinket kinds (amulets, rings).
 - **Open:** the list of uniques for each weapon and armour type.
 - **Saving:** items are saved by type and rarity today. Moving to named items changes the save format, which is fine since test saves are wiped before launch.
 
