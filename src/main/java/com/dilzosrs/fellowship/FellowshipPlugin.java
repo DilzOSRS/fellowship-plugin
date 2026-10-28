@@ -191,11 +191,7 @@ public class FellowshipPlugin extends Plugin
 				if (unlock.roll(event.getSkill(), gained, osrsLevelsGained, team.count(found), random))
 				{
 					team.hire(found);
-					String message = team.getDisplayName(team.size() - 1)
-						+ (found == CharacterClass.THIEF ? " snuck into" : " answered the call and joined")
-						+ " your Fellowship!";
-					sendChatMessage(message);
-					showClassPopup(found, message);
+					announceNewCharacter();
 				}
 			}
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
@@ -295,10 +291,11 @@ public class FellowshipPlugin extends Plugin
 				return;
 			}
 			Blessing blessing = newClass.getBlessing();
-			sendChatMessage(blessing != null
+			String message = blessing != null
 				? oldName + " has devoted themselves to " + blessing.getGodName() + "!"
-				: oldName + " has been trained in the ways of the " + newClass.getDisplayName() + "!");
-			showClassPopup(newClass, "Unlocked " + newClass.getDisplayName() + "!");
+				: oldName + " has been trained in the ways of the " + newClass.getDisplayName() + "!";
+			sendChatMessage(message);
+			showClassPopup(newClass, message);
 			saveTeam();
 			updatePanel();
 		});
@@ -469,7 +466,7 @@ public class FellowshipPlugin extends Plugin
 			}
 			coins -= Guild.HIRE_COST;
 			team.hire();
-			announceHire();
+			announceNewCharacter();
 			saveTeam();
 			saveCoins();
 			saveGuild();
@@ -477,11 +474,14 @@ public class FellowshipPlugin extends Plugin
 		});
 	}
 
-	/** Announce the newest team member in chat and with a pop-up. Call on the client thread. */
-	private void announceHire()
+	/**
+	 * Announce the newest team member (hired or found) in chat and with a pop-up.
+	 * Call on the client thread.
+	 */
+	private void announceNewCharacter()
 	{
 		int index = team.size() - 1;
-		String message = team.getDisplayName(index) + " joined your Fellowship!";
+		String message = team.getDisplayName(index) + " has joined your Fellowship!";
 		sendChatMessage(message);
 		showClassPopup(team.get(index).getCharacterClass(), message);
 	}
@@ -508,7 +508,7 @@ public class FellowshipPlugin extends Plugin
 			guild.useSkillerHire();
 			coins -= cost;
 			team.hire(CharacterClass.SKILLER);
-			announceHire();
+			announceNewCharacter();
 			saveTeam();
 			saveCoins();
 			saveGuild();
