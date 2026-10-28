@@ -529,6 +529,10 @@ public class FellowshipPlugin extends Plugin
 			saveCoins();
 			sendChatMessage("You opened a " + bundle.getDisplayName() + ": " + opened.item.getName()
 				+ " (" + opened.item.getDescription() + ") and " + opened.coins + " coins!");
+			Rarity rarity = opened.item.getRarity();
+			String article = rarity == Rarity.UNCOMMON || rarity == Rarity.EPIC ? "an " : "a ";
+			popup.show("You pulled " + article + opened.item.getName() + "!",
+				itemManager.getImage(bundle.getIconItemId()), rarity.getColor());
 			SwingUtilities.invokeLater(() -> vaultPanel.showOpened(bundle, opened.item, opened.coins));
 			updatePanel();
 		});

@@ -46,6 +46,7 @@ public class PopupOverlay extends OverlayPanel
 	// Set on the client thread and read while drawing (also the client thread), so plain fields are fine.
 	private String message;
 	private BufferedImage icon;
+	private Color color;
 	private Instant shownAt;
 
 	@Inject
@@ -67,8 +68,15 @@ public class PopupOverlay extends OverlayPanel
 	 */
 	public void show(String message, BufferedImage icon)
 	{
+		show(message, icon, Color.WHITE);
+	}
+
+	/** Like {@link #show(String, BufferedImage)}, with the message in a colour (e.g. an item's rarity). */
+	public void show(String message, BufferedImage icon, Color color)
+	{
 		this.message = message;
 		this.icon = icon;
+		this.color = color;
 		this.shownAt = Instant.now();
 		client.playSoundEffect(CHIME);
 	}
@@ -91,7 +99,7 @@ public class PopupOverlay extends OverlayPanel
 		int slide = Math.round((1f - appear) * -SLIDE_DISTANCE);
 
 		panelComponent.getChildren().add(TitleComponent.builder().text("Fellowship").color(GOLD).build());
-		LineComponent line = LineComponent.builder().left(message).build();
+		LineComponent line = LineComponent.builder().left(message).leftColor(color).build();
 		if (icon == null)
 		{
 			panelComponent.setPreferredSize(new Dimension(ComponentConstants.STANDARD_WIDTH, 0));
