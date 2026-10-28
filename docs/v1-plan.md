@@ -68,6 +68,23 @@ Gear gets better along the way:
 
 This is a big v1: about 25 classes, 8 perks and around 8 new systems. That's fine, but build it in the same one-step-at-a-time way as Phases 1–6. If it starts to drag, the first thing to cut is one of the two special trees (Thief or Vyre), saving it for v1.1.
 
+## Proposal: fewer advancements, more characters (2026-10-28, saved, not decided)
+
+**The user's point:** v1 has about 39 classes on paper, but it feels like 5, because players feel each new *character* they get, not each advancement. Better to have more characters than deep advancement trees.
+
+**Why not just add 30 more characters:** the code is cheap (a class is one line, and armour types made gear cheap). The cost is unlock methods (some need new detection code), perks (each is its own build step) and design time (XP skills, stats, gear and a reason to pick each one). A single player would also only see maybe 6–8 characters in v1.
+
+**Claude's suggestion: every character gets exactly one class advancement in v1.**
+- Adventurer → Knight / Archer / Wizard (the 9 second advancements wait)
+- Skiller → Harvester / Artisan / Explorer
+- Thief → Bandit / Assassin (Warlord and Night Blade wait)
+- Vyre → Blood Mage / Death Knight / Shadow Lord
+- Acolyte → choose a god: Guthix / Saradomin / Zamorak Acolyte (the 9 god classes wait)
+
+That's about 20 classes and drops the "second class advancement" system from v1. The saved time goes into more starting characters, built with a cheap recipe: XP-based rare unlock, XP skills, armour and weapon types, stat split, and a perk only if it's special.
+
+**User's response:** might be good, but saved for now. The user definitely wants a second advancement for *some* characters, and really likes **Warlord and Night Blade**. One option to consider: keep the second advancement only for the Thief tree in v1 (still builds the system, but with 2 classes instead of 20).
+
 ## Still to design before building
 
 1. The expedition ladder: the first four are decided (2026-10-27). Still open: a tier between Dorgeshuun (threat 8) and Barrows, Guild unlock levels, and a few draft numbers.
