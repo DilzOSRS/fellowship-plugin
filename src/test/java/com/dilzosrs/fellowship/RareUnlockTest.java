@@ -24,7 +24,7 @@ public class RareUnlockTest
 
 	private static RareUnlock thief()
 	{
-		return new RareUnlock(CharacterClass.THIEF, Skill.THIEVING, Skill.AGILITY);
+		return RareUnlock.fromSkills(CharacterClass.THIEF, Skill.THIEVING, Skill.AGILITY);
 	}
 
 	@Test
@@ -35,9 +35,22 @@ public class RareUnlockTest
 		assertEquals(0, unlock.getXpProgress());
 		assertTrue(unlock.roll(Skill.AGILITY, 1_000, 0, 0, always(0)));
 
-		RareUnlock acolyte = new RareUnlock(CharacterClass.ACOLYTE, Skill.PRAYER);
+		RareUnlock acolyte = RareUnlock.fromSkills(CharacterClass.ACOLYTE, Skill.PRAYER);
 		assertFalse(acolyte.roll(Skill.THIEVING, 1_000, 0, 0, always(0)));
 		assertTrue(acolyte.roll(Skill.PRAYER, 1_000, 0, 0, always(0)));
+	}
+
+	@Test
+	public void vyreRollsOnAnyXpButNotOnLevelUps()
+	{
+		RareUnlock vyre = RareUnlock.fromMorytania(CharacterClass.VYRE);
+		assertTrue(vyre.isMorytaniaOnly());
+		assertFalse(thief().isMorytaniaOnly());
+		assertTrue(vyre.roll(Skill.WOODCUTTING, 1_000, 0, 0, always(0)));
+		// A level-up with under 1,000 XP gives no roll, even one that would always hit.
+		assertFalse(vyre.roll(Skill.ATTACK, 100, 5, 0, always(0)));
+		// It still adds to the XP total: 100 more makes 1,000.
+		assertEquals(100, vyre.getXpProgress());
 	}
 
 	@Test

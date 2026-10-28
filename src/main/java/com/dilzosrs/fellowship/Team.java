@@ -67,7 +67,7 @@ public class Team
 		hire(CharacterClass.ADVENTURER);
 	}
 
-	/** Add a fresh level 1 character of a starting class (Adventurer, Skiller, Thief or Acolyte). */
+	/** Add a fresh level 1 character of a starting class (Adventurer, Skiller, Thief, Acolyte or Vyre). */
 	public void hire(CharacterClass startingClass)
 	{
 		characters.add(new FellowshipCharacter(startingClass, 0));

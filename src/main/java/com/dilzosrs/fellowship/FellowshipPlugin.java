@@ -18,7 +18,9 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.Experience;
 import net.runelite.api.GameState;
+import net.runelite.api.Player;
 import net.runelite.api.Skill;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
@@ -96,8 +98,9 @@ public class FellowshipPlugin extends Plugin
 	private final XpTracker xpTracker = new XpTracker();
 	private final Random random = new Random();
 	private final List<RareUnlock> rareUnlocks = List.of(
-		new RareUnlock(CharacterClass.THIEF, Skill.THIEVING, Skill.AGILITY),
-		new RareUnlock(CharacterClass.ACOLYTE, Skill.PRAYER));
+		RareUnlock.fromSkills(CharacterClass.THIEF, Skill.THIEVING, Skill.AGILITY),
+		RareUnlock.fromSkills(CharacterClass.ACOLYTE, Skill.PRAYER),
+		RareUnlock.fromMorytania(CharacterClass.VYRE));
 	private FellowshipPanel panel;
 	private VaultPanel vaultPanel;
 	private NavigationButton navButton;
@@ -181,13 +184,18 @@ public class FellowshipPlugin extends Plugin
 			{
 				announceBundle(BundleType.GENERIC);
 			}
-			// XP and level-ups in some skills give a rare chance of a character joining
-			// (a Thief from Thieving and Agility, an Acolyte from Prayer).
+			// XP gives a rare chance of a character joining (a Thief from Thieving and Agility,
+			// an Acolyte from Prayer, a Vyre from any XP in Morytania).
 			int osrsLevelsGained = Experience.getLevelForXp(event.getXp())
 				- Experience.getLevelForXp(event.getXp() - gained);
+			boolean inMorytania = isInMorytania();
 			for (RareUnlock unlock : rareUnlocks)
 			{
 				CharacterClass found = unlock.getCharacterClass();
+				if (unlock.isMorytaniaOnly() && !inMorytania)
+				{
+					continue;
+				}
 				if (unlock.roll(event.getSkill(), gained, osrsLevelsGained, team.count(found), random))
 				{
 					team.hire(found);
@@ -472,6 +480,19 @@ public class FellowshipPlugin extends Plugin
 			saveGuild();
 			updatePanel();
 		});
+	}
+
+	/** Whether the player is standing in Morytania (or an instance there). Call on the client thread. */
+	private boolean isInMorytania()
+	{
+		Player player = client.getLocalPlayer();
+		if (player == null)
+		{
+			return false;
+		}
+		// In an instance (like the Theatre of Blood), this gives the real map tile it copies.
+		WorldPoint location = WorldPoint.fromLocalInstance(client, player.getLocalLocation());
+		return location != null && Morytania.contains(location.getX(), location.getY());
 	}
 
 	/**

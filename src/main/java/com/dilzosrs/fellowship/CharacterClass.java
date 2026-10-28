@@ -39,6 +39,9 @@ public enum CharacterClass
 		Skill.THIEVING, Skill.AGILITY, Skill.ATTACK, Skill.STRENGTH),
 	NIGHT_BLADE("Night Blade", LevelCurve.MAX_LEVEL, ItemID.SHAYZIEN_HELM_5,
 		Skill.THIEVING, Skill.AGILITY, Skill.RANGED),
+	// A rare character that joins from any XP gained in Morytania (see RareUnlock). 1x XP in every
+	// skill for now. Its class advancements (Blood Mage, Death Knight, Shadow Lord) come later.
+	VYRE("Vyre", 10, ItemID.VYRELORD_TORSO),
 	// A rare character that joins from Prayer. Its class advancement is choosing a god to worship,
 	// which blesses every expedition the team goes on, so it mostly stays at base (see Blessing).
 	// The gods' bonus skills are placeholders.

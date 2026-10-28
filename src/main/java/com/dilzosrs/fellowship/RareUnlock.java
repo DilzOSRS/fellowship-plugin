@@ -6,12 +6,12 @@ import java.util.Set;
 import net.runelite.api.Skill;
 
 /**
- * The rare chance of a character joining the Fellowship from OSRS XP in some skills, e.g. a Thief
- * from Thieving and Agility, or an Acolyte from Prayer.
+ * The rare chance of a character joining the Fellowship from OSRS XP, e.g. a Thief from Thieving
+ * and Agility, an Acolyte from Prayer, or a Vyre from any XP gained in Morytania.
  * <p>
- * There are two rolls: one for every 1,000 XP (fair to fast and slow training methods), and one
- * for every level-up (fair to low-level players, who earn XP slowly but level often).
- * Each one of the class you already have makes both chances 10 times smaller.
+ * There's a roll for every 1,000 XP (fair to fast and slow training methods), and skill-based
+ * unlocks also roll on every level-up (fair to low-level players, who earn XP slowly but level
+ * often). Each one of the class you already have makes the chances 10 times smaller.
  */
 public class RareUnlock
 {
@@ -28,19 +28,41 @@ public class RareUnlock
 
 	private final CharacterClass characterClass;
 	private final Set<Skill> skills;
+	private final boolean levelUpRolls;
+	private final boolean morytaniaOnly;
 	// Kept in memory only: a restart loses under 1,000 XP towards the next roll.
 	private long xpProgress;
 
-	public RareUnlock(CharacterClass characterClass, Skill first, Skill... rest)
+	private RareUnlock(CharacterClass characterClass, Set<Skill> skills, boolean levelUpRolls, boolean morytaniaOnly)
 	{
 		this.characterClass = characterClass;
-		this.skills = EnumSet.of(first, rest);
+		this.skills = skills;
+		this.levelUpRolls = levelUpRolls;
+		this.morytaniaOnly = morytaniaOnly;
+	}
+
+	/** Rolls on XP and level-ups in these skills, anywhere. */
+	public static RareUnlock fromSkills(CharacterClass characterClass, Skill first, Skill... rest)
+	{
+		return new RareUnlock(characterClass, EnumSet.of(first, rest), true, false);
+	}
+
+	/** Rolls on XP in any skill, but only while the player is in Morytania. No level-up rolls. */
+	public static RareUnlock fromMorytania(CharacterClass characterClass)
+	{
+		return new RareUnlock(characterClass, EnumSet.allOf(Skill.class), false, true);
 	}
 
 	/** The class this unlock adds to the team. */
 	public CharacterClass getCharacterClass()
 	{
 		return characterClass;
+	}
+
+	/** If true, the caller should only roll while the player is in Morytania. */
+	public boolean isMorytaniaOnly()
+	{
+		return morytaniaOnly;
 	}
 
 	public boolean counts(Skill skill)
@@ -68,7 +90,7 @@ public class RareUnlock
 			xpProgress -= XP_STEP;
 			found |= hits(XP_STEP_CHANCE, owned, random);
 		}
-		for (int i = 0; i < levelsGained; i++)
+		for (int i = 0; levelUpRolls && i < levelsGained; i++)
 		{
 			found |= hits(LEVEL_UP_CHANCE, owned, random);
 		}
