@@ -96,6 +96,28 @@ That's about 20 classes and drops the "second class advancement" system from v1.
   - The Dorgeshuun free Skiller and the 3-Adventurer cap were decided on 2026-10-27/28 assuming hiring. They'd need rethinking.
   - Coin sinks need to stay balanced with coin income (178 coins in two days of playtesting).
 
+### The encampment route (user, 2026-10-28, not decided)
+
+Characters keep coming from OSRS grinds, but **character slots** pace the start so new ones feel like an early surprise, not a flood or a long grind. Coins build the slots instead of hiring. Slots only pace the beginning: once a crew is built they shouldn't matter, and **a character who joins is always ready to use**.
+
+The intended path:
+1. Start with one Adventurer and play with it to level 10.
+2. Fellowship (Guild) level 2 unlocks the **Scouting the Encampment** expedition. Each run has about a 25% chance of "We found a suitable place to build our encampment!"
+3. That unlocks **Adventurer housing**: spend coins to build a slot (up to 2 more Adventurers, 3 in total).
+4. With a free slot, **combat XP** can roll for a new Adventurer (like the Thief roll).
+5. **Lumbridge Swamp Caves** becomes a 2-character expedition, with a chance of a **skilling tools** reward that unlocks 1 Skiller slot.
+6. With that slot, **skilling XP** can roll for a Skiller.
+7. Meanwhile the Skiller reaches level 10 and unlocks **Fortifying the Camp**, which unlocks the 3rd Adventurer slot.
+8. Three characters means the party for **Looting the Dorgeshuun Caves**.
+
+Side idea: a building section for the encampment, with Skillers as the builders.
+
+Claude's notes:
+- **No slot, no roll.** If there's no free slot, the game simply doesn't roll for that class, so nobody is ever found and then held back. This keeps "a character is always ready to use" true.
+- **Thieves and other rare characters** don't need slots (decided with the Thief unlock), so slots only gate the basic Adventurers and Skillers.
+- **This replaces** the coin-hiring of Adventurers and Skillers, the "one hire per Guild level" rule, the Skiller prices (500 / 1,000 / 2,000) and the free Dorgeshuun Skiller.
+- **Still open:** the roll odds for Adventurers and Skillers, what a slot costs, what Guild levels give after level 2, and whether more slots open after v1.
+
 ## Still to design before building
 
 1. The expedition ladder: the first four are decided (2026-10-27). Still open: a tier between Dorgeshuun (threat 8) and Barrows, Guild unlock levels, and a few draft numbers.
