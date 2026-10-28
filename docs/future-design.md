@@ -197,6 +197,8 @@ Notes:
 
 ### Acolyte tree (in v1 from 2026-10-27; the god layer is "maybe")
 
+**Built and tested in-game 2026-10-28:** the Acolyte joins from Prayer (the same odds as the Thief) and at level 10 chooses Guthix, Saradomin, Zamorak or Zaros, becoming a "Guthixian Zealot" etc. Each god gives a flat blessing to everyone sent on any expedition while its Zealot is on the team (the user's choice: Zealots mostly stay at base), once per god. Placeholder buffs until the user decides what each god does: Guthix +1 ATK, DEF and MAG, Saradomin +3 DEF, Zamorak +3 ATK, Zaros +3 MAG. Ideas for later: a church per god once the encampment has buildings, and religious expeditions that give Zealots a reason to go out. The notes below are the older plan.
+
 - **Unlock:** linked to Prayer, e.g. a rare chance per amount of Prayer XP (the shared rare-unlock system, like Thief and Vyre). Prayer was kept free from the Skiller paths for a class like this.
 - **First advancement: choose a god to worship** instead of a class. Same system as a normal class advancement, with in-world wording ("Choose your god"). E.g. Acolyte → Guthix Acolyte.
 - **Second advancement:** each god has 3 unique classes. Guthix: **Guardian of Guthix, Guthixian Dryad, Void Knight**. Other gods to design (Saradomin and Zamorak are the obvious ones; Armadyl, Bandos, Zaros, Seren could come later).
@@ -227,7 +229,7 @@ Thief ──┬── Bandit ──── Warlord
 | Assassin | Thief class advancement | Thieving, Agility, Ranged | Borrows Archer gear | Chance to finish a dangerous expedition in half the time |
 | Night Blade | Assassin at high level | Same as Assassin | Archer gear | Can go on any dangerous expedition alone (decided 2026-10-26, see below) |
 
-**Unlock rules (decided 2026-10-28; built and tested in-game 2026-10-28 as `ThiefUnlock`, with a cap of 10 and no class advancement yet):**
+**Unlock rules (decided 2026-10-28; built and tested in-game 2026-10-28 as `RareUnlock`, shared with the Acolyte, with a cap of 10 and no class advancement yet):**
 - **Two triggers, from Thieving and Agility:** a chance per 1,000 XP (*draft* 1%) and a chance per level-up (*draft* 3%) in either skill. The XP roll is fair to fast and slow training methods (unlike rolling per XP drop, where pickpocketing would unlock it in minutes); the level-up roll keeps it fair to low-level players, who earn XP slowly but level often. Same idea as the bundle launch plan in `docs/playtest-notes.md`.
 - **Each extra Thief is 10× harder (user's idea):** both chances are divided by 10 for every Thief you already have. The first Thief at 1% / 3%, the second at 0.1% / 0.3%, the third at 0.01% / 0.03%. So more than one is possible, but each one is a real event.
 - Rough feel at these numbers: a new account training Thieving from 1 to 50 gets about 50 level-up rolls, and a high-level player at about 200k XP an hour expects one in about an hour of Thieving or Agility (less with both).
