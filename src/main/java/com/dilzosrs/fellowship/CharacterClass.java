@@ -28,9 +28,17 @@ public enum CharacterClass
 		Skill.SMITHING, Skill.CRAFTING, Skill.FLETCHING, Skill.COOKING, Skill.HERBLORE, Skill.CONSTRUCTION, Skill.FIREMAKING),
 	EXPLORER("Explorer", LevelCurve.MAX_LEVEL, ItemID.LEATHER_BOOTS,
 		Skill.AGILITY, Skill.THIEVING, Skill.RUNECRAFT, Skill.PRAYER, Skill.SLAYER),
-	// A rare character that joins from Thieving and Agility (see RareUnlock), not hired.
-	// Its class advancement (Bandit or Assassin) comes in a later step.
-	THIEF("Thief", 10, ItemID.HIGHWAYMAN_MASK, Skill.THIEVING, Skill.AGILITY),
+	// A rare character that joins from Thieving and Agility (see RareUnlock), not hired. Its tree
+	// has two class advancements: Thief -> Bandit -> Warlord, or Thief -> Assassin -> Night Blade.
+	// Every step is at level 10 for now; later the Thief should cap higher (about 20) and the
+	// second step higher still, so it's a real grind. Perks and gear borrowing come later.
+	THIEF("Thief", 10, ItemID.ROGUESDEN_HELM, Skill.THIEVING, Skill.AGILITY),
+	BANDIT("Bandit", 10, ItemID.HIGHWAYMAN_MASK, Skill.THIEVING, Skill.AGILITY, Skill.ATTACK, Skill.STRENGTH),
+	ASSASSIN("Assassin", 10, ItemID.BARROWS_KARIL_HEAD, Skill.THIEVING, Skill.AGILITY, Skill.RANGED),
+	WARLORD("Warlord", LevelCurve.MAX_LEVEL, ItemID.ELITE_BLACK_FULL_HELM,
+		Skill.THIEVING, Skill.AGILITY, Skill.ATTACK, Skill.STRENGTH),
+	NIGHT_BLADE("Night Blade", LevelCurve.MAX_LEVEL, ItemID.SHAYZIEN_HELM_5,
+		Skill.THIEVING, Skill.AGILITY, Skill.RANGED),
 	// A rare character that joins from Prayer. Its class advancement is choosing a god to worship,
 	// which blesses every expedition the team goes on, so it mostly stays at base (see Blessing).
 	// The gods' bonus skills are placeholders.
@@ -91,6 +99,18 @@ public enum CharacterClass
 		if (this == SKILLER)
 		{
 			return List.of(HARVESTER, ARTISAN, EXPLORER);
+		}
+		if (this == THIEF)
+		{
+			return List.of(BANDIT, ASSASSIN);
+		}
+		if (this == BANDIT)
+		{
+			return List.of(WARLORD);
+		}
+		if (this == ASSASSIN)
+		{
+			return List.of(NIGHT_BLADE);
 		}
 		if (this == ACOLYTE)
 		{
