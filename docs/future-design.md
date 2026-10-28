@@ -186,6 +186,8 @@ Naming note: "Hunter" is also an OSRS skill, now an Explorer skill. Kept for now
 | Death Knight | Vyre class advancement | Finishes the Barrows expedition faster |
 | Shadow Lord | Vyre class advancement | Better chance at rare loot |
 
+**Built and tested in-game 2026-10-28:** the Vyre and its unlock. A 1% roll per 1,000 XP in any skill while in Morytania (no level-up rolls; 10x harder per Vyre owned, like the Thief). 1x XP in every skill for now, cap 10, no advancements or perks yet. Morytania is rough map boxes (the mainland east of the Salve and Mos Le'Harmless), with dungeons and instances counted as the surface above them, so the edges may be a few tiles off.
+
 Decided 2026-10-26:
 - **The Barrows expedition is end-game content for v1:** an intense Morytania raid that needs a Vyre to unlock. All three Vyre advancements have perks for it.
 - **Unlock:** XP gained while standing in Morytania has a chance to unlock a Vyre (the plugin can read the player's location, which is read-only and allowed). Suggest rolling per amount of XP, like the Generic Bundle, so training methods with many small XP drops don't get more rolls.
