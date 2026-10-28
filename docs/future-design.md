@@ -227,14 +227,14 @@ Thief ──┬── Bandit ──── Warlord
 | Assassin | Thief class advancement | Thieving, Agility, Ranged | Borrows Archer gear | Chance to finish a dangerous expedition in half the time |
 | Night Blade | Assassin at high level | Same as Assassin | Archer gear | Can go on any dangerous expedition alone (decided 2026-10-26, see below) |
 
-**Unlock rules (decided 2026-10-28):**
+**Unlock rules (decided 2026-10-28; built and tested in-game 2026-10-28 as `ThiefUnlock`, with a cap of 10 and no class advancement yet):**
 - **Two triggers, from Thieving and Agility:** a chance per 1,000 XP (*draft* 1%) and a chance per level-up (*draft* 3%) in either skill. The XP roll is fair to fast and slow training methods (unlike rolling per XP drop, where pickpocketing would unlock it in minutes); the level-up roll keeps it fair to low-level players, who earn XP slowly but level often. Same idea as the bundle launch plan in `docs/playtest-notes.md`.
 - **Each extra Thief is 10× harder (user's idea):** both chances are divided by 10 for every Thief you already have. The first Thief at 1% / 3%, the second at 0.1% / 0.3%, the third at 0.01% / 0.03%. So more than one is possible, but each one is a real event.
 - Rough feel at these numbers: a new account training Thieving from 1 to 50 gets about 50 level-up rolls, and a high-level player at about 200k XP an hour expects one in about an hour of Thieving or Agility (less with both).
 - Rare characters don't use a Guild hire and don't count toward the Adventurer cap.
 
 What it would take to build:
-- **System: rare unlocks.** A chance to get a character from OSRS XP. Suggest rolling per amount of XP (e.g. a chance per 10,000 Thieving or Agility XP), like the Generic Bundle, so fast and slow training methods are treated the same. Rare characters don't use a Guild hire.
+- **System: rare unlocks (built for the Thief, 2026-10-28).** A chance to get a character from OSRS XP, using the unlock rules above. Rare characters don't use a Guild hire.
 - **System: second class advancement.** Today a class advancement happens once, at level 10. Thief needs caps per class and a second advancement.
 - **System: perks.** None exist yet, and each perk is its own bit of code. Five perks = five small build steps.
 - **System: gear borrowing.** Letting a class use another class's gear (Bandit uses Knight gear). Small change to the equip rule.
@@ -250,7 +250,6 @@ Open questions:
 - Thief perk: does it make expeditions **shorter** ("get in, get out")? It was written as "increase the time". And does that overlap with the Assassin's speed perk?
 - Level caps for Thief, Bandit and Assassin (somewhere between 20 and 50).
 - Do perks work for the whole team (Bandit's bundle perk) or only when the character is involved (on the expedition, or at home for Warlord)?
-- Can you get more than one Thief, or does the rare chance stop once you have one?
 
 ## 3. Gear
 

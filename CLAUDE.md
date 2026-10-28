@@ -32,6 +32,8 @@ Phase 6 steps (each one ends with the user testing it; for testing, temporarily 
 4. **6.4 Skiller class (built 2026-10-26; rules changed by the user before building).** Skillers can be hired **from the start**: **up to 3**, **no Guild hire needed**, costing **500, then 1,000, then 2,000 coins** (doubling; saved as `skillersHired`). The Skiller works like the Adventurer: no XP bonus, level cap 10, then a class advancement into **Harvester**, **Artisan** or **Explorer** (cap 99). Their 2x XP skills are a first guess to tune after playtesting: Harvester = Woodcutting, Mining, Fishing, Farming, Hunter; Artisan = Smithing, Crafting, Fletching, Cooking, Herblore, Construction, Firemaking; Explorer = Agility, Thieving, Runecraft, Prayer, Slayer. No gear is made for them yet, so they can only wear Generic trinkets.
 5. **Bundle pop-ups (built 2026-10-26).** A small overlay at the top of the game screen for 6 seconds when a bundle drops (`PopupOverlay`), alongside the chat message.
 
+**Thief (step 1 done, tested in-game 2026-10-28).** A rare character found through Thieving and Agility (`ThiefUnlock`; rules in `docs/future-design.md`), with 2x Thieving and Agility XP, cap 10 and Generic trinkets only. Next, step 2: the Bandit / Assassin class advancement at level 10.
+
 The compact roster / UI redesign is also waiting.
 
 **UI work (decided 2026-10-26; the user chose to start it during the playtest, since UI changes don't affect the game rules):**
