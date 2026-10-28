@@ -40,8 +40,12 @@ public enum CharacterClass
 	NIGHT_BLADE("Night Blade", LevelCurve.MAX_LEVEL, ItemID.SHAYZIEN_HELM_5,
 		Skill.THIEVING, Skill.AGILITY, Skill.RANGED),
 	// A rare character that joins from any XP gained in Morytania (see RareUnlock). 1x XP in every
-	// skill for now. Its class advancements (Blood Mage, Death Knight, Shadow Lord) come later.
+	// skill for now. At level 10 it becomes a Blood Mage, Death Knight or Shadow Lord (also 1x XP
+	// for now). Their Barrows perks come later.
 	VYRE("Vyre", 10, ItemID.VYRELORD_TORSO),
+	BLOOD_MAGE("Blood Mage", LevelCurve.MAX_LEVEL, ItemID.ANCIENT_CEREMONIAL_MASK),
+	DEATH_KNIGHT("Death Knight", LevelCurve.MAX_LEVEL, ItemID.TORVA_HELM_SANGUINE),
+	SHADOW_LORD("Shadow Lord", LevelCurve.MAX_LEVEL, ItemID.INQUISITORS_HELM),
 	// A rare character that joins from Prayer. Its class advancement is choosing a god to worship,
 	// which blesses every expedition the team goes on, so it mostly stays at base (see Blessing).
 	// The gods' bonus skills are placeholders.
@@ -114,6 +118,10 @@ public enum CharacterClass
 		if (this == ASSASSIN)
 		{
 			return List.of(NIGHT_BLADE);
+		}
+		if (this == VYRE)
+		{
+			return List.of(BLOOD_MAGE, DEATH_KNIGHT, SHADOW_LORD);
 		}
 		if (this == ACOLYTE)
 		{
