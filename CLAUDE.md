@@ -143,3 +143,4 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 - Custom names for recruits (typed in when recruiting).
 - Beast Master: a 10% chance to unlock when you get a pet drop in OSRS (read the drop message only). Example of unlocks from rare game events, like an advancement from a rare raid item.
 - Online features (leaderboards, trading). Risky under the rules, so maybe never.
+- HP and a combat system (user, 2026-10-28). Small version first: HP replaces the injury roll (expeditions cost HP, low HP means resting). A full combat system (rounds, abilities, enemies) is a big build, after v1. Keep it fictional; never simulate real OSRS boss mechanics (rules: no content simulation).
