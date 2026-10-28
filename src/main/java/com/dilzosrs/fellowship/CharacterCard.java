@@ -255,7 +255,8 @@ public class CharacterCard extends JPanel
 			headerXpBar.setMaximumValue(1);
 			headerXpBar.setValue(1);
 			xpLabel.setText(view.canEvolve
-				? "<html>Class advancement ready!<br>Choose a path:</html>"
+				? "<html>Class advancement ready!<br>"
+					+ (view.characterClass == CharacterClass.ACOLYTE ? "Choose your god:" : "Choose a path:") + "</html>"
 				: String.format("Max level (%,d XP)", view.xp));
 			return;
 		}
@@ -316,7 +317,10 @@ public class CharacterCard extends JPanel
 	private void showGear(CharacterView view)
 	{
 		String stats = "ATK " + view.atk + "   DEF " + view.def + "   MAG " + view.mag;
-		infoStatsLabel.setText(stats);
+		Blessing blessing = view.characterClass.getBlessing();
+		infoStatsLabel.setText(blessing == null ? stats
+			: "<html>" + stats + "<br>Blessing of " + blessing.getGodName() + ":<br>"
+				+ blessing.describe() + " on every expedition</html>");
 		gearStatsLabel.setText(stats);
 		gearRows.removeAll();
 		for (GearType.Slot slot : GearType.Slot.values())
@@ -353,7 +357,8 @@ public class CharacterCard extends JPanel
 		{
 			for (CharacterClass newClass : evolvingFrom.getEvolutions())
 			{
-				JButton button = new JButton(newClass.getDisplayName());
+				Blessing blessing = newClass.getBlessing();
+				JButton button = new JButton(blessing != null ? blessing.getGodName() : newClass.getDisplayName());
 				button.addActionListener(e -> confirmEvolve(newClass));
 				evolveButtons.add(button);
 			}
@@ -365,9 +370,13 @@ public class CharacterCard extends JPanel
 
 	private void confirmEvolve(CharacterClass newClass)
 	{
+		Blessing blessing = newClass.getBlessing();
 		int choice = JOptionPane.showConfirmDialog(
 			this,
-			"Train " + shownName + " in the ways of the " + newClass.getDisplayName() + "?\n\n"
+			(blessing != null
+				? shownName + " will worship " + blessing.getGodName() + ", giving "
+					+ blessing.describe() + " to everyone you send on expeditions.\n\n"
+				: "Train " + shownName + " in the ways of the " + newClass.getDisplayName() + "?\n\n")
 				+ "This is permanent, and the character restarts at level 1.",
 			"Class advancement",
 			JOptionPane.YES_NO_OPTION);

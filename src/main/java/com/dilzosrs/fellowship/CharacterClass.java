@@ -28,9 +28,17 @@ public enum CharacterClass
 		Skill.SMITHING, Skill.CRAFTING, Skill.FLETCHING, Skill.COOKING, Skill.HERBLORE, Skill.CONSTRUCTION, Skill.FIREMAKING),
 	EXPLORER("Explorer", LevelCurve.MAX_LEVEL, ItemID.LEATHER_BOOTS,
 		Skill.AGILITY, Skill.THIEVING, Skill.RUNECRAFT, Skill.PRAYER, Skill.SLAYER),
-	// A rare character that joins from Thieving and Agility (see ThiefUnlock), not hired.
+	// A rare character that joins from Thieving and Agility (see RareUnlock), not hired.
 	// Its class advancement (Bandit or Assassin) comes in a later step.
-	THIEF("Thief", 10, ItemID.HIGHWAYMAN_MASK, Skill.THIEVING, Skill.AGILITY);
+	THIEF("Thief", 10, ItemID.HIGHWAYMAN_MASK, Skill.THIEVING, Skill.AGILITY),
+	// A rare character that joins from Prayer. Its class advancement is choosing a god to worship,
+	// which blesses every expedition the team goes on, so it mostly stays at base (see Blessing).
+	// The gods' bonus skills are placeholders.
+	ACOLYTE("Acolyte", 10, ItemID.ICTHLARINS_HOOD, Skill.PRAYER),
+	GUTHIXIAN("Guthixian Zealot", LevelCurve.MAX_LEVEL, ItemID.CASTLEWARS_GUTHIX_HALO, Skill.PRAYER),
+	SARADOMINIST("Saradominist Zealot", LevelCurve.MAX_LEVEL, ItemID.CASTLEWARS_SARADOMIN_HALO, Skill.PRAYER),
+	ZAMORAKIAN("Zamorakian Zealot", LevelCurve.MAX_LEVEL, ItemID.CASTLEWARS_ZAMORAK_HALO, Skill.PRAYER),
+	ZAROSIAN("Zarosian Zealot", LevelCurve.MAX_LEVEL, ItemID.ZAROS_HALO, Skill.PRAYER);
 
 	/** XP from a class's bonus skills is multiplied by this. */
 	static final int BONUS_XP_MULTIPLIER = 2;
@@ -84,6 +92,28 @@ public enum CharacterClass
 		{
 			return List.of(HARVESTER, ARTISAN, EXPLORER);
 		}
+		if (this == ACOLYTE)
+		{
+			return List.of(GUTHIXIAN, SARADOMINIST, ZAMORAKIAN, ZAROSIAN);
+		}
 		return Collections.emptyList();
+	}
+
+	/** The god this class worships, whose blessing helps its parties, or null if none. */
+	public Blessing getBlessing()
+	{
+		switch (this)
+		{
+			case GUTHIXIAN:
+				return Blessing.GUTHIX;
+			case SARADOMINIST:
+				return Blessing.SARADOMIN;
+			case ZAMORAKIAN:
+				return Blessing.ZAMORAK;
+			case ZAROSIAN:
+				return Blessing.ZAROS;
+			default:
+				return null;
+		}
 	}
 }

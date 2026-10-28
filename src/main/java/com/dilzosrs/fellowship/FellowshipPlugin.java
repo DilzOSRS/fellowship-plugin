@@ -95,7 +95,9 @@ public class FellowshipPlugin extends Plugin
 
 	private final XpTracker xpTracker = new XpTracker();
 	private final Random random = new Random();
-	private final ThiefUnlock thiefUnlock = new ThiefUnlock();
+	private final List<RareUnlock> rareUnlocks = List.of(
+		new RareUnlock(CharacterClass.THIEF, Skill.THIEVING, Skill.AGILITY),
+		new RareUnlock(CharacterClass.ACOLYTE, Skill.PRAYER));
 	private FellowshipPanel panel;
 	private VaultPanel vaultPanel;
 	private NavigationButton navButton;
@@ -179,16 +181,22 @@ public class FellowshipPlugin extends Plugin
 			{
 				announceBundle(BundleType.GENERIC);
 			}
-			// Thieving and Agility XP and level-ups give a rare chance of a Thief joining.
+			// XP and level-ups in some skills give a rare chance of a character joining
+			// (a Thief from Thieving and Agility, an Acolyte from Prayer).
 			int osrsLevelsGained = Experience.getLevelForXp(event.getXp())
 				- Experience.getLevelForXp(event.getXp() - gained);
-			if (thiefUnlock.roll(event.getSkill(), gained, osrsLevelsGained, team.count(CharacterClass.THIEF), random))
+			for (RareUnlock unlock : rareUnlocks)
 			{
-				team.hire(CharacterClass.THIEF);
-				int index = team.size() - 1;
-				String message = team.getDisplayName(index) + " snuck into your Fellowship!";
-				sendChatMessage(message);
-				showClassPopup(CharacterClass.THIEF, message);
+				CharacterClass found = unlock.getCharacterClass();
+				if (unlock.roll(event.getSkill(), gained, osrsLevelsGained, team.count(found), random))
+				{
+					team.hire(found);
+					String message = team.getDisplayName(team.size() - 1)
+						+ (found == CharacterClass.THIEF ? " snuck into" : " answered the call and joined")
+						+ " your Fellowship!";
+					sendChatMessage(message);
+					showClassPopup(found, message);
+				}
 			}
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
@@ -286,7 +294,10 @@ public class FellowshipPlugin extends Plugin
 			{
 				return;
 			}
-			sendChatMessage(oldName + " has been trained in the ways of the " + newClass.getDisplayName() + "!");
+			Blessing blessing = newClass.getBlessing();
+			sendChatMessage(blessing != null
+				? oldName + " has devoted themselves to " + blessing.getGodName() + "!"
+				: oldName + " has been trained in the ways of the " + newClass.getDisplayName() + "!");
 			showClassPopup(newClass, "Unlocked " + newClass.getDisplayName() + "!");
 			saveTeam();
 			updatePanel();
@@ -336,7 +347,7 @@ public class FellowshipPlugin extends Plugin
 			// so these are worked out from what the party set off with.
 			Instant now = Instant.now();
 			List<Integer> partyBefore = team.partyOf(index);
-			double[] memberDefs = partyBefore.stream().mapToDouble(i -> team.get(i).getEffectiveDef()).toArray();
+			double[] memberDefs = team.memberDefs(partyBefore);
 			boolean success = Danger.rollSuccess(finished.getThreatLevel(), team.averageAtk(partyBefore), random);
 			List<Integer> party = team.collectParty(index, now, success);
 			if (party.isEmpty())

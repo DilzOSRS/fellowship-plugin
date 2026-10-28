@@ -2,9 +2,12 @@ package com.dilzosrs.fellowship;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.runelite.api.Skill;
 
 /**
@@ -64,7 +67,7 @@ public class Team
 		hire(CharacterClass.ADVENTURER);
 	}
 
-	/** Add a fresh level 1 character of a starting class (Adventurer, Skiller or Thief). */
+	/** Add a fresh level 1 character of a starting class (Adventurer, Skiller, Thief or Acolyte). */
 	public void hire(CharacterClass startingClass)
 	{
 		characters.add(new FellowshipCharacter(startingClass, 0));
@@ -195,16 +198,45 @@ public class Team
 		return party;
 	}
 
-	/** The party's ATK against a threat: the average of its members' effective ATK. */
+	/**
+	 * The party's ATK against a threat: the average of its members' effective ATK, plus the
+	 * blessings of the gods the team worships.
+	 */
 	public double averageAtk(List<Integer> party)
 	{
-		return party.stream().mapToDouble(i -> characters.get(i).getEffectiveAtk()).average().orElse(0);
+		double bonus = blessings().stream().mapToDouble(Blessing::getEffectiveAtk).sum();
+		return party.stream().mapToDouble(i -> characters.get(i).getEffectiveAtk() + bonus).average().orElse(0);
 	}
 
-	/** The party's DEF against a threat: the average of its members' effective DEF. */
+	/** The party's DEF against a threat: the average of {@link #memberDefs}. */
 	public double averageDef(List<Integer> party)
 	{
-		return party.stream().mapToDouble(i -> characters.get(i).getEffectiveDef()).average().orElse(0);
+		return Arrays.stream(memberDefs(party)).average().orElse(0);
+	}
+
+	/** Each member's effective DEF, plus the blessings of the gods the team worships. */
+	public double[] memberDefs(List<Integer> party)
+	{
+		double bonus = blessings().stream().mapToDouble(Blessing::getEffectiveDef).sum();
+		return party.stream().mapToDouble(i -> characters.get(i).getEffectiveDef() + bonus).toArray();
+	}
+
+	/**
+	 * The gods worshipped by anyone on the team, wherever they are. They bless every expedition.
+	 * Each god counts once, however many worshippers it has.
+	 */
+	public Set<Blessing> blessings()
+	{
+		Set<Blessing> blessings = EnumSet.noneOf(Blessing.class);
+		for (FellowshipCharacter character : characters)
+		{
+			Blessing blessing = character.getCharacterClass().getBlessing();
+			if (blessing != null)
+			{
+				blessings.add(blessing);
+			}
+		}
+		return blessings;
 	}
 
 	/**
