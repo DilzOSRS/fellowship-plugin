@@ -25,6 +25,8 @@ import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.StatChanged;
+import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
@@ -206,6 +208,24 @@ public class FellowshipPlugin extends Plugin
 			// settings in memory; RuneLite writes them to disk itself.
 			saveTeam();
 			saveVault();
+			updatePanel();
+		}
+	}
+
+	@Subscribe
+	public void onWidgetLoaded(WidgetLoaded event)
+	{
+		// Opening a shop or the Grand Exchange gives a rare chance of a Merchant joining.
+		int group = event.getGroupId();
+		if (team == null || (group != InterfaceID.SHOPMAIN && group != InterfaceID.GE_OFFERS))
+		{
+			return;
+		}
+		if (RareUnlock.rollInteraction(team.count(CharacterClass.MERCHANT), random))
+		{
+			team.hire(CharacterClass.MERCHANT);
+			announceNewCharacter();
+			saveTeam();
 			updatePanel();
 		}
 	}

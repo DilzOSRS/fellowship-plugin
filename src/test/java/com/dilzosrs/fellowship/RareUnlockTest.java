@@ -28,6 +28,17 @@ public class RareUnlockTest
 	}
 
 	@Test
+	public void interactionRollsAreTenTimesHarderPerOneOwned()
+	{
+		int firstChance = RareUnlock.chance(RareUnlock.INTERACTION_CHANCE, 0);
+		int secondChance = RareUnlock.chance(RareUnlock.INTERACTION_CHANCE, 1);
+		assertEquals(firstChance / 10, secondChance);
+		assertTrue(RareUnlock.rollInteraction(0, always(firstChance - 1)));
+		assertTrue(RareUnlock.rollInteraction(1, always(secondChance - 1)));
+		assertFalse(RareUnlock.rollInteraction(1, always(secondChance)));
+	}
+
+	@Test
 	public void onlyItsOwnSkillsCount()
 	{
 		RareUnlock unlock = thief();

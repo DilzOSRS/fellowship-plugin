@@ -53,7 +53,11 @@ public enum CharacterClass
 	GUTHIXIAN("Guthixian Zealot", LevelCurve.MAX_LEVEL, ItemID.CASTLEWARS_GUTHIX_HALO, Skill.PRAYER),
 	SARADOMINIST("Saradominist Zealot", LevelCurve.MAX_LEVEL, ItemID.CASTLEWARS_SARADOMIN_HALO, Skill.PRAYER),
 	ZAMORAKIAN("Zamorakian Zealot", LevelCurve.MAX_LEVEL, ItemID.CASTLEWARS_ZAMORAK_HALO, Skill.PRAYER),
-	ZAROSIAN("Zarosian Zealot", LevelCurve.MAX_LEVEL, ItemID.ZAROS_HALO, Skill.PRAYER);
+	ZAROSIAN("Zarosian Zealot", LevelCurve.MAX_LEVEL, ItemID.ZAROS_HALO, Skill.PRAYER),
+	// A secret rare character that joins when the player opens a shop or the Grand Exchange.
+	// 1x XP in every skill for now (may be slowed later so it's a real grind), cap 10, and no
+	// class advancement yet. It will run the Grand Exchange trade expedition.
+	MERCHANT("Merchant", 10, ItemID.ROYAL_CROWN);
 
 	/** XP from a class's bonus skills is multiplied by this. */
 	static final int BONUS_XP_MULTIPLIER = 2;

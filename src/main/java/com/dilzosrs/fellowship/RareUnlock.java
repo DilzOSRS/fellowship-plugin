@@ -23,6 +23,8 @@ public class RareUnlock
 	static final int XP_STEP_CHANCE = 10_000;
 	/** 3% per level-up for the first one. */
 	static final int LEVEL_UP_CHANCE = 30_000;
+	/** 1% per interaction (opening a shop or the Grand Exchange) for the first one. */
+	static final int INTERACTION_CHANCE = 10_000;
 	/** Each one already on the team divides the chances by this. */
 	static final int HARDER_PER_OWNED = 10;
 
@@ -95,6 +97,17 @@ public class RareUnlock
 			found |= hits(LEVEL_UP_CHANCE, owned, random);
 		}
 		return found;
+	}
+
+	/**
+	 * One roll at the chance per interaction (e.g. opening a shop), for unlocks that come from
+	 * something the player does rather than XP.
+	 *
+	 * @param owned how many of this class are already on the team
+	 */
+	public static boolean rollInteraction(int owned, Random random)
+	{
+		return hits(INTERACTION_CHANCE, owned, random);
 	}
 
 	/** A chance (out of {@link #ONE_IN}), made 10 times smaller for each one already owned. */
