@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
+import java.util.function.Predicate;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -58,6 +59,9 @@ public class FellowshipPanel extends PluginPanel
 	private int shownSkillerCost;
 	private final VaultPanel vaultPanel;
 	private final ExpeditionsPanel expeditionsPanel;
+	private final MaterialTabGroup tabs;
+	private final MaterialTab followersTabButton;
+	private final MaterialTab bankTabButton;
 	/** Draws the in-game item icons the cards use for each class. */
 	private final ItemManager itemManager;
 	/** Draws the OSRS gear slot tiles on the cards. */
@@ -122,15 +126,28 @@ public class FellowshipPanel extends PluginPanel
 
 		JPanel tabContent = new JPanel(new BorderLayout());
 		tabContent.setOpaque(false);
-		MaterialTabGroup tabs = new MaterialTabGroup(tabContent);
+		tabs = new MaterialTabGroup(tabContent);
 		// Tighter gaps than the default, so all three tabs fit on one line in the narrow sidebar.
 		tabs.setLayout(new FlowLayout(FlowLayout.CENTER, 2, 0));
-		MaterialTab followersTabButton = new MaterialTab("Followers", tabs, followersTab);
+		followersTabButton = new MaterialTab("Followers", tabs, followersTab);
 		tabs.addTab(followersTabButton);
 		// Short names, because longer ones don't fit side by side in the narrow sidebar.
-		tabs.addTab(new MaterialTab("Events", tabs, expeditionsPanel));
-		tabs.addTab(new MaterialTab("Bank", tabs, inventoryTab));
+		MaterialTab eventsTabButton = new MaterialTab("Events", tabs, expeditionsPanel);
+		tabs.addTab(eventsTabButton);
+		bankTabButton = new MaterialTab("Bank", tabs, inventoryTab);
+		tabs.addTab(bankTabButton);
 		tabs.select(followersTabButton);
+		// Leaving the Bank while picking gear cancels the pick.
+		followersTabButton.setOnSelectEvent(() ->
+		{
+			vaultPanel.stopChoosing();
+			return true;
+		});
+		eventsTabButton.setOnSelectEvent(() ->
+		{
+			vaultPanel.stopChoosing();
+			return true;
+		});
 
 		JPanel tabArea = new JPanel(new BorderLayout(0, 10));
 		tabArea.setOpaque(false);
@@ -216,6 +233,7 @@ public class FellowshipPanel extends PluginPanel
 		cardsPanel.add(new JLabel(LOGGED_OUT_TEXT));
 		shownTeam = new ArrayList<>();
 		shownStorage = new ArrayList<>();
+		vaultPanel.stopChoosing();
 		expeditionsPanel.show(shownTeam);
 		coinsLabel.setText("");
 		guildLabel.setText("");
@@ -351,8 +369,9 @@ public class FellowshipPanel extends PluginPanel
 	}
 
 	/**
-	 * Let the player pick what a character wears in a slot: any fitting item from storage,
-	 * or taking off what's there now.
+	 * Let the player pick what a character wears in a slot: opens the Bank showing only the items
+	 * that fit. Clicking one equips it; the Bank's banner can also take off what's worn, or cancel.
+	 * Either way it comes back to the Followers tab.
 	 */
 	private void chooseGear(int characterIndex, GearType.Slot slot)
 	{
@@ -370,39 +389,16 @@ public class FellowshipPanel extends PluginPanel
 		GearItem equipped = character.getEquipped(slot);
 
 		// Storage items that go in this slot and that this character's class can use.
-		List<Integer> fittingIndexes = new ArrayList<>();
-		List<String> options = new ArrayList<>();
-		for (int i = 0; i < shownStorage.size(); i++)
+		Predicate<GearItem> fits = item -> item.getType().getSlot() == slot
+			&& item.getType().canBeUsedBy(character.characterClass);
+		String prompt = "Choose a " + CharacterCard.slotName(slot) + " for " + character.name + ":";
+		if (shownStorage.stream().noneMatch(fits))
 		{
-			GearItem item = shownStorage.get(i);
-			if (item.getType().getSlot() == slot && item.getType().canBeUsedBy(character.characterClass))
-			{
-				fittingIndexes.add(i);
-				options.add(item.getName() + " (" + item.getDescription() + ")");
-			}
-		}
-		String takeOff = equipped == null ? null : "Take off the " + equipped.getName();
-		if (takeOff != null)
-		{
-			options.add(takeOff);
-		}
-
-		if (options.isEmpty())
-		{
-			String reason = character.characterClass == CharacterClass.ADVENTURER && slot != GearType.Slot.TRINKET
+			prompt += "<br><br>" + (character.characterClass == CharacterClass.ADVENTURER && slot != GearType.Slot.TRINKET
 				? "Adventurers can only use Generic gear (trinkets) until their class advancement."
-				: "There's no " + CharacterCard.slotName(slot) + " in storage that " + character.name + " can use.";
-			JOptionPane.showMessageDialog(this, reason, "Gear", JOptionPane.INFORMATION_MESSAGE);
-			return;
+				: "There's no " + CharacterCard.slotName(slot) + " in storage that " + character.name + " can use.");
 		}
-
-		Object choice = JOptionPane.showInputDialog(this, "Choose a " + CharacterCard.slotName(slot) + " for "
-			+ character.name + ":", "Gear", JOptionPane.QUESTION_MESSAGE, null, options.toArray(), options.get(0));
-		if (choice == null)
-		{
-			return;
-		}
-		if (choice.equals(takeOff))
+		Runnable takeOff = equipped == null ? null : () ->
 		{
 			if (shownStorage.size() >= shownCapacity)
 			{
@@ -411,9 +407,11 @@ public class FellowshipPanel extends PluginPanel
 				return;
 			}
 			onUnequip.accept(characterIndex, slot);
-			return;
-		}
-		onEquip.accept(characterIndex, fittingIndexes.get(options.indexOf(choice)));
+		};
+
+		vaultPanel.startChoosing(prompt, fits, storageIndex -> onEquip.accept(characterIndex, storageIndex), takeOff,
+			() -> tabs.select(followersTabButton));
+		tabs.select(bankTabButton);
 	}
 
 	/**

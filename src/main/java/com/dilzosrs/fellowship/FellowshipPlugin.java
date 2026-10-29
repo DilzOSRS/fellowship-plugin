@@ -128,7 +128,7 @@ public class FellowshipPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		vaultPanel = new VaultPanel(this::openBundle, this::salvage);
+		vaultPanel = new VaultPanel(this::openBundle, this::salvage, itemManager, spriteManager);
 		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::makeActive,
 			this::hire, this::hireSkiller, this::equip, this::unequip, vaultPanel, itemManager, spriteManager);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
