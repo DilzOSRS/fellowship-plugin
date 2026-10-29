@@ -56,7 +56,8 @@ The compact roster / UI redesign is also waiting.
    - The Gear tab shows three `GearSlot` squares across, built from OSRS's grey equipment slot tile, with the item's icon (or the slot's faded outline when empty), a border in the rarity colour, and the name below. Click a square to change it; the Change button is gone.
    - Items have placeholder icons per type and rarity (`GearType`, e.g. Bronze sword up to Abyssal whip). Opening a bundle pops up the item's icon, with the text in its rarity colour, and Bank names use the rarity colour too.
    - Expedition names: "Explore the Lumbridge Swamp Caves" and "Loot the Dorgeshuun Caves" when choosing, and "Exploring…" / "Looting…" while away (`Expedition.getOngoingName`).
-5. **Later:** the compact roster (one row per character, click to open its tabbed card) and moving expedition choosing off the cards (see `docs/future-design.md`).
+5. **Bank squares and picking gear from the Bank (done, tested in-game 2026-10-29).** Stored items show as the same slot squares, three across, with two-line names; bundles show their casket icon. Clicking a gear slot on a card opens the Bank in choosing mode (`VaultPanel.startChoosing`): a prompt, only the items that fit, Take off and Cancel; clicking an item equips it and goes back to Followers. Leaving the Bank tab cancels. Outside choosing, clicking an item asks to salvage it.
+6. **Later:** the compact roster (one row per character, click to open its tabbed card) and moving expedition choosing off the cards (see `docs/future-design.md`).
 
 **Future designs** (more expeditions, classes and gear, planned during the playtest but not scheduled) are in `docs/future-design.md`. One-line ideas still go in the Ideas Parking Lot.
 
