@@ -38,6 +38,11 @@ Phase 6 steps (each one ends with the user testing it; for testing, temporarily 
 
 **Acolyte (done, tested in-game 2026-10-28).** A rare character found through Prayer, with the same `RareUnlock` odds as the Thief, 2x Prayer XP and cap 10. At level 10 it chooses a god (Guthix, Saradomin, Zamorak or Zaros) and becomes e.g. a "Zamorakian Zealot" (cap 99, 2x Prayer as a placeholder). Each god's flat blessing (`Blessing`) helps everyone sent on any expedition while its Zealot is on the team, so Zealots mostly stay at base; each god counts once. Placeholder buffs: Guthix +1 ATK, DEF and MAG, Saradomin +3 DEF, Zamorak +3 ATK, Zaros +3 MAG. Icons: Icthlarin's hood (no Zealot's hat in RuneLite's item names) and the Castle Wars halos (Zaros has its own).
 
+**Merchant (decided 2026-10-28; step 1 done, tested in-game 2026-10-28).** A secret rare character: each time the player opens a shop or the Grand Exchange (`WidgetLoaded`, `InterfaceID.SHOPMAIN` / `GE_OFFERS`), 1% to join (`RareUnlock.rollInteraction`), 10x harder per Merchant owned. Spamming is fine since it's a secret unlock. Royal crown icon, 1x XP in every skill (the user may slow it down later so it's a real grind), cap 10, no class advancement yet, Generic trinkets only. Steps:
+1. **The Merchant class and its trigger.** Done.
+2. **"Traveling to trade at the Grand Exchange".** Only a Merchant can go, alone. 30 minutes, costs 100 coins, gives no coins. On return: 1,000 Fellowship XP for the Merchant, the usual +1 Guild XP, and 5 Generic Bundles that give **items only, no coins** (so the trip can't print money). Bundle type to revisit once the items are worked out.
+3. **Hidden expeditions.** Every expedition stays hidden on the cards until the team can do it, then a chat message says "<name> expedition has been unlocked." (Swamp Caves is open from the start; Dorgeshuun unlocks with 3 characters; the trade run with the first Merchant.)
+
 The compact roster / UI redesign is also waiting.
 
 **UI work (decided 2026-10-26; the user chose to start it during the playtest, since UI changes don't affect the game rules):**
