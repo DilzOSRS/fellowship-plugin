@@ -186,7 +186,7 @@ public class FellowshipPlugin extends Plugin
 				// Every character level-up is worth 1 Guild XP.
 				addGuildXp(levelsGained);
 			}
-			// Every 100,000 OSRS XP (all skills together) gives a chance of a Generic Bundle.
+			// Every Vault.GENERIC_BUNDLE_XP of OSRS XP (all skills together) gives a chance of a Generic Bundle.
 			int bundlesFound = vault.addXpForGenericBundles(gained, random);
 			for (int i = 0; i < bundlesFound; i++)
 			{

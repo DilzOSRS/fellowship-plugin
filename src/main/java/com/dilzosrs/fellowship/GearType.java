@@ -30,15 +30,23 @@ public enum GearType
 	/** Where a piece of gear is worn. Weapons give ATK, armour DEF and trinkets MAG. */
 	public enum Slot
 	{
-		WEAPON("ATK"),
-		ARMOUR("DEF"),
-		TRINKET("MAG");
+		WEAPON("Weapon", "ATK"),
+		ARMOUR("Armour", "DEF"),
+		TRINKET("Trinket", "MAG");
 
+		private final String displayName;
 		private final String statName;
 
-		Slot(String statName)
+		Slot(String displayName, String statName)
 		{
+			this.displayName = displayName;
 			this.statName = statName;
+		}
+
+		/** e.g. "Weapon". */
+		public String getDisplayName()
+		{
+			return displayName;
 		}
 
 		public String getStatName()

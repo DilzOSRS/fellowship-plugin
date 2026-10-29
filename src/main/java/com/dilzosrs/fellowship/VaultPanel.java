@@ -2,11 +2,7 @@ package com.dilzosrs.fellowship;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -185,8 +181,9 @@ public class VaultPanel extends JPanel
 	 */
 	public void showOpened(BundleType bundle, GearItem item, int coins)
 	{
+		// Trade Bundles give no coins, so there's nothing to add for them.
 		lastOpenedLabel.setText("<html>" + bundle.getDisplayName() + ":<br>" + item.getName()
-			+ " and " + coins + " coins!</html>");
+			+ (coins > 0 ? " and " + coins + " coins" : "") + "!</html>");
 	}
 
 	/**
@@ -223,43 +220,23 @@ public class VaultPanel extends JPanel
 	}
 
 	/** One stored item: its slot square with the name under it. Click to equip it while choosing, else salvage. */
-	private JPanel buildItemCell(GearItem item, int index, boolean choosing)
+	private GearCell buildItemCell(GearItem item, int index, boolean choosing)
 	{
-		JPanel cell = new JPanel(new BorderLayout(0, 2));
-		cell.setOpaque(false);
-		GearSlot slot = new GearSlot(itemManager, spriteManager, item.getType().getSlot());
-		slot.showItem(item);
-		JPanel square = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		square.setOpaque(false);
-		square.add(slot);
-		cell.add(square, BorderLayout.NORTH);
-		// The name goes on two lines (rarity, then type), since the columns are narrow.
-		JLabel name = new JLabel("<html><center>" + item.getRarity().getDisplayName() + "<br>"
-			+ item.getType().getDisplayName() + "</center></html>");
-		name.setFont(FontManager.getRunescapeSmallFont());
-		name.setForeground(item.getRarity().getColor());
-		name.setHorizontalAlignment(JLabel.CENTER);
-		cell.add(name, BorderLayout.CENTER);
-		cell.setToolTipText(item.getDescription() + (choosing ? ". Click to equip" : ". Click to salvage for "
-			+ item.getRarity().getSalvageValue() + " coins"));
-		cell.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		cell.addMouseListener(new MouseAdapter()
+		GearCell cell = new GearCell(itemManager, spriteManager, item.getType().getSlot(), () ->
 		{
-			@Override
-			public void mouseClicked(MouseEvent e)
+			if (choosing)
 			{
-				if (choosing)
-				{
-					IntConsumer pick = onPick;
-					stopChoosing();
-					pick.accept(index);
-				}
-				else
-				{
-					confirmSalvage(item, index);
-				}
+				IntConsumer pick = onPick;
+				stopChoosing();
+				pick.accept(index);
+			}
+			else
+			{
+				confirmSalvage(item, index);
 			}
 		});
+		cell.show(item, item.getDescription() + (choosing ? ". Click to equip" : ". Click to salvage for "
+			+ item.getRarity().getSalvageValue() + " coins"));
 		return cell;
 	}
 

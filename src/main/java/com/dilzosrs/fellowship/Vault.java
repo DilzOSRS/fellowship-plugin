@@ -71,7 +71,7 @@ public class Vault
 	}
 
 	/**
-	 * Count OSRS XP towards Generic Bundles: every 100,000 XP gives a 10% chance of one.
+	 * Count OSRS XP towards Generic Bundles: every {@link #GENERIC_BUNDLE_XP} gives one roll of the Generic chance.
 	 *
 	 * @return how many Generic Bundles were found (they're added to the vault)
 	 */

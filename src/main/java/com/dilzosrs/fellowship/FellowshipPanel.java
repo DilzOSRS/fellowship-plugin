@@ -41,7 +41,7 @@ public class FellowshipPanel extends PluginPanel
 	private final BiConsumer<Integer, Integer> onEquip;
 	private final BiConsumer<Integer, GearType.Slot> onUnequip;
 
-	// The latest team and storage shown, so the gear dialog knows what can be picked.
+	// The latest team and storage shown, so choosing gear knows what can be picked.
 	private List<CharacterView> shownTeam = new ArrayList<>();
 	private List<GearItem> shownStorage = new ArrayList<>();
 	private int shownCapacity;
@@ -391,12 +391,12 @@ public class FellowshipPanel extends PluginPanel
 		// Storage items that go in this slot and that this character's class can use.
 		Predicate<GearItem> fits = item -> item.getType().getSlot() == slot
 			&& item.getType().canBeUsedBy(character.characterClass);
-		String prompt = "Choose a " + CharacterCard.slotName(slot) + " for " + character.name + ":";
+		String prompt = "Choose a " + slot.getDisplayName().toLowerCase() + " for " + character.name + ":";
 		if (shownStorage.stream().noneMatch(fits))
 		{
 			prompt += "<br><br>" + (character.characterClass == CharacterClass.ADVENTURER && slot != GearType.Slot.TRINKET
 				? "Adventurers can only use Generic gear (trinkets) until their class advancement."
-				: "There's no " + CharacterCard.slotName(slot) + " in storage that " + character.name + " can use.");
+				: "There's no " + slot.getDisplayName().toLowerCase() + " in storage that " + character.name + " can use.");
 		}
 		Runnable takeOff = equipped == null ? null : () ->
 		{

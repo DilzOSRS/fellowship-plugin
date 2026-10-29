@@ -33,7 +33,7 @@ import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 /**
  * One character's card in the sidebar. A header that's always visible (class icon, name, level,
  * status, and the Make active / Collect buttons), then three tabs: Info (XP, class advancement and
- * stats), Gear (stats and gear slots) and Expedition. Clicking the header minimizes the card to
+ * stats), Gear (stats and gear slots) and Events (expeditions). Clicking the header minimizes the card to
  * its icon, name, level and a thin XP bar.
  */
 public class CharacterCard extends JPanel
@@ -71,9 +71,7 @@ public class CharacterCard extends JPanel
 	private final JLabel gearStatsLabel = new JLabel();
 	// The Gear tab: one column per slot, with the slot square and the item name under it.
 	private final JPanel gearRows = new JPanel(new GridLayout(1, 0, 4, 0));
-	private final GearSlot[] gearSlots = new GearSlot[GearType.Slot.values().length];
-	private final JLabel[] gearNames = new JLabel[GearType.Slot.values().length];
-	private final JPanel[] gearCells = new JPanel[GearType.Slot.values().length];
+	private final GearCell[] gearCells = new GearCell[GearType.Slot.values().length];
 	private final JLabel expeditionLabel = new JLabel();
 	private final JPanel expeditionButtons = new JPanel(new GridLayout(0, 1, 0, 4));
 
@@ -185,7 +183,7 @@ public class CharacterCard extends JPanel
 		infoBottom.add(infoStatsLabel, BorderLayout.SOUTH);
 		infoTab.add(infoBottom, BorderLayout.SOUTH);
 
-		// Gear tab: the stats, then one row per slot.
+		// Gear tab: the stats, then one column per slot. Click a slot to change it.
 		JPanel gearTab = new JPanel(new BorderLayout(0, 4));
 		gearTab.setOpaque(false);
 		gearStatsLabel.setForeground(Color.WHITE);
@@ -193,11 +191,12 @@ public class CharacterCard extends JPanel
 		gearRows.setOpaque(false);
 		for (GearType.Slot slot : GearType.Slot.values())
 		{
-			gearRows.add(buildGearCell(slot.ordinal(), slot, spriteManager));
+			gearCells[slot.ordinal()] = new GearCell(itemManager, spriteManager, slot, () -> onChangeGear.accept(slot));
+			gearRows.add(gearCells[slot.ordinal()]);
 		}
 		gearTab.add(gearRows, BorderLayout.CENTER);
 
-		// Expedition tab: where the character is, or the expeditions it can go on.
+		// Events tab: where the character is, or the expeditions it can go on.
 		JPanel expeditionTab = new JPanel(new BorderLayout(0, 4));
 		expeditionTab.setOpaque(false);
 		expeditionTab.add(expeditionLabel, BorderLayout.NORTH);
@@ -370,7 +369,7 @@ public class CharacterCard extends JPanel
 	}
 
 	/**
-	 * Show the character's stats and one row per gear slot, each with a button to change it.
+	 * Show the character's stats and what's in each gear slot.
 	 */
 	private void showGear(CharacterView view)
 	{
@@ -380,53 +379,12 @@ public class CharacterCard extends JPanel
 			: "<html>" + stats + "<br>Blessing of " + blessing.getGodName() + ":<br>"
 				+ blessing.describe() + " on every expedition</html>");
 		gearStatsLabel.setText(stats);
-		GearType.Slot[] slots = GearType.Slot.values();
-		for (int i = 0; i < slots.length; i++)
+		for (GearType.Slot slot : GearType.Slot.values())
 		{
-			GearItem item = view.getEquipped(slots[i]);
-			gearSlots[i].showItem(item);
-			// The name goes on two lines (rarity, then type), since the columns are narrow.
-			JLabel name = gearNames[i];
-			name.setText("<html><center>" + (item == null ? "Empty<br>" + slots[i].name().charAt(0)
-				+ slotName(slots[i]).substring(1) : item.getRarity().getDisplayName() + "<br>"
-				+ item.getType().getDisplayName()) + "</center></html>");
-			name.setForeground(item == null ? ColorScheme.LIGHT_GRAY_COLOR : item.getRarity().getColor());
-			String tooltip = item == null ? "Click to equip" : item.getDescription() + ". Click to change";
-			gearCells[i].setToolTipText(tooltip);
+			GearItem item = view.getEquipped(slot);
+			gearCells[slot.ordinal()].show(item,
+				item == null ? "Click to equip" : item.getDescription() + ". Click to change");
 		}
-	}
-
-	/** One column of the Gear tab: a slot square with the item's name under it. Click to change it. */
-	private JPanel buildGearCell(int index, GearType.Slot slot, SpriteManager spriteManager)
-	{
-		JPanel cell = new JPanel(new BorderLayout(0, 2));
-		cell.setOpaque(false);
-		gearSlots[index] = new GearSlot(itemManager, spriteManager, slot);
-		JPanel square = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		square.setOpaque(false);
-		square.add(gearSlots[index]);
-		cell.add(square, BorderLayout.NORTH);
-		gearNames[index] = new JLabel();
-		gearNames[index].setFont(FontManager.getRunescapeSmallFont());
-		gearNames[index].setHorizontalAlignment(JLabel.CENTER);
-		cell.add(gearNames[index], BorderLayout.CENTER);
-		cell.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		cell.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseClicked(MouseEvent e)
-			{
-				onChangeGear.accept(slot);
-			}
-		});
-		gearCells[index] = cell;
-		return cell;
-	}
-
-	/** e.g. "weapon", for "No weapon". */
-	static String slotName(GearType.Slot slot)
-	{
-		return slot.name().toLowerCase();
 	}
 
 	/**
