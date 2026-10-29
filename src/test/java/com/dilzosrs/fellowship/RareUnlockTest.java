@@ -28,11 +28,11 @@ public class RareUnlockTest
 	}
 
 	@Test
-	public void interactionRollsAreTenTimesHarderPerOneOwned()
+	public void interactionRollsAreFiveTimesHarderPerOneOwned()
 	{
 		int firstChance = RareUnlock.chance(RareUnlock.INTERACTION_CHANCE, 0);
 		int secondChance = RareUnlock.chance(RareUnlock.INTERACTION_CHANCE, 1);
-		assertEquals(firstChance / 10, secondChance);
+		assertEquals(firstChance / 5, secondChance);
 		assertTrue(RareUnlock.rollInteraction(0, always(firstChance - 1)));
 		assertTrue(RareUnlock.rollInteraction(1, always(secondChance - 1)));
 		assertFalse(RareUnlock.rollInteraction(1, always(secondChance)));
@@ -91,15 +91,15 @@ public class RareUnlockTest
 	}
 
 	@Test
-	public void eachOneOwnedMakesTheNextTenTimesHarder()
+	public void eachOneOwnedMakesTheNextFiveTimesHarder()
 	{
 		assertEquals(10_000, RareUnlock.chance(RareUnlock.XP_STEP_CHANCE, 0));
-		assertEquals(1_000, RareUnlock.chance(RareUnlock.XP_STEP_CHANCE, 1));
-		assertEquals(100, RareUnlock.chance(RareUnlock.XP_STEP_CHANCE, 2));
+		assertEquals(2_000, RareUnlock.chance(RareUnlock.XP_STEP_CHANCE, 1));
+		assertEquals(400, RareUnlock.chance(RareUnlock.XP_STEP_CHANCE, 2));
 		assertEquals(30_000, RareUnlock.chance(RareUnlock.LEVEL_UP_CHANCE, 0));
-		assertEquals(3_000, RareUnlock.chance(RareUnlock.LEVEL_UP_CHANCE, 1));
+		assertEquals(6_000, RareUnlock.chance(RareUnlock.LEVEL_UP_CHANCE, 1));
 
-		// A roll of 5,000 would win the first one (1%) but not the second (0.1%).
+		// A roll of 5,000 would win the first one (1%) but not the second (0.2%).
 		RareUnlock unlock = thief();
 		assertTrue(unlock.roll(Skill.THIEVING, 1_000, 0, 0, always(5_000)));
 		assertFalse(unlock.roll(Skill.THIEVING, 1_000, 0, 1, always(5_000)));

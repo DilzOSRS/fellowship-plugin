@@ -11,7 +11,7 @@ import net.runelite.api.Skill;
  * <p>
  * There's a roll for every 1,000 XP (fair to fast and slow training methods), and skill-based
  * unlocks also roll on every level-up (fair to low-level players, who earn XP slowly but level
- * often). Each one of the class you already have makes the chances 10 times smaller.
+ * often). Each one of the class you already have makes the chances 5 times smaller.
  */
 public class RareUnlock
 {
@@ -26,7 +26,7 @@ public class RareUnlock
 	/** 1% per interaction (opening a shop or the Grand Exchange) for the first one. */
 	static final int INTERACTION_CHANCE = 10_000;
 	/** Each one already on the team divides the chances by this. */
-	static final int HARDER_PER_OWNED = 10;
+	static final int HARDER_PER_OWNED = 5;
 
 	private final CharacterClass characterClass;
 	private final Set<Skill> skills;
@@ -110,7 +110,7 @@ public class RareUnlock
 		return hits(INTERACTION_CHANCE, owned, random);
 	}
 
-	/** A chance (out of {@link #ONE_IN}), made 10 times smaller for each one already owned. */
+	/** A chance (out of {@link #ONE_IN}), made 5 times smaller for each one already owned. */
 	static int chance(int baseChance, int owned)
 	{
 		int chance = baseChance;

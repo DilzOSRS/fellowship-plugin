@@ -11,40 +11,10 @@ import org.junit.Test;
 public class SkillerTest
 {
 	@Test
-	public void skillersCostDoubleEachTime()
-	{
-		Guild guild = new Guild(0, 0, 0);
-		assertEquals(500, guild.getSkillerCost());
-		guild.useSkillerHire();
-		assertEquals(1_000, guild.getSkillerCost());
-		guild.useSkillerHire();
-		assertEquals(2_000, guild.getSkillerCost());
-	}
-
-	@Test
-	public void skillersDontNeedAGuildHire()
-	{
-		// Guild level 1: no hires, but a Skiller can still be hired with enough coins.
-		Guild guild = new Guild(0, 0, 0);
-		assertEquals(0, guild.getHiresAvailable());
-		assertTrue(guild.canHireSkiller(500));
-		assertFalse(guild.canHireSkiller(499));
-	}
-
-	@Test
-	public void onlyThreeSkillers()
-	{
-		Guild guild = new Guild(0, 0, 3);
-		assertFalse(guild.canHireSkiller(1_000_000));
-		assertFalse(guild.useSkillerHire());
-		assertEquals(3, guild.getSkillersHired());
-	}
-
-	@Test
 	public void skillersStartLikeAdventurers()
 	{
 		Team team = new Team(Collections.emptyList());
-		team.hire(CharacterClass.SKILLER);
+		team.add(CharacterClass.SKILLER);
 		FellowshipCharacter skiller = team.get(1);
 		assertEquals(CharacterClass.SKILLER, skiller.getCharacterClass());
 		assertEquals(0, skiller.getXp());
@@ -86,8 +56,8 @@ public class SkillerTest
 	public void skillersAreNamedByClass()
 	{
 		Team team = new Team(Collections.emptyList());
-		team.hire(CharacterClass.SKILLER);
-		team.hire(CharacterClass.SKILLER);
+		team.add(CharacterClass.SKILLER);
+		team.add(CharacterClass.SKILLER);
 		assertEquals("Adventurer", team.getDisplayName(0));
 		assertEquals("Skiller", team.getDisplayName(1));
 		assertEquals("Skiller 2", team.getDisplayName(2));

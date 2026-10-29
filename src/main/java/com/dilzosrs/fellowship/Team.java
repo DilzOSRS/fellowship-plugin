@@ -58,22 +58,18 @@ public class Team
 		return characters.size();
 	}
 
-	/**
-	 * Add a fresh Adventurer to the team. There's no team size limit; the Guild decides
-	 * when a hire is allowed, and the caller takes the hire and the coins.
-	 */
-	public void hire()
+	/** Add a fresh level 1 Adventurer to the team. There's no team size limit. */
+	public void add()
 	{
-		hire(CharacterClass.ADVENTURER);
+		add(CharacterClass.ADVENTURER);
 	}
 
 	/** Add a fresh level 1 character of a starting class (Adventurer, Skiller, Thief, Acolyte or Vyre). */
-	public void hire(CharacterClass startingClass)
+	public void add(CharacterClass startingClass)
 	{
 		characters.add(new FellowshipCharacter(startingClass, 0));
 	}
 
-	/** How many characters of a class are on the team. */
 	/** The expeditions this team has unlocked (see {@link Expedition#isUnlockedFor}). */
 	public Set<Expedition> unlockedExpeditions()
 	{
@@ -88,6 +84,20 @@ public class Team
 		return unlocked;
 	}
 
+	/** Whether anyone on the team has taken a class advancement. */
+	public boolean hasAdvancedCharacter()
+	{
+		for (FellowshipCharacter character : characters)
+		{
+			if (character.getCharacterClass().isAdvanced())
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** How many characters of a class are on the team. */
 	public int count(CharacterClass characterClass)
 	{
 		int count = 0;

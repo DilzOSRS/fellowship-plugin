@@ -100,8 +100,8 @@ public class InjuryTest
 	public void restingCharactersCantBeSent()
 	{
 		Team team = new Team(Collections.emptyList());
-		team.hire();
-		team.hire();
+		team.add();
+		team.add();
 		team.get(2).injure(NOW.plus(Duration.ofHours(1)));
 		assertFalse(team.sendParty(List.of(0, 1, 2), Expedition.DORGESHUUN_CAVES, NOW));
 		assertFalse(team.sendParty(List.of(2), Expedition.LUMBRIDGE_SWAMP_CAVES, NOW));

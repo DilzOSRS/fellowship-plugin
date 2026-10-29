@@ -21,7 +21,7 @@ public class PartyTest
 		Team team = new Team(Collections.emptyList());
 		for (int i = 1; i < size; i++)
 		{
-			team.hire();
+			team.add();
 		}
 		return team;
 	}

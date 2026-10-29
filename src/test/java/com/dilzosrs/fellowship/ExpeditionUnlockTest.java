@@ -1,6 +1,8 @@
 package com.dilzosrs.fellowship;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import java.util.EnumSet;
 import java.util.List;
 import org.junit.Test;
@@ -10,19 +12,35 @@ public class ExpeditionUnlockTest
 	@Test
 	public void expeditionsUnlockAsTheTeamGrows()
 	{
-		Team team = new Team(List.of(new FellowshipCharacter(CharacterClass.ADVENTURER, 0)));
-		assertEquals(EnumSet.of(Expedition.LUMBRIDGE_SWAMP_CAVES), team.unlockedExpeditions());
+		// A new team has no expeditions until someone takes a class advancement.
+		Team team = new Team(List.of(new FellowshipCharacter(CharacterClass.ADVENTURER, LevelCurve.xpForLevel(10))));
+		assertEquals(EnumSet.noneOf(Expedition.class), team.unlockedExpeditions());
 
 		// Three characters make a party for the Dorgeshuun Caves.
-		team.hire(CharacterClass.SKILLER);
-		assertEquals(EnumSet.of(Expedition.LUMBRIDGE_SWAMP_CAVES), team.unlockedExpeditions());
-		team.hire(CharacterClass.THIEF);
-		assertEquals(EnumSet.of(Expedition.LUMBRIDGE_SWAMP_CAVES, Expedition.DORGESHUUN_CAVES),
-			team.unlockedExpeditions());
+		team.add(CharacterClass.SKILLER);
+		assertEquals(EnumSet.noneOf(Expedition.class), team.unlockedExpeditions());
+		team.add(CharacterClass.THIEF);
+		assertEquals(EnumSet.of(Expedition.DORGESHUUN_CAVES), team.unlockedExpeditions());
 
 		// The first Merchant unlocks the trade run.
-		team.hire(CharacterClass.MERCHANT);
+		team.add(CharacterClass.MERCHANT);
+		assertEquals(EnumSet.of(Expedition.DORGESHUUN_CAVES, Expedition.GRAND_EXCHANGE_TRADE),
+			team.unlockedExpeditions());
+
+		// The first class advancement unlocks the Swamp Caves.
+		assertTrue(team.get(0).evolve(CharacterClass.KNIGHT));
 		assertEquals(EnumSet.allOf(Expedition.class), team.unlockedExpeditions());
+	}
+
+	@Test
+	public void onlyAdvancementsCountAsAdvanced()
+	{
+		assertFalse(CharacterClass.ADVENTURER.isAdvanced());
+		assertFalse(CharacterClass.THIEF.isAdvanced());
+		assertFalse(CharacterClass.MERCHANT.isAdvanced());
+		assertTrue(CharacterClass.KNIGHT.isAdvanced());
+		assertTrue(CharacterClass.BANDIT.isAdvanced());
+		assertTrue(CharacterClass.ZAROSIAN.isAdvanced());
 	}
 
 	@Test

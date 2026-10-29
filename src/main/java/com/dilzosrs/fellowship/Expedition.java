@@ -133,10 +133,15 @@ public enum Expedition
 
 	/**
 	 * Whether the team could ever go: it has enough characters for the party, and one of the
-	 * required class if there is one. Characters never leave, so once unlocked it stays unlocked.
+	 * required class if there is one. The Swamp Caves also wait for the first class advancement.
+	 * Characters never leave or lose a class, so once unlocked it stays unlocked.
 	 */
 	public boolean isUnlockedFor(Team team)
 	{
+		if (this == LUMBRIDGE_SWAMP_CAVES && !team.hasAdvancedCharacter())
+		{
+			return false;
+		}
 		return team.size() >= partySize && (requiredClass == null || team.count(requiredClass) > 0);
 	}
 

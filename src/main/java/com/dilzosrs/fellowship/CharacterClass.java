@@ -134,6 +134,22 @@ public enum CharacterClass
 		return Collections.emptyList();
 	}
 
+	/**
+	 * Whether this class is reached by a class advancement (e.g. Knight or Bandit), rather than
+	 * being a class characters start as (e.g. Adventurer or Thief).
+	 */
+	public boolean isAdvanced()
+	{
+		for (CharacterClass other : values())
+		{
+			if (other.getEvolutions().contains(this))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/** The god this class worships, whose blessing helps its parties, or null if none. */
 	public Blessing getBlessing()
 	{
