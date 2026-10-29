@@ -36,6 +36,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -95,6 +96,9 @@ public class FellowshipPlugin extends Plugin
 	private ItemManager itemManager;
 
 	@Inject
+	private SpriteManager spriteManager;
+
+	@Inject
 	private PopupOverlay popup;
 
 	private final XpTracker xpTracker = new XpTracker();
@@ -126,7 +130,7 @@ public class FellowshipPlugin extends Plugin
 	{
 		vaultPanel = new VaultPanel(this::openBundle, this::salvage);
 		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::makeActive,
-			this::hire, this::hireSkiller, this::equip, this::unequip, vaultPanel, itemManager);
+			this::hire, this::hireSkiller, this::equip, this::unequip, vaultPanel, itemManager, spriteManager);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -272,7 +276,7 @@ public class FellowshipPlugin extends Plugin
 					announcedReturns.add(team.get(member));
 				}
 				sendChatMessage(joinNames(party) + (party.size() == 1 ? " is" : " are") + " back from "
-					+ character.getExpedition().getDisplayName() + "! Collect the rewards in the Fellowship panel.");
+					+ character.getExpedition().getOngoingName() + "! Collect the rewards in the Fellowship panel.");
 			}
 			if (restingCharacters.contains(character) && !character.isResting(now))
 			{
@@ -412,7 +416,7 @@ public class FellowshipPlugin extends Plugin
 			if (!success)
 			{
 				sendChatMessage(joinNames(party) + (party.size() == 1 ? " was" : " were") + " overwhelmed in "
-					+ finished.getDisplayName() + " and came back empty-handed.");
+					+ finished.getOngoingName() + " and came back empty-handed.");
 				announceInjuries(injured, rest);
 				for (int member : party)
 				{
@@ -443,7 +447,7 @@ public class FellowshipPlugin extends Plugin
 			long xpEach = finished.getXpReward();
 			sendChatMessage(joinNames(party) + " brought back "
 				+ String.format("%,d XP", xpEach) + (party.size() > 1 ? " each" : "")
-				+ (haul != null ? " and " + haul : "") + " from " + finished.getDisplayName() + "!"
+				+ (haul != null ? " and " + haul : "") + " from " + finished.getOngoingName() + "!"
 				+ (bundles != null && coinsGained > 0 ? " They also found " + bundles + "!" : ""));
 			if (bundles != null)
 			{
@@ -641,7 +645,7 @@ public class FellowshipPlugin extends Plugin
 			Rarity rarity = opened.item.getRarity();
 			String article = rarity == Rarity.UNCOMMON || rarity == Rarity.EPIC ? "an " : "a ";
 			popup.show("You pulled " + article + opened.item.getName() + "!",
-				itemManager.getImage(bundle.getIconItemId()), rarity.getColor());
+				itemManager.getImage(opened.item.getIconItemId()), rarity.getColor());
 			SwingUtilities.invokeLater(() -> vaultPanel.showOpened(bundle, opened.item, opened.coins));
 			updatePanel();
 		});

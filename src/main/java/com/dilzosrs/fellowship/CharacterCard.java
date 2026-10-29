@@ -2,9 +2,12 @@ package com.dilzosrs.fellowship;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -20,6 +23,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.SpriteManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.ProgressBar;
@@ -29,7 +33,8 @@ import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 /**
  * One character's card in the sidebar. A header that's always visible (class icon, name, level,
  * status, and the Make active / Collect buttons), then three tabs: Info (XP, class advancement and
- * stats), Gear (stats and gear slots) and Expedition.
+ * stats), Gear (stats and gear slots) and Expedition. Clicking the header minimizes the card to
+ * its icon, name, level and a thin XP bar.
  */
 public class CharacterCard extends JPanel
 {
@@ -64,7 +69,11 @@ public class CharacterCard extends JPanel
 	// The stats show on both the Info and the Gear tab, and a label can only be in one place.
 	private final JLabel infoStatsLabel = new JLabel();
 	private final JLabel gearStatsLabel = new JLabel();
-	private final JPanel gearRows = new JPanel(new GridLayout(0, 1, 0, 2));
+	// The Gear tab: one column per slot, with the slot square and the item name under it.
+	private final JPanel gearRows = new JPanel(new GridLayout(1, 0, 4, 0));
+	private final GearSlot[] gearSlots = new GearSlot[GearType.Slot.values().length];
+	private final JLabel[] gearNames = new JLabel[GearType.Slot.values().length];
+	private final JPanel[] gearCells = new JPanel[GearType.Slot.values().length];
 	private final JLabel expeditionLabel = new JLabel();
 	private final JPanel expeditionButtons = new JPanel(new GridLayout(0, 1, 0, 4));
 
@@ -84,11 +93,16 @@ public class CharacterCard extends JPanel
 	private List<Expedition> shownExpeditions = Collections.emptyList();
 	/** What the last collected expedition gave, or null. */
 	private String lastReward;
+	/** The tabs, hidden while the card is minimized. */
+	private final JPanel tabArea = new JPanel(new BorderLayout(0, 6));
+	private boolean minimized;
+	/** Whether the Info tab (with the big XP bar) is the one open. */
+	private boolean infoTabOpen = true;
 
 	/**
 	 * The callbacks are called on the Swing thread once the player confirms the action.
 	 */
-	public CharacterCard(ItemManager itemManager, Consumer<CharacterClass> onEvolve, Consumer<Expedition> onSendExpedition,
+	public CharacterCard(ItemManager itemManager, SpriteManager spriteManager, Consumer<CharacterClass> onEvolve, Consumer<Expedition> onSendExpedition,
 		Runnable onCollect, Runnable onMakeActive, Consumer<GearType.Slot> onChangeGear)
 	{
 		this.itemManager = itemManager;
@@ -137,6 +151,18 @@ public class CharacterCard extends JPanel
 		makeActiveButton.addActionListener(e -> onMakeActive.run());
 		collectButton.addActionListener(e -> onCollect.run());
 		header.add(headerButtons, BorderLayout.SOUTH);
+		// Clicking the header minimizes the card to its icon, name and thin XP bar, or opens it again.
+		// The buttons inside handle their own clicks, so they don't toggle it.
+		header.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		header.setToolTipText("Click to minimize or open");
+		header.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				setMinimized(!minimized);
+			}
+		});
 		add(header, BorderLayout.NORTH);
 
 		// Info tab: the XP bar, then class advancement and stats underneath.
@@ -165,6 +191,10 @@ public class CharacterCard extends JPanel
 		gearStatsLabel.setForeground(Color.WHITE);
 		gearTab.add(gearStatsLabel, BorderLayout.NORTH);
 		gearRows.setOpaque(false);
+		for (GearType.Slot slot : GearType.Slot.values())
+		{
+			gearRows.add(buildGearCell(slot.ordinal(), slot, spriteManager));
+		}
 		gearTab.add(gearRows, BorderLayout.CENTER);
 
 		// Expedition tab: where the character is, or the expeditions it can go on.
@@ -182,28 +212,46 @@ public class CharacterCard extends JPanel
 		tabs.setLayout(new FlowLayout(FlowLayout.CENTER, 2, 0));
 		MaterialTab infoTabButton = new MaterialTab("Info", tabs, infoTab);
 		MaterialTab gearTabButton = new MaterialTab("Gear", tabs, gearTab);
-		MaterialTab expeditionTabButton = new MaterialTab("Expedition", tabs, expeditionTab);
+		MaterialTab expeditionTabButton = new MaterialTab("Events", tabs, expeditionTab);
 		// The Info tab has the big XP bar, so the thin one only shows on the other tabs.
-		infoTabButton.setOnSelectEvent(() -> showHeaderXpBar(false));
-		gearTabButton.setOnSelectEvent(() -> showHeaderXpBar(true));
-		expeditionTabButton.setOnSelectEvent(() -> showHeaderXpBar(true));
+		infoTabButton.setOnSelectEvent(() -> selectTab(true));
+		gearTabButton.setOnSelectEvent(() -> selectTab(false));
+		expeditionTabButton.setOnSelectEvent(() -> selectTab(false));
 		tabs.addTab(infoTabButton);
 		tabs.addTab(gearTabButton);
 		tabs.addTab(expeditionTabButton);
 		tabs.select(infoTabButton);
 
-		JPanel tabArea = new JPanel(new BorderLayout(0, 6));
 		tabArea.setOpaque(false);
 		tabArea.add(tabs, BorderLayout.NORTH);
 		tabArea.add(tabContent, BorderLayout.CENTER);
 		add(tabArea, BorderLayout.CENTER);
 	}
 
-	/** Show or hide the thin header XP bar. Returns true so the tab switch goes ahead. */
-	private boolean showHeaderXpBar(boolean visible)
+	/** Remember which tab is open and update the thin XP bar. Returns true so the switch goes ahead. */
+	private boolean selectTab(boolean info)
 	{
-		headerXpBar.setVisible(visible);
+		infoTabOpen = info;
+		updateHeaderXpBar();
 		return true;
+	}
+
+	/** Minimize the card to its icon, name and thin XP bar, or open it again. */
+	private void setMinimized(boolean minimized)
+	{
+		this.minimized = minimized;
+		tabArea.setVisible(!minimized);
+		roleLabel.setVisible(!minimized);
+		updateHeaderButtons();
+		updateHeaderXpBar();
+		revalidate();
+		repaint();
+	}
+
+	/** The thin XP bar shows when minimized, or on the tabs that don't have the big one. */
+	private void updateHeaderXpBar()
+	{
+		headerXpBar.setVisible(minimized || !infoTabOpen);
 	}
 
 	/**
@@ -301,7 +349,7 @@ public class CharacterCard extends JPanel
 	 */
 	public void showFailure(Expedition expedition)
 	{
-		lastReward = "Failed to clear<br>" + expedition.getDisplayName() + ".<br>No rewards.";
+		lastReward = "Failed to clear<br>" + expedition.getOngoingName() + ".<br>No rewards.";
 	}
 
 	/** Show only the header buttons that apply right now, or hide the row if none do. */
@@ -316,7 +364,7 @@ public class CharacterCard extends JPanel
 		{
 			headerButtons.add(makeActiveButton);
 		}
-		headerButtons.setVisible(headerButtons.getComponentCount() > 0);
+		headerButtons.setVisible(!minimized && headerButtons.getComponentCount() > 0);
 		headerButtons.revalidate();
 		headerButtons.repaint();
 	}
@@ -332,23 +380,47 @@ public class CharacterCard extends JPanel
 			: "<html>" + stats + "<br>Blessing of " + blessing.getGodName() + ":<br>"
 				+ blessing.describe() + " on every expedition</html>");
 		gearStatsLabel.setText(stats);
-		gearRows.removeAll();
-		for (GearType.Slot slot : GearType.Slot.values())
+		GearType.Slot[] slots = GearType.Slot.values();
+		for (int i = 0; i < slots.length; i++)
 		{
-			GearItem item = view.getEquipped(slot);
-			JPanel row = new JPanel(new BorderLayout());
-			row.setOpaque(false);
-			JLabel label = new JLabel(item == null ? "No " + slotName(slot) : item.getName());
-			label.setFont(FontManager.getRunescapeSmallFont());
-			label.setForeground(item == null ? ColorScheme.LIGHT_GRAY_COLOR : Color.WHITE);
-			row.add(label, BorderLayout.CENTER);
-			JButton change = new JButton(item == null ? "Equip" : "Change");
-			change.addActionListener(e -> onChangeGear.accept(slot));
-			row.add(change, BorderLayout.EAST);
-			gearRows.add(row);
+			GearItem item = view.getEquipped(slots[i]);
+			gearSlots[i].showItem(item);
+			// The name goes on two lines (rarity, then type), since the columns are narrow.
+			JLabel name = gearNames[i];
+			name.setText("<html><center>" + (item == null ? "Empty<br>" + slots[i].name().charAt(0)
+				+ slotName(slots[i]).substring(1) : item.getRarity().getDisplayName() + "<br>"
+				+ item.getType().getDisplayName()) + "</center></html>");
+			name.setForeground(item == null ? ColorScheme.LIGHT_GRAY_COLOR : item.getRarity().getColor());
+			String tooltip = item == null ? "Click to equip" : item.getDescription() + ". Click to change";
+			gearCells[i].setToolTipText(tooltip);
 		}
-		gearRows.revalidate();
-		gearRows.repaint();
+	}
+
+	/** One column of the Gear tab: a slot square with the item's name under it. Click to change it. */
+	private JPanel buildGearCell(int index, GearType.Slot slot, SpriteManager spriteManager)
+	{
+		JPanel cell = new JPanel(new BorderLayout(0, 2));
+		cell.setOpaque(false);
+		gearSlots[index] = new GearSlot(itemManager, spriteManager, slot);
+		JPanel square = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		square.setOpaque(false);
+		square.add(gearSlots[index]);
+		cell.add(square, BorderLayout.NORTH);
+		gearNames[index] = new JLabel();
+		gearNames[index].setFont(FontManager.getRunescapeSmallFont());
+		gearNames[index].setHorizontalAlignment(JLabel.CENTER);
+		cell.add(gearNames[index], BorderLayout.CENTER);
+		cell.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		cell.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				onChangeGear.accept(slot);
+			}
+		});
+		gearCells[index] = cell;
+		return cell;
 	}
 
 	/** e.g. "weapon", for "No weapon". */
@@ -478,7 +550,7 @@ public class CharacterCard extends JPanel
 		if (left.isNegative() || left.isZero())
 		{
 			countdownTimer.stop();
-			expeditionLabel.setText("<html>Back from<br>" + shownExpedition.getDisplayName() + "!</html>");
+			expeditionLabel.setText("<html>Back from<br>" + shownExpedition.getOngoingName() + "!</html>");
 			roleLabel.setText("Back! Rewards waiting");
 			roleLabel.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
 			if (!expeditionDone)
@@ -489,7 +561,7 @@ public class CharacterCard extends JPanel
 			return;
 		}
 		// Explicit line breaks: letting Swing wrap long HTML text cuts off the last line.
-		expeditionLabel.setText("<html>Away on an expedition:<br>" + shownExpedition.getDisplayName()
+		expeditionLabel.setText("<html>Away on an expedition:<br>" + shownExpedition.getOngoingName()
 			+ "<br>Back in " + formatCountdown(left) + "</html>");
 	}
 
@@ -528,7 +600,7 @@ public class CharacterCard extends JPanel
 	}
 
 	/** e.g. "29:41", or "1:05:00" when an hour or more is left. */
-	private static String formatCountdown(Duration left)
+	static String formatCountdown(Duration left)
 	{
 		long hours = left.toHours();
 		int minutes = left.toMinutesPart();

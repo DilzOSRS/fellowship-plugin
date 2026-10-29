@@ -106,7 +106,7 @@ public class VaultPanel extends JPanel
 			JPanel row = new JPanel(new BorderLayout(0, 2));
 			row.setOpaque(false);
 			JLabel name = new JLabel(item.getName());
-			name.setForeground(Color.WHITE);
+			name.setForeground(item.getRarity().getColor());
 			row.add(name, BorderLayout.NORTH);
 			JPanel statsLine = new JPanel(new BorderLayout());
 			statsLine.setOpaque(false);

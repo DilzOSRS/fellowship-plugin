@@ -33,6 +33,12 @@ public final class GearItem
 		return rarity.getDisplayName() + " " + type.getDisplayName();
 	}
 
+	/** The OSRS item whose icon stands for this item, until there's custom art. */
+	public int getIconItemId()
+	{
+		return type.getIconItemId(rarity);
+	}
+
 	public int getPower()
 	{
 		return rarity.getPower();

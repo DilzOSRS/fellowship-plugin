@@ -12,9 +12,9 @@ import java.util.Random;
  */
 public enum Expedition
 {
-	LUMBRIDGE_SWAMP_CAVES("Explore Lumbridge Swamp Caves", Duration.ofMinutes(30), 1_000, 10, 50,
+	LUMBRIDGE_SWAMP_CAVES("Explore the Lumbridge Swamp Caves", Duration.ofMinutes(30), 1_000, 10, 50,
 		0, 1, null, 0),
-	DORGESHUUN_CAVES("Looting the Dorgeshuun Caves", Duration.ofHours(2), 3_000, 40, 100,
+	DORGESHUUN_CAVES("Loot the Dorgeshuun Caves", Duration.ofHours(2), 3_000, 40, 100,
 		8, 3, BundleType.BOSS, 20),
 	// Only a Merchant can go, alone. It costs coins and brings back no coins, just bundles.
 	GRAND_EXCHANGE_TRADE("Traveling to trade at the Grand Exchange", Duration.ofMinutes(30), 1_000, 0, 0,
@@ -65,6 +65,23 @@ public enum Expedition
 	public String getDisplayName()
 	{
 		return displayName;
+	}
+
+	/**
+	 * The name while the expedition is under way, e.g. "Exploring the Lumbridge Swamp Caves" instead of
+	 * "Explore the Lumbridge Swamp Caves". Names that already read as under way stay the same.
+	 */
+	public String getOngoingName()
+	{
+		switch (this)
+		{
+			case LUMBRIDGE_SWAMP_CAVES:
+				return "Exploring the Lumbridge Swamp Caves";
+			case DORGESHUUN_CAVES:
+				return "Looting the Dorgeshuun Caves";
+			default:
+				return displayName;
+		}
 	}
 
 	public Duration getDuration()

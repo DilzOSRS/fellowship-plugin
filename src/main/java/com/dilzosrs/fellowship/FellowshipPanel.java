@@ -2,6 +2,7 @@ package com.dilzosrs.fellowship;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +17,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.SpriteManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.components.materialtabs.MaterialTab;
+import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 
 /**
- * The Fellowship sidebar panel: the coin balance, one card per character, and recruiting.
+ * The Fellowship sidebar panel: the coin balance and Guild, then three tabs. Followers has one card
+ * per character and recruiting; Events has the expeditions that are out; Bank has bundles and storage.
  */
 public class FellowshipPanel extends PluginPanel
 {
@@ -52,8 +57,11 @@ public class FellowshipPanel extends PluginPanel
 	private final Runnable onHireSkiller;
 	private int shownSkillerCost;
 	private final VaultPanel vaultPanel;
+	private final ExpeditionsPanel expeditionsPanel;
 	/** Draws the in-game item icons the cards use for each class. */
 	private final ItemManager itemManager;
+	/** Draws the OSRS gear slot tiles on the cards. */
+	private final SpriteManager spriteManager;
 
 	/**
 	 * The callbacks are called on the Swing thread once the player confirms the action.
@@ -63,9 +71,10 @@ public class FellowshipPanel extends PluginPanel
 	public FellowshipPanel(BiConsumer<Integer, CharacterClass> onEvolve, BiConsumer<List<Integer>, Expedition> onSendExpedition,
 		IntConsumer onCollect, IntConsumer onMakeActive, Runnable onHire, Runnable onHireSkiller,
 		BiConsumer<Integer, Integer> onEquip, BiConsumer<Integer, GearType.Slot> onUnequip, VaultPanel vaultPanel,
-		ItemManager itemManager)
+		ItemManager itemManager, SpriteManager spriteManager)
 	{
 		this.itemManager = itemManager;
+		this.spriteManager = spriteManager;
 		this.vaultPanel = vaultPanel;
 		this.onHireSkiller = onHireSkiller;
 		this.onEquip = onEquip;
@@ -97,13 +106,37 @@ public class FellowshipPanel extends PluginPanel
 		// Shown until an account's team is loaded.
 		cardsPanel.add(new JLabel(LOGGED_OUT_TEXT));
 
-		// The cards, then bundles and storage underneath. Storage stays hidden until an account is loaded.
-		JPanel middle = new JPanel(new BorderLayout(0, 10));
-		middle.setOpaque(false);
-		middle.add(cardsPanel, BorderLayout.CENTER);
+		// Three tabs: Followers (the cards and hiring), Events (expeditions that are out) and
+		// Bank (bundles and storage).
+		expeditionsPanel = new ExpeditionsPanel(itemManager, onCollect);
+		JPanel followersTab = new JPanel(new BorderLayout(0, 10));
+		followersTab.setOpaque(false);
+		followersTab.add(cardsPanel, BorderLayout.CENTER);
+		followersTab.add(hireArea, BorderLayout.SOUTH);
+
+		// Storage stays hidden until an account is loaded.
 		vaultPanel.setVisible(false);
-		middle.add(vaultPanel, BorderLayout.SOUTH);
-		add(middle, BorderLayout.CENTER);
+		JPanel inventoryTab = new JPanel(new BorderLayout());
+		inventoryTab.setOpaque(false);
+		inventoryTab.add(vaultPanel, BorderLayout.NORTH);
+
+		JPanel tabContent = new JPanel(new BorderLayout());
+		tabContent.setOpaque(false);
+		MaterialTabGroup tabs = new MaterialTabGroup(tabContent);
+		// Tighter gaps than the default, so all three tabs fit on one line in the narrow sidebar.
+		tabs.setLayout(new FlowLayout(FlowLayout.CENTER, 2, 0));
+		MaterialTab followersTabButton = new MaterialTab("Followers", tabs, followersTab);
+		tabs.addTab(followersTabButton);
+		// Short names, because longer ones don't fit side by side in the narrow sidebar.
+		tabs.addTab(new MaterialTab("Events", tabs, expeditionsPanel));
+		tabs.addTab(new MaterialTab("Bank", tabs, inventoryTab));
+		tabs.select(followersTabButton);
+
+		JPanel tabArea = new JPanel(new BorderLayout(0, 10));
+		tabArea.setOpaque(false);
+		tabArea.add(tabs, BorderLayout.NORTH);
+		tabArea.add(tabContent, BorderLayout.CENTER);
+		add(tabArea, BorderLayout.CENTER);
 
 		hireArea.setOpaque(false);
 		hiresLabel.setFont(FontManager.getRunescapeSmallFont());
@@ -117,7 +150,6 @@ public class FellowshipPanel extends PluginPanel
 		skillerButton.addActionListener(e -> confirmHireSkiller());
 		hireArea.add(skillerButton);
 		hireArea.setVisible(false);
-		add(hireArea, BorderLayout.SOUTH);
 	}
 
 	/**
@@ -126,6 +158,7 @@ public class FellowshipPanel extends PluginPanel
 	public void stopTimers()
 	{
 		cards.forEach(CharacterCard::stopTimer);
+		expeditionsPanel.stopTimer();
 	}
 
 	/**
@@ -159,6 +192,7 @@ public class FellowshipPanel extends PluginPanel
 		{
 			cards.get(i).show(team.get(i));
 		}
+		expeditionsPanel.show(team);
 
 		hiresLabel.setText(hiresAvailable > 0
 			? "Hires available: " + hiresAvailable
@@ -182,6 +216,7 @@ public class FellowshipPanel extends PluginPanel
 		cardsPanel.add(new JLabel(LOGGED_OUT_TEXT));
 		shownTeam = new ArrayList<>();
 		shownStorage = new ArrayList<>();
+		expeditionsPanel.show(shownTeam);
 		coinsLabel.setText("");
 		guildLabel.setText("");
 		hireArea.setVisible(false);
@@ -217,6 +252,7 @@ public class FellowshipPanel extends PluginPanel
 		int index = cards.size();
 		CharacterCard card = new CharacterCard(
 			itemManager,
+			spriteManager,
 			newClass -> onEvolve.accept(index, newClass),
 			expedition -> send(index, expedition),
 			() -> onCollect.accept(index),
