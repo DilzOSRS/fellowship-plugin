@@ -15,6 +15,40 @@ Each idea is tagged:
 | Explore Lumbridge Swamp Caves | 1 | 30 min | none | 1,000 XP, 10–50 coins | 2,000 |
 | Looting the Dorgeshuun Caves | exactly 3 | 2 h | 8 | 3,000 XP each, 40–100 coins, 20% Boss Bundle | 1,500 (if it succeeds) |
 
+### The opening path (decided by the user 2026-10-29)
+
+How a new player's game starts. This replaces hiring, the Encampment Perimeter scout as the first expedition, and the "free Skiller from the first Dorgeshuun clear" plan below.
+
+1. **Start:** one Adventurer and **no expeditions**. No Adventurers or Skillers can join yet; rare characters (Thief, Vyre, Acolyte, Merchant) still can.
+2. **Level the Adventurer to 10** from OSRS XP, finding bundles along the way. Take the first class advancement, then equip gear (the only benefit of advancing for now).
+3. **Explore the Lumbridge Swamp Caves unlocks** after the first class advancement, with the usual "expedition has been unlocked" chat message. **Threat 1, solo, 15 minutes.**
+4. **The first Swamp Caves run, success or failure,** gives the chat message: "You find someone trapped in the cave. They thank you for your help." From then on, Skillers can join.
+5. **Skillers join by chance** (like rare characters, not hired): 1% per 1,000 XP and 1% per level-up, in **skilling skills only** (not combat). Each Skiller already owned makes it **5x harder** (1%, 0.2%, 0.04%), up to 3. Roughly 100k, then 500k, then 2.5M skilling XP on average; level-up rolls make it quicker. **5x per one of the same class owned applies to every character that joins by chance** (changed from 10x for the rare characters, 2026-10-29).
+6. **The first Skiller** gets the usual pop-up plus the chat message: "The man you rescued from Lumbridge Swamp Caves has decided to join your fellowship."
+7. **Secure and Fortify the Encampment unlocks** with the first Skiller: Skillers only, 1.5 h for one, 30 minutes shorter per extra Skiller (30 min with 3).
+
+**Other rule changes in this decision:**
+- **Injured characters rest 1/3 of the expedition's length** (was 5x), on every expedition. Swamp Caves: 5 minutes. Dorgeshuun: 40 minutes.
+- **No hiring.** Remove "Hire Adventurer" and buying Skillers. The Fellowship Guild keeps its levels and Guild XP, but **Guild levels give nothing for now** (the user has ideas for later).
+- **No class stats for now** (the user, 2026-10-29). Power still comes from gear only. A character stat system is likely later (see "Class stat bonuses" in section 3).
+
+**What threat 1 means for a solo character** (with today's danger rules):
+
+| Gear | Fail chance | Injury chance |
+|---|---|---|
+| Nothing | 100% | 100% |
+| Trinket only (ATK 0.5, DEF 0.5) | 50% | 50% |
+| Weapon only | 0% | 100% |
+| Weapon and armour | 0% | 0% |
+
+The first run still unlocks Skillers even when it fails, so nobody gets stuck. A failed run is still a 15-minute trip plus a 5-minute rest.
+
+**Open:**
+- **Locking the 2nd Skiller** until the player does something with the characters they have (the user is thinking about it).
+- **More Adventurers:** a story unlock, like the rescued Skiller (e.g. a later expedition brings one). Needs its own design. Until then no new Adventurers can join, so Dorgeshuun's party of 3 needs the Adventurer plus Skillers or rare characters.
+- **Coins lose their main use** with hiring gone. Left: the Merchant's trade run and the planned storage upgrades. Revisit with the Guild ideas.
+- **Swamp Caves rewards:** XP, coins and bundle chance (the ladder below has drafts: 3,000 XP, 20–60 coins, 40% Generic).
+
 ### The expedition ladder (v1, started 2026-10-26)
 
 Threat is matched to gear: power by rarity is 1 / 3 / 6 / 10 / 15, plus class bonuses later, so a top character reaches roughly 20–25. Each tier should pay more than the last, so the risk is worth it.
@@ -40,7 +74,7 @@ The early game has a small story: the Fellowship has set up camp. First you scou
 | 4 | Securing and Fortifying the Encampment | 1–3 Skillers | 1.5 h, −30 min per extra Skiller | 0 | 5,000 | none | *draft* 25% Generic | 3,333 (solo) to 10,000 (3 Skillers) |
 
 - **Bundles are a chance per run for now**, not guaranteed. Once the bundle loot tables exist (mostly cheap Generic items to salvage), they could become guaranteed. Storage (10 slots) is the limit to watch.
-- **Completing Dorgeshuun for the first time gives one free Skiller (decided 2026-10-27).** Skillers can't be hired with coins until then. After that, the other two are hired with coins as today (up to 3 Skillers in total). This changes 6.4, where Skillers could be hired from the start. Fortifying (#4) is therefore only reachable after the first Dorgeshuun clear. *To decide when building:* whether the hire prices for the other two stay at 1,000 and 2,000.
+- **Replaced by the opening path (2026-10-29): Skillers now join after the first Swamp Caves run.** *Old plan:* **Completing Dorgeshuun for the first time gives one free Skiller (decided 2026-10-27).** Skillers can't be hired with coins until then. After that, the other two are hired with coins as today (up to 3 Skillers in total). This changes 6.4, where Skillers could be hired from the start. Fortifying (#4) is therefore only reachable after the first Dorgeshuun clear. *To decide when building:* whether the hire prices for the other two stay at 1,000 and 2,000.
 - **XP per hour isn't a ladder (user's choice, 2026-10-27).** Claude pointed out that Dorgeshuun pays less per hour than Swamp Caves, and that Fortifying with 3 Skillers pays the most of all, and suggested Dorgeshuun 8,000 XP and a flat 1.5 h Fortifying at 4,500 XP. The user kept these numbers: longer trips need fewer clicks. Watch in playtesting whether players skip Dorgeshuun or only run Fortifying.
 - **Still to decide:** coins for Swamp Caves (draft above), the Fortifying bundle, and Guild unlock levels for #2 and #3.
 
@@ -186,7 +220,7 @@ Naming note: "Hunter" is also an OSRS skill, now an Explorer skill. Kept for now
 | Death Knight | Vyre class advancement | Finishes the Barrows expedition faster |
 | Shadow Lord | Vyre class advancement | Better chance at rare loot |
 
-**Built and tested in-game 2026-10-28:** the Vyre and its unlock. A 1% roll per 1,000 XP in any skill while in Morytania (no level-up rolls; 10x harder per Vyre owned, like the Thief). 1x XP in every skill for now, cap 10. Its three advancements are built too (Blood Mage, Death Knight, Shadow Lord: cap 99, 1x XP, icons ancient ceremonial mask, sanguine Torva full helm and Inquisitor's great helm), with no perks yet. Morytania is rough map boxes (the mainland east of the Salve and Mos Le'Harmless), with dungeons and instances counted as the surface above them, so the edges may be a few tiles off.
+**Built and tested in-game 2026-10-28:** the Vyre and its unlock. A 1% roll per 1,000 XP in any skill while in Morytania (no level-up rolls; 10x harder per Vyre owned, like the Thief; 5x from 2026-10-29). 1x XP in every skill for now, cap 10. Its three advancements are built too (Blood Mage, Death Knight, Shadow Lord: cap 99, 1x XP, icons ancient ceremonial mask, sanguine Torva full helm and Inquisitor's great helm), with no perks yet. Morytania is rough map boxes (the mainland east of the Salve and Mos Le'Harmless), with dungeons and instances counted as the surface above them, so the edges may be a few tiles off.
 
 Decided 2026-10-26:
 - **The Barrows expedition is end-game content for v1:** an intense Morytania raid that needs a Vyre to unlock. All three Vyre advancements have perks for it.
