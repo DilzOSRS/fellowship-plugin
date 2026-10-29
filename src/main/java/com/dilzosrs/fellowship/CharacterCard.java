@@ -277,12 +277,17 @@ public class CharacterCard extends JPanel
 	 * Show what the last expedition gave. Must be called on the Swing thread, before the
 	 * character is shown at home again.
 	 */
-	public void showReward(long xpGained, int coinsGained)
+	public void showReward(long xpGained, String loot)
 	{
+		if (loot == null)
+		{
+			lastReward = xpGained > 0 ? String.format("Back with +%,d XP!", xpGained) : "Back!";
+			return;
+		}
 		lastReward = xpGained > 0
-			? String.format("Back with +%,d XP<br>and +%d coins!", xpGained, coinsGained)
+			? String.format("Back with +%,d XP<br>and %s!", xpGained, loot)
 			// An Adventurer at the level cap wastes the XP, like any other XP.
-			: String.format("Back with +%d coins!<br>(No XP: level cap reached.)", coinsGained);
+			: "Back with " + loot + "!<br>(No XP: level cap reached.)";
 	}
 
 	/**
@@ -411,6 +416,10 @@ public class CharacterCard extends JPanel
 				: "<html>" + lastReward + "<br><br>Send on an expedition:</html>");
 			for (Expedition option : Expedition.values())
 			{
+				if (!option.allows(shownClass))
+				{
+					continue;
+				}
 				// The name gets its own line, because it's too long to fit inside a button.
 				JPanel row = new JPanel(new BorderLayout(0, 2));
 				row.setOpaque(false);
@@ -420,7 +429,8 @@ public class CharacterCard extends JPanel
 				// Every row gets an info line, so all rows are the same height.
 				JLabel info = new JLabel(
 					(option.getThreatLevel() > 0 ? "Threat " + option.getThreatLevel() : "Safe") + ", "
-						+ (option.getPartySize() > 1 ? "party of " + option.getPartySize() : "solo"));
+						+ (option.getPartySize() > 1 ? "party of " + option.getPartySize() : "solo")
+						+ (option.getCost() > 0 ? ", " + option.getCost() + " coins" : ""));
 				info.setFont(FontManager.getRunescapeSmallFont());
 				info.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 				row.add(info, BorderLayout.CENTER);
@@ -494,6 +504,7 @@ public class CharacterCard extends JPanel
 			this,
 			"Send " + shownName + " to " + expedition.getDisplayName() + " for "
 				+ formatDuration(expedition.getDuration()) + "?\n\n"
+				+ (expedition.getCost() > 0 ? "It costs " + expedition.getCost() + " coins.\n" : "")
 				+ "It won't earn XP from your OSRS play while it's away.",
 			"Expedition",
 			JOptionPane.YES_NO_OPTION);

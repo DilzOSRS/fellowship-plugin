@@ -4,7 +4,7 @@ import java.util.Random;
 import net.runelite.api.gameval.ItemID;
 
 /**
- * The kinds of loot bundle. Each gives some coins plus one random item. For now every
+ * The kinds of loot bundle. Each gives one random item, and most give some coins too. For now every
  * bundle can roll any item; only the rarity odds and coins differ.
  * <p>
  * The enum names are saved per account, so never rename them without a migration.
@@ -18,7 +18,10 @@ public enum BundleType
 	SLAYER("Slayer Bundle", ItemID.TRAIL_REWARD_CASKET_MEDIUM, 10, 10, 30, 50, 30, 15, 4, 1),
 	RAID("Raid Bundle", ItemID.TRAIL_REWARD_CASKET_MASTER, 10, 30, 80, 0, 30, 40, 22, 8),
 	BOSS("Boss Bundle", ItemID.TRAIL_REWARD_CASKET_ELITE, 1, 10, 40, 30, 35, 25, 8, 2),
-	CLUE("Clue Bundle", ItemID.TRAIL_REWARD_CASKET_HARD, 25, 15, 40, 40, 35, 20, 4, 1);
+	CLUE("Clue Bundle", ItemID.TRAIL_REWARD_CASKET_HARD, 25, 15, 40, 40, 35, 20, 4, 1),
+	// Bought on the Merchant's Grand Exchange trip. It never drops, and gives an item but no coins,
+	// so the trip can't make more coins than it costs. Generic odds until the items are worked out.
+	TRADE("Trade Bundle", ItemID.TRAIL_REWARD_CASKET_BEGINNER, 0, 0, 0, 50, 30, 15, 4, 1);
 
 	private final String displayName;
 	private final int iconItemId;

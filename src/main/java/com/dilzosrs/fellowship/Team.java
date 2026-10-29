@@ -130,7 +130,7 @@ public class Team
 	 * they're known to be one party later (even after a restart).
 	 *
 	 * @return false (and nobody is sent) if the party is the wrong size, has repeats, or anyone is
-	 *     away or resting from an injury
+	 *     away, resting from an injury or not allowed on it
 	 */
 	public boolean sendParty(List<Integer> indexes, Expedition expedition, Instant start)
 	{
@@ -140,7 +140,8 @@ public class Team
 		}
 		for (int index : indexes)
 		{
-			if (index < 0 || index >= characters.size() || !characters.get(index).isAvailable(start))
+			if (index < 0 || index >= characters.size() || !characters.get(index).isAvailable(start)
+				|| !expedition.allows(characters.get(index).getCharacterClass()))
 			{
 				return false;
 			}

@@ -15,7 +15,10 @@ public enum Expedition
 	LUMBRIDGE_SWAMP_CAVES("Explore Lumbridge Swamp Caves", Duration.ofMinutes(30), 1_000, 10, 50,
 		0, 1, null, 0),
 	DORGESHUUN_CAVES("Looting the Dorgeshuun Caves", Duration.ofHours(2), 3_000, 40, 100,
-		8, 3, BundleType.BOSS, 20);
+		8, 3, BundleType.BOSS, 20),
+	// Only a Merchant can go, alone. It costs coins and brings back no coins, just bundles.
+	GRAND_EXCHANGE_TRADE("Traveling to trade at the Grand Exchange", Duration.ofMinutes(30), 1_000, 0, 0,
+		0, 1, BundleType.TRADE, 100, 5, 100, CharacterClass.MERCHANT);
 
 	private final String displayName;
 	private final Duration duration;
@@ -27,10 +30,27 @@ public enum Expedition
 	/** A bundle that can come back too, or null. */
 	private final BundleType bonusBundle;
 	private final int bonusBundleChance;
+	/** How many of the bonus bundle come back when its chance hits. */
+	private final int bonusBundleCount;
+	/** Coins paid when the party sets off. */
+	private final int cost;
+	/** Only this class can go, or null if anyone can. */
+	private final CharacterClass requiredClass;
 
 	Expedition(String displayName, Duration duration, int xpReward, int minCoins, int maxCoins,
 		int threatLevel, int partySize, BundleType bonusBundle, int bonusBundleChance)
 	{
+		this(displayName, duration, xpReward, minCoins, maxCoins, threatLevel, partySize,
+			bonusBundle, bonusBundleChance, 1, 0, null);
+	}
+
+	Expedition(String displayName, Duration duration, int xpReward, int minCoins, int maxCoins,
+		int threatLevel, int partySize, BundleType bonusBundle, int bonusBundleChance,
+		int bonusBundleCount, int cost, CharacterClass requiredClass)
+	{
+		this.bonusBundleCount = bonusBundleCount;
+		this.cost = cost;
+		this.requiredClass = requiredClass;
 		this.displayName = displayName;
 		this.duration = duration;
 		this.xpReward = xpReward;
@@ -80,5 +100,23 @@ public enum Expedition
 	public BundleType rollBonusBundle(Random random)
 	{
 		return bonusBundle != null && random.nextInt(100) < bonusBundleChance ? bonusBundle : null;
+	}
+
+	/** How many of the bonus bundle come back when its chance hits. */
+	public int getBonusBundleCount()
+	{
+		return bonusBundleCount;
+	}
+
+	/** Coins paid when the party sets off. 0 means free. */
+	public int getCost()
+	{
+		return cost;
+	}
+
+	/** Whether a character of this class is allowed to go. */
+	public boolean allows(CharacterClass characterClass)
+	{
+		return requiredClass == null || requiredClass == characterClass;
 	}
 }

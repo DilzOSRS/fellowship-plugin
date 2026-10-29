@@ -204,11 +204,11 @@ public class FellowshipPanel extends PluginPanel
 	/**
 	 * Show what the last expedition gave on one character's card. Must be called on the Swing thread.
 	 */
-	public void showReward(int index, long xpGained, int coinsGained)
+	public void showReward(int index, long xpGained, String loot)
 	{
 		if (index < cards.size())
 		{
-			cards.get(index).showReward(xpGained, coinsGained);
+			cards.get(index).showReward(xpGained, loot);
 		}
 	}
 

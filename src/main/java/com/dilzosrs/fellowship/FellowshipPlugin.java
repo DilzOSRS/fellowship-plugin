@@ -337,9 +337,25 @@ public class FellowshipPlugin extends Plugin
 	{
 		clientThread.invokeLater(() ->
 		{
-			if (team == null || !team.sendParty(party, expedition, Instant.now()))
+			if (team == null)
 			{
 				return;
+			}
+			int cost = expedition.getCost();
+			if (coins < cost)
+			{
+				sendChatMessage(expedition.getDisplayName() + " costs " + cost + " coins, but you only have "
+					+ coins + ".");
+				return;
+			}
+			if (!team.sendParty(party, expedition, Instant.now()))
+			{
+				return;
+			}
+			if (cost > 0)
+			{
+				coins -= cost;
+				saveCoins();
 			}
 			saveTeam();
 			updatePanel();
@@ -408,20 +424,29 @@ public class FellowshipPlugin extends Plugin
 			int coinsGained = finished.rollCoins(random);
 			coins += coinsGained;
 			BundleType bonus = finished.rollBonusBundle(random);
+			String bundles = null;
 			if (bonus != null)
 			{
-				vault.addBundle(bonus);
+				int count = finished.getBonusBundleCount();
+				for (int i = 0; i < count; i++)
+				{
+					vault.addBundle(bonus);
+				}
 				saveVault();
+				bundles = count == 1 ? "a " + bonus.getDisplayName() : count + " " + bonus.getDisplayName() + "s";
 			}
+			// The main haul is coins, or the bundles on expeditions that give no coins (the trade run).
+			String haul = coinsGained > 0 ? coinsGained + " coins" : bundles;
 
 			long xpEach = finished.getXpReward();
 			sendChatMessage(joinNames(party) + " brought back "
-				+ String.format("%,d XP", xpEach) + (party.size() > 1 ? " each" : "") + " and "
-				+ coinsGained + " coins from " + finished.getDisplayName() + "!"
-				+ (bonus != null ? " They also found a " + bonus.getDisplayName() + "!" : ""));
-			if (bonus != null)
+				+ String.format("%,d XP", xpEach) + (party.size() > 1 ? " each" : "")
+				+ (haul != null ? " and " + haul : "") + " from " + finished.getDisplayName() + "!"
+				+ (bundles != null && coinsGained > 0 ? " They also found " + bundles + "!" : ""));
+			if (bundles != null)
 			{
-				showBundlePopup(bonus, "Your party found a " + bonus.getDisplayName() + "!");
+				String finder = party.size() > 1 ? "Your party" : team.getDisplayName(party.get(0));
+				showBundlePopup(bonus, finder + " brought back " + bundles + "!");
 			}
 			announceInjuries(injured, rest);
 			announceLevelUps(levelsBefore);
@@ -432,7 +457,8 @@ public class FellowshipPlugin extends Plugin
 				announcedReturns.remove(team.get(member));
 				levelsGained += team.get(member).getLevel() - levelsBefore[member];
 				long gained = team.get(member).getXp() - xpBefore[member];
-				SwingUtilities.invokeLater(() -> panel.showReward(member, gained, coinsGained));
+				String loot = coinsGained > 0 ? "+" + coinsGained + " coins" : bundles;
+				SwingUtilities.invokeLater(() -> panel.showReward(member, gained, loot));
 			}
 			// 1 Guild XP for the expedition, plus 1 for each level its XP reward gave.
 			addGuildXp(1 + levelsGained);
@@ -593,7 +619,7 @@ public class FellowshipPlugin extends Plugin
 			saveVault();
 			saveCoins();
 			sendChatMessage("You opened a " + bundle.getDisplayName() + ": " + opened.item.getName()
-				+ " (" + opened.item.getDescription() + ") and " + opened.coins + " coins!");
+				+ " (" + opened.item.getDescription() + ")" + (opened.coins > 0 ? " and " + opened.coins + " coins" : "") + "!");
 			Rarity rarity = opened.item.getRarity();
 			String article = rarity == Rarity.UNCOMMON || rarity == Rarity.EPIC ? "an " : "a ";
 			popup.show("You pulled " + article + opened.item.getName() + "!",
