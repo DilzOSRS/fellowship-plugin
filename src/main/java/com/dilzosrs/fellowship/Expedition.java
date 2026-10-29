@@ -114,6 +114,15 @@ public enum Expedition
 		return cost;
 	}
 
+	/**
+	 * Whether the team could ever go: it has enough characters for the party, and one of the
+	 * required class if there is one. Characters never leave, so once unlocked it stays unlocked.
+	 */
+	public boolean isUnlockedFor(Team team)
+	{
+		return team.size() >= partySize && (requiredClass == null || team.count(requiredClass) > 0);
+	}
+
 	/** Whether a character of this class is allowed to go. */
 	public boolean allows(CharacterClass characterClass)
 	{

@@ -1,6 +1,8 @@
 package com.dilzosrs.fellowship;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A snapshot of one character for the panel. Characters change on the client thread and the
@@ -26,6 +28,8 @@ public class CharacterView
 	final int atk;
 	final int def;
 	final int mag;
+	/** The expeditions to offer on the card: unlocked by the team and allowed for this class. */
+	final List<Expedition> expeditions = new ArrayList<>();
 
 	CharacterView(Team team, int index)
 	{
@@ -44,6 +48,13 @@ public class CharacterView
 		this.atk = character.getAtk();
 		this.def = character.getDef();
 		this.mag = character.getMag();
+		for (Expedition expedition : team.unlockedExpeditions())
+		{
+			if (expedition.allows(characterClass))
+			{
+				expeditions.add(expedition);
+			}
+		}
 	}
 
 	/** The gear in a slot, or null if it's empty. */

@@ -74,6 +74,20 @@ public class Team
 	}
 
 	/** How many characters of a class are on the team. */
+	/** The expeditions this team has unlocked (see {@link Expedition#isUnlockedFor}). */
+	public Set<Expedition> unlockedExpeditions()
+	{
+		Set<Expedition> unlocked = EnumSet.noneOf(Expedition.class);
+		for (Expedition expedition : Expedition.values())
+		{
+			if (expedition.isUnlockedFor(this))
+			{
+				unlocked.add(expedition);
+			}
+		}
+		return unlocked;
+	}
+
 	public int count(CharacterClass characterClass)
 	{
 		int count = 0;

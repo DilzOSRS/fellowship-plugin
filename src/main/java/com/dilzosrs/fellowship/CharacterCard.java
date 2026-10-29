@@ -7,6 +7,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -78,6 +80,8 @@ public class CharacterCard extends JPanel
 	private boolean expeditionDone;
 	/** When the shown character's injury heals, or null if it isn't resting. */
 	private Instant shownRestingUntil;
+	/** The expeditions this character can be sent on; locked ones stay hidden. */
+	private List<Expedition> shownExpeditions = Collections.emptyList();
 	/** What the last collected expedition gave, or null. */
 	private String lastReward;
 
@@ -245,6 +249,7 @@ public class CharacterCard extends JPanel
 		showEvolveButtons(view.canEvolve ? view.characterClass : null);
 		showGear(view);
 		shownRestingUntil = view.restingUntil;
+		shownExpeditions = view.expeditions;
 		showExpedition(view.expedition, view.expeditionEnd);
 
 		if (level >= levelCap)
@@ -414,12 +419,8 @@ public class CharacterCard extends JPanel
 			expeditionLabel.setText(lastReward == null
 				? "Send on an expedition:"
 				: "<html>" + lastReward + "<br><br>Send on an expedition:</html>");
-			for (Expedition option : Expedition.values())
+			for (Expedition option : shownExpeditions)
 			{
-				if (!option.allows(shownClass))
-				{
-					continue;
-				}
 				// The name gets its own line, because it's too long to fit inside a button.
 				JPanel row = new JPanel(new BorderLayout(0, 2));
 				row.setOpaque(false);

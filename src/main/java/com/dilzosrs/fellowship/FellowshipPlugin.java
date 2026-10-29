@@ -118,6 +118,8 @@ public class FellowshipPlugin extends Plugin
 	private final Set<FellowshipCharacter> announcedReturns = new HashSet<>();
 	/** Characters resting from an injury, so their recovery is announced once. */
 	private final Set<FellowshipCharacter> restingCharacters = new HashSet<>();
+	/** Expeditions the team has unlocked, so each new one is announced once. */
+	private Set<Expedition> unlockedExpeditions = new HashSet<>();
 
 	@Override
 	protected void startUp() throws Exception
@@ -551,6 +553,22 @@ public class FellowshipPlugin extends Plugin
 		String message = team.getDisplayName(index) + " has joined your Fellowship!";
 		sendChatMessage(message);
 		showClassPopup(team.get(index).getCharacterClass(), message);
+		announceNewExpeditions();
+	}
+
+	/**
+	 * Tell the player about expeditions the team has just unlocked. Every join goes through
+	 * {@link #announceNewCharacter}, so this is only checked there (and remembered on load).
+	 */
+	private void announceNewExpeditions()
+	{
+		for (Expedition expedition : team.unlockedExpeditions())
+		{
+			if (unlockedExpeditions.add(expedition))
+			{
+				sendChatMessage(expedition.getDisplayName() + " expedition has been unlocked.");
+			}
+		}
 	}
 
 	/** Show a pop-up on the game screen with the class's icon beside the message. */
@@ -796,6 +814,9 @@ public class FellowshipPlugin extends Plugin
 			Integer savedActive = configManager.getRSProfileConfiguration(CONFIG_GROUP, ACTIVE_INDEX_KEY, Integer.class);
 			team = new Team(loaded, savedActive == null ? 0 : savedActive);
 		}
+
+		// Expeditions already unlocked aren't announced again.
+		unlockedExpeditions = team.unlockedExpeditions();
 
 		restingCharacters.clear();
 		for (FellowshipCharacter character : team.getCharacters())
