@@ -2,7 +2,6 @@ package com.dilzosrs.fellowship;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import java.time.Duration;
 import java.time.Instant;
@@ -120,6 +119,6 @@ public class PartyTest
 			}
 		};
 		assertEquals(BundleType.BOSS, Expedition.DORGESHUUN_CAVES.rollBonusBundle(always0));
-		assertNull(Expedition.LUMBRIDGE_SWAMP_CAVES.rollBonusBundle(always0));
+		assertEquals(BundleType.GENERIC, Expedition.LUMBRIDGE_SWAMP_CAVES.rollBonusBundle(always0));
 	}
 }
