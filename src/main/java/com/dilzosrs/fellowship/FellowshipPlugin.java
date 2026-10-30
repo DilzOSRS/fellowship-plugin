@@ -405,7 +405,7 @@ public class FellowshipPlugin extends Plugin
 			{
 				injured.add(partyBefore.get(position));
 			}
-			Duration rest = finished.getDuration().multipliedBy(Danger.REST_MULTIPLIER);
+			Duration rest = finished.getDuration().dividedBy(Danger.REST_DIVISOR);
 			for (int member : injured)
 			{
 				team.get(member).injure(now.plus(rest));

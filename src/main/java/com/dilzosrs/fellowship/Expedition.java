@@ -12,8 +12,8 @@ import java.util.Random;
  */
 public enum Expedition
 {
-	LUMBRIDGE_SWAMP_CAVES("Explore the Lumbridge Swamp Caves", Duration.ofMinutes(30), 1_000, 10, 50,
-		0, 1, null, 0),
+	LUMBRIDGE_SWAMP_CAVES("Explore the Lumbridge Swamp Caves", Duration.ofMinutes(15), 1_000, 10, 50,
+		1, 1, null, 0),
 	DORGESHUUN_CAVES("Loot the Dorgeshuun Caves", Duration.ofHours(2), 3_000, 40, 100,
 		8, 3, BundleType.BOSS, 20),
 	// Only a Merchant can go, alone. It costs coins and brings back no coins, just bundles.

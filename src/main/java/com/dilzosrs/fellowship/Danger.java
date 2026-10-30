@@ -37,8 +37,8 @@ public final class Danger
 	/** Chance of a single injury after a failure when the party's DEF is high enough. */
 	static final double FAIL_INJURY_CHANCE_WITH_DEF = 0.1;
 
-	/** How long an injured character rests, compared with the expedition's length. */
-	static final int REST_MULTIPLIER = 5;
+	/** An injured character rests for the expedition's length divided by this (a third of it). */
+	static final int REST_DIVISOR = 3;
 
 	/**
 	 * Roll who gets injured on an expedition. With p = (threat - party DEF) / threat:

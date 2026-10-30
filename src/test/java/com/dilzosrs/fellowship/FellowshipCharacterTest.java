@@ -145,14 +145,14 @@ public class FellowshipCharacterTest
 	}
 
 	@Test
-	public void expeditionLastsThirtyMinutes()
+	public void swampCavesLastFifteenMinutes()
 	{
 		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
 		assertTrue(character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START));
 		assertTrue(character.isAway());
-		assertEquals(START.plus(Duration.ofMinutes(30)), character.getExpeditionEnd());
-		assertEquals(Duration.ofMinutes(30), character.getTimeLeft(START));
-		assertEquals(Duration.ofMinutes(10), character.getTimeLeft(START.plus(Duration.ofMinutes(20))));
+		assertEquals(START.plus(Duration.ofMinutes(15)), character.getExpeditionEnd());
+		assertEquals(Duration.ofMinutes(15), character.getTimeLeft(START));
+		assertEquals(Duration.ofMinutes(5), character.getTimeLeft(START.plus(Duration.ofMinutes(10))));
 	}
 
 	@Test
@@ -160,8 +160,8 @@ public class FellowshipCharacterTest
 	{
 		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
 		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
-		assertFalse(character.isExpeditionDone(START.plus(Duration.ofMinutes(29))));
-		assertTrue(character.isExpeditionDone(START.plus(Duration.ofMinutes(30))));
+		assertFalse(character.isExpeditionDone(START.plus(Duration.ofMinutes(14))));
+		assertTrue(character.isExpeditionDone(START.plus(Duration.ofMinutes(15))));
 		// Hours later (e.g. after being logged out), it's still done and never "negative".
 		assertTrue(character.isExpeditionDone(START.plus(Duration.ofHours(5))));
 		assertEquals(Duration.ZERO, character.getTimeLeft(START.plus(Duration.ofHours(5))));
@@ -203,7 +203,7 @@ public class FellowshipCharacterTest
 		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
 		assertNull(character.collectExpedition(START));
 		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
-		assertNull(character.collectExpedition(START.plus(Duration.ofMinutes(29))));
+		assertNull(character.collectExpedition(START.plus(Duration.ofMinutes(14))));
 		assertTrue(character.isAway());
 		assertEquals(0, character.getXp());
 	}
@@ -213,7 +213,7 @@ public class FellowshipCharacterTest
 	{
 		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
 		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
-		assertEquals(Expedition.LUMBRIDGE_SWAMP_CAVES, character.collectExpedition(START.plus(Duration.ofMinutes(30))));
+		assertEquals(Expedition.LUMBRIDGE_SWAMP_CAVES, character.collectExpedition(START.plus(Duration.ofMinutes(15))));
 		assertEquals(1_000, character.getXp());
 		assertFalse(character.isAway());
 		// Home again, so OSRS XP counts again.
@@ -228,7 +228,7 @@ public class FellowshipCharacterTest
 	{
 		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.WIZARD, 0);
 		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
-		character.collectExpedition(START.plus(Duration.ofMinutes(30)));
+		character.collectExpedition(START.plus(Duration.ofMinutes(15)));
 		assertEquals(1_000, character.getXp());
 	}
 
@@ -237,7 +237,7 @@ public class FellowshipCharacterTest
 	{
 		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, CAP_XP - 400);
 		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
-		character.collectExpedition(START.plus(Duration.ofMinutes(30)));
+		character.collectExpedition(START.plus(Duration.ofMinutes(15)));
 		assertEquals(CAP_XP, character.getXp());
 	}
 
