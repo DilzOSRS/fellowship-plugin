@@ -2,6 +2,7 @@ package com.dilzosrs.fellowship;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.inject.Provides;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.time.Duration;
@@ -34,6 +35,7 @@ import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SpriteManager;
@@ -54,12 +56,13 @@ import net.runelite.client.util.Text;
 public class FellowshipPlugin extends Plugin
 {
 	// Never change these strings without a migration, or players lose their saved progress.
-	private static final String CONFIG_GROUP = "fellowship";
+	static final String CONFIG_GROUP = "fellowship";
 	private static final String TEAM_KEY = "team";
 	private static final String COINS_KEY = "coins";
 	private static final String ACTIVE_INDEX_KEY = "activeIndex";
 	private static final String GUILD_XP_KEY = "guildXp";
 	private static final String VAULT_KEY = "vault";
+	private static final String RESCUED_KEY = "rescuedFromSwampCaves";
 
 	private static final Color CHAT_TAG_COLOR = new Color(255, 200, 0);
 
@@ -114,6 +117,8 @@ public class FellowshipPlugin extends Plugin
 	private long coins;
 	/** The account's Fellowship Guild, loaded with the team. */
 	private Guild guild;
+	/** Whether the first Swamp Caves run has rescued someone, which lets Skillers join. Loaded with the team. */
+	private boolean rescued;
 	/** The account's unopened bundles and gear storage, loaded with the team. */
 	private Vault vault;
 	/** Characters whose finished expedition has already been announced in chat, so it's said only once. */
@@ -161,6 +166,26 @@ public class FellowshipPlugin extends Plugin
 		panel.stopTimers();
 		team = null;
 		log.debug("Fellowship stopped!");
+	}
+
+	@Provides
+	FellowshipConfig provideConfig(ConfigManager configManager)
+	{
+		return configManager.getConfig(FellowshipConfig.class);
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		// The "Start a new game" setting works like a button: RuneLite has already asked the player to
+		// confirm, so wipe the account's progress and untick it again.
+		if (!CONFIG_GROUP.equals(event.getGroup()) || !FellowshipConfig.RESET_KEY.equals(event.getKey())
+			|| !Boolean.parseBoolean(event.getNewValue()))
+		{
+			return;
+		}
+		configManager.setConfiguration(CONFIG_GROUP, FellowshipConfig.RESET_KEY, false);
+		clientThread.invokeLater(this::startNewGame);
 	}
 
 	@Subscribe
@@ -417,6 +442,7 @@ public class FellowshipPlugin extends Plugin
 				sendChatMessage(joinNames(party) + (party.size() == 1 ? " was" : " were") + " overwhelmed in "
 					+ finished.getOngoingName() + " and came back empty-handed.");
 				announceInjuries(injured, rest);
+				rescueIfFirstSwampCavesRun(finished, party);
 				for (int member : party)
 				{
 					announcedReturns.remove(team.get(member));
@@ -454,6 +480,7 @@ public class FellowshipPlugin extends Plugin
 				showBundlePopup(bonus, finder + " brought back " + bundles + "!");
 			}
 			announceInjuries(injured, rest);
+			rescueIfFirstSwampCavesRun(finished, party);
 			announceLevelUps(levelsBefore);
 
 			int levelsGained = 0;
@@ -791,6 +818,8 @@ public class FellowshipPlugin extends Plugin
 		Long savedGuildXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, Long.class);
 		guild = new Guild(savedGuildXp == null ? 0 : savedGuildXp);
 
+		rescued = Boolean.TRUE.equals(configManager.getRSProfileConfiguration(CONFIG_GROUP, RESCUED_KEY, Boolean.class));
+
 		String vaultJson = configManager.getRSProfileConfiguration(CONFIG_GROUP, VAULT_KEY);
 		vault = Vault.empty();
 		if (vaultJson != null)
@@ -813,6 +842,26 @@ public class FellowshipPlugin extends Plugin
 		}
 
 		updatePanel();
+	}
+
+	/**
+	 * Wipe the logged-in account's Fellowship and load a fresh one: a single Adventurer, no coins,
+	 * Guild XP, bundles or gear. Must be called on the client thread.
+	 */
+	private void startNewGame()
+	{
+		if (configManager.getRSProfileKey() == null)
+		{
+			log.debug("Can't start a new Fellowship game while logged out");
+			return;
+		}
+		for (String key : new String[]{TEAM_KEY, COINS_KEY, ACTIVE_INDEX_KEY, GUILD_XP_KEY, VAULT_KEY, RESCUED_KEY})
+		{
+			configManager.unsetRSProfileConfiguration(CONFIG_GROUP, key);
+		}
+		restingCharacters.clear();
+		loadTeam();
+		sendChatMessage("Your Fellowship has started a new game.");
 	}
 
 	/**
@@ -861,6 +910,23 @@ public class FellowshipPlugin extends Plugin
 	private void saveVault()
 	{
 		configManager.setRSProfileConfiguration(CONFIG_GROUP, VAULT_KEY, gson.toJson(SavedVault.from(vault)));
+	}
+
+	/**
+	 * The first Swamp Caves run, whether it succeeds or fails, rescues someone trapped in the cave.
+	 * It only happens once per account, and from then on Skillers can join.
+	 */
+	private void rescueIfFirstSwampCavesRun(Expedition finished, List<Integer> party)
+	{
+		if (finished != Expedition.LUMBRIDGE_SWAMP_CAVES || rescued)
+		{
+			return;
+		}
+		rescued = true;
+		configManager.setRSProfileConfiguration(CONFIG_GROUP, RESCUED_KEY, true);
+		boolean solo = party.size() == 1;
+		sendChatMessage(joinNames(party) + (solo ? " finds" : " find") + " someone trapped in the cave and "
+			+ (solo ? "helps" : "help") + " them out.");
 	}
 
 	private void saveGuild()
