@@ -21,8 +21,8 @@ How a new player's game starts. This replaces hiring, the Encampment Perimeter s
 
 1. **Start:** one Adventurer and **no expeditions**. No Adventurers or Skillers can join yet; rare characters (Thief, Vyre, Acolyte, Merchant) still can.
 2. **Level the Adventurer to 10** from OSRS XP, finding bundles along the way. Take the first class advancement, then equip gear (the only benefit of advancing for now).
-3. **Explore the Lumbridge Swamp Caves unlocks** after the first class advancement, with the usual "expedition has been unlocked" chat message. **Threat 1, solo, 15 minutes**, 1,000 XP, 10–50 coins and a **40% Generic Bundle** on success (added 2026-10-29, to see how far bundles bridge the gap to the 1,000-coin Guild level).
-4. **The first Swamp Caves run, success or failure,** gives the chat message: "You find someone trapped in the cave. They thank you for your help." From then on, Skillers can join.
+3. **Explore the Lumbridge Swamp Caves unlocks** after the first class advancement, with the usual "expedition has been unlocked" chat message. **Threat 1, solo, 15 minutes**, 1,000 XP, 10–50 coins and a **Generic Bundle on every successful run** (added 2026-10-29 at 40%, raised to 100% the same day, to see how far bundles bridge the gap to the 1,000-coin Guild level).
+4. **The first Swamp Caves run, success or failure,** gives the chat message: "<name> finds someone trapped in the cave and helps them out." From then on, Skillers can join.
 5. **Skillers join by chance** (like rare characters, not hired), in **skilling skills only** (not combat), up to 3. Changed 2026-10-29 so the first comes quickly:
    - 1st Skiller: **10%** per 1,000 XP and 10% per level-up (about 10k XP).
    - 2nd: **1%** per 1,000 XP and per level-up (about 100k XP).
@@ -36,7 +36,7 @@ How a new player's game starts. This replaces hiring, the Encampment Perimeter s
 
 **Naming (to decide):** "Fellowship" is the people, and the Guild level may become the **encampment's** level (the place you build up and fortify, which could grow camp → outpost → Guild Hall). The user will decide; the code keeps the name `Guild` either way.
 
-**Build order:** 1. remove hiring and lock Swamp Caves (done); 2. Swamp Caves at 15 min, threat 1, rest 1/3, plus its bundle (done); 3. the rescue; 4. Skillers by chance; 5. Guild levels cost coins, +1 Guild XP per advancement; 6. Guild level 2 unlocks Fortifying; 7. the first Fortify opens the Adventurer slot.
+**Build order:** 1. remove hiring and lock Swamp Caves (done); 2. Swamp Caves at 15 min, threat 1, rest 1/3, plus its bundle (done); 3. the rescue (done); 4. Skillers by chance; 5. Guild levels cost coins, +1 Guild XP per advancement; 6. Guild level 2 unlocks Fortifying; 7. the first Fortify opens the Adventurer slot.
 
 **Other rule changes in this decision:**
 - **Injured characters rest 1/3 of the expedition's length** (was 5x), on every expedition. Swamp Caves: 5 minutes. Dorgeshuun: 40 minutes.
@@ -55,7 +55,7 @@ How a new player's game starts. This replaces hiring, the Encampment Perimeter s
 The first run still unlocks Skillers even when it fails, so nobody gets stuck. A failed run is still a 15-minute trip plus a 5-minute rest.
 
 **Open:**
-- **1,000 coins is steep for Guild level 2:** Swamp Caves averages about 30 coins, plus about 16 coins' worth from its bundle (a Generic Bundle is worth about 39 coins: 10–30 coins plus an item that salvages for about 19 on average), so roughly 20–25 runs. The user kept 1,000 on purpose, to see how far bundles bring them.
+- **1,000 coins is steep for Guild level 2:** Swamp Caves averages about 30 coins, plus about 39 coins' worth from its bundle (a Generic Bundle is worth about 39 coins: 10–30 coins plus an item that salvages for about 19 on average), so roughly 14 successful runs. The user kept 1,000 on purpose, to see how far bundles bring them.
 - **The 3rd character** and the details of the Adventurer slot (step 9).
 - **Swamp Caves XP and coins** (the ladder below has drafts: 3,000 XP, 20–60 coins).
 
