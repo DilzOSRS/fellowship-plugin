@@ -282,7 +282,7 @@ public class FellowshipPanel extends PluginPanel
 		{
 			JOptionPane.showMessageDialog(this, expedition.getDisplayName() + " needs a party of "
 				+ expedition.getPartySize() + ", but only " + (candidates.size() + 1)
-				+ " of your characters are home and healthy.",
+				+ " of your followers are home and healthy.",
 				"Expedition", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
@@ -317,7 +317,7 @@ public class FellowshipPanel extends PluginPanel
 		}
 		if (party.size() != expedition.getPartySize())
 		{
-			JOptionPane.showMessageDialog(this, "Pick exactly " + needed + " more characters.", "Expedition",
+			JOptionPane.showMessageDialog(this, "Pick exactly " + needed + " more " + (needed == 1 ? "follower." : "followers."), "Expedition",
 				JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}

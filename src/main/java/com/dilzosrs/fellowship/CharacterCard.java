@@ -417,7 +417,7 @@ public class CharacterCard extends JPanel
 				? shownName + " will worship " + blessing.getGodName() + ", giving "
 					+ blessing.describe() + " to everyone you send on expeditions.\n\n"
 				: "Train " + shownName + " in the ways of the " + newClass.getDisplayName() + "?\n\n")
-				+ "This is permanent, and the character restarts at level 1.",
+				+ "This is permanent, and " + shownName + " restarts at level 1.",
 			"Class advancement",
 			JOptionPane.YES_NO_OPTION);
 		if (choice == JOptionPane.YES_OPTION)
@@ -446,9 +446,11 @@ public class CharacterCard extends JPanel
 		else if (expedition == null)
 		{
 			countdownTimer.stop();
-			expeditionLabel.setText(lastReward == null
-				? "Send on an expedition:"
-				: "<html>" + lastReward + "<br><br>Send on an expedition:</html>");
+			// With nothing unlocked yet, say that expeditions will come, so the tab doesn't look broken.
+			String prompt = shownExpeditions.isEmpty()
+				? shownName + " can't go on<br>an expedition just yet.<br><br>Expeditions will appear here<br>as your Fellowship grows."
+				: "Send on an expedition:";
+			expeditionLabel.setText("<html>" + (lastReward == null ? "" : lastReward + "<br><br>") + prompt + "</html>");
 			for (Expedition option : shownExpeditions)
 			{
 				// The name gets its own line, because it's too long to fit inside a button.
