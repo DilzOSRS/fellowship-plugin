@@ -39,6 +39,10 @@ tasks.register('run', JavaExec) {
 	mainClass = pluginMainClass
 
 	jvmArgs "-ea"
+	// RuneLite uses Apple's full-screen classes on macOS, which Java 17 blocks unless they're opened up
+	if (System.getProperty('os.name').toLowerCase().contains('mac')) {
+		jvmArgs "--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED", "--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED"
+	}
 	args "--developer-mode", "--debug"
 }
 
