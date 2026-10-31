@@ -28,15 +28,15 @@ How a new player's game starts. This replaces hiring, the Encampment Perimeter s
    - 2nd: **1%** per 1,000 XP and per level-up (about 100k XP).
    - 3rd: **0.4%** (about 250k XP).
    This is an exception to the rule that **every other character that joins by chance is 5x harder per one of the same class owned** (changed from 10x, 2026-10-29).
-6. **The first Skiller** gets the usual pop-up plus the chat message: "The man you rescued from Lumbridge Swamp Caves has decided to join your fellowship."
-7. **Guild levels cost coins** (2026-10-29). When the Guild XP for the next level is full, it stops filling (extra Guild XP is wasted) and a **"Level up – 1,000 coins"** button appears. 1,000 coins per level for now; later the cost should scale with the Guild XP the level needs. A class advancement now also gives **+1 Guild XP** (on top of level-ups and collected expeditions).
+6. **The first Skiller** gets the usual pop-up plus the chat message: "The man you rescued from the Lumbridge Swamp Caves has decided to join your Fellowship."
+7. **Guild levels cost coins** (2026-10-29). When the Guild XP for the next level is full, it stops filling (extra Guild XP is wasted) and a **"Level up"** button appears. **Changed 2026-10-30 after playtesting (1,000 felt like a lot): 100 coins for level 2, doubling each level** (200 for 3, 400 for 4, ...). A class advancement now also gives **+1 Guild XP** (on top of level-ups and collected expeditions).
 8. **Guild level 2** gives the chat message "Your encampment can now be fortified." **Secure and Fortify the Encampment** unlocks when the team has **both Guild level 2 and a Skiller**: Skillers only, 1.5 h for one, 30 minutes shorter per extra Skiller (30 min with 3).
 9. **The first Fortify run** gives the chat message "Adventurers have started noticing your encampment." From then on, **one more Adventurer can join by chance**, after about 100k XP (draft: 1% per 1,000 XP; which skills and whether level-ups roll are still to decide).
 10. **The 3rd character** (Dorgeshuun needs a party of 3 and should be tough): still to design.
 
 **Naming (to decide):** "Fellowship" is the people, and the Guild level may become the **encampment's** level (the place you build up and fortify, which could grow camp → outpost → Guild Hall). The user will decide; the code keeps the name `Guild` either way.
 
-**Build order:** 1. remove hiring and lock Swamp Caves (done); 2. Swamp Caves at 15 min, threat 1, rest 1/3, plus its bundle (done); 3. the rescue (done); 4. Skillers by chance; 5. Guild levels cost coins, +1 Guild XP per advancement; 6. Guild level 2 unlocks Fortifying; 7. the first Fortify opens the Adventurer slot.
+**Build order:** 1. remove hiring and lock Swamp Caves (done); 2. Swamp Caves at 15 min, threat 1, rest 1/3, plus its bundle (done); 3. the rescue (done); 4. Skillers by chance (done); 5. Guild levels cost coins, +1 Guild XP per advancement (done); 6. Guild level 2 unlocks Fortifying; 7. the first Fortify opens the Adventurer slot.
 
 **Other rule changes in this decision:**
 - **Injured characters rest 1/3 of the expedition's length** (was 5x), on every expedition. Swamp Caves: 5 minutes. Dorgeshuun: 40 minutes.
@@ -55,7 +55,7 @@ How a new player's game starts. This replaces hiring, the Encampment Perimeter s
 The first run still unlocks Skillers even when it fails, so nobody gets stuck. A failed run is still a 15-minute trip plus a 5-minute rest.
 
 **Open:**
-- **1,000 coins is steep for Guild level 2:** Swamp Caves averages about 30 coins, plus about 39 coins' worth from its bundle (a Generic Bundle is worth about 39 coins: 10–30 coins plus an item that salvages for about 19 on average), so roughly 14 successful runs. The user kept 1,000 on purpose, to see how far bundles bring them.
+- **1,000 coins is steep for Guild level 2:** Swamp Caves averages about 30 coins, plus about 39 coins' worth from its bundle (a Generic Bundle is worth about 39 coins: 10–30 coins plus an item that salvages for about 19 on average), so roughly 14 successful runs. The user kept 1,000 on purpose, to see how far bundles bring them. (Lowered to 100, doubling, on 2026-10-30.)
 - **The 3rd character** and the details of the Adventurer slot (step 9).
 - **Swamp Caves XP and coins** (the ladder below has drafts: 3,000 XP, 20–60 coins).
 

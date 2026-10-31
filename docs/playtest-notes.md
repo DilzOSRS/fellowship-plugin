@@ -29,3 +29,7 @@ Notes from playing, to sort into fixes and tuning after each playtest.
     - Already a Parking Lot idea ("More loot triggers: level-ups"); this makes it part of the launch balance.
   - **How often depends on what's inside (user, 2026-10-26).** If the Generic Bundle has very low odds of anything rare, it's fine for it to drop often: it's expected to be mostly low-level items to salvage for coins. So drop rate and loot odds get tuned together, not separately.
     - It all depends on the bundle system, which the user pictures as a mix of **MapleStory Classic drop tables, OSRS drops and clue scrolls**. Design that before settling the final rates. See also "Bundle loot pools" in `docs/future-design.md`.
+
+## Playtest 2 (2026-10-30)
+
+- **The Vyre felt very quick to get (user, 2026-10-30).** Its odds were not raised for testing: 1% per 1,000 XP in Morytania, all skills added together, so combat there (Attack/Strength plus Hitpoints, and sometimes Slayer) fills it fast. About 63% to have one by 100k Morytania XP. Could just be RNG. **Test it again later** to see if it still feels fast; if so, options are 0.2% per 1,000 XP, or counting non-combat XP only.
