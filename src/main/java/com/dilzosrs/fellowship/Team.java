@@ -71,12 +71,12 @@ public class Team
 	}
 
 	/** The expeditions this team has unlocked (see {@link Expedition#isUnlockedFor}). */
-	public Set<Expedition> unlockedExpeditions()
+	public Set<Expedition> unlockedExpeditions(int guildLevel)
 	{
 		Set<Expedition> unlocked = EnumSet.noneOf(Expedition.class);
 		for (Expedition expedition : Expedition.values())
 		{
-			if (expedition.isUnlockedFor(this))
+			if (expedition.isUnlockedFor(this, guildLevel))
 			{
 				unlocked.add(expedition);
 			}
@@ -175,7 +175,7 @@ public class Team
 	 */
 	public boolean sendParty(List<Integer> indexes, Expedition expedition, Instant start)
 	{
-		if (indexes.size() != expedition.getPartySize() || new HashSet<>(indexes).size() != indexes.size())
+		if (!expedition.allowsPartySize(indexes.size()) || new HashSet<>(indexes).size() != indexes.size())
 		{
 			return false;
 		}
@@ -189,7 +189,7 @@ public class Team
 		}
 		for (int index : indexes)
 		{
-			characters.get(index).startExpedition(expedition, start);
+			characters.get(index).startExpedition(expedition, start, indexes.size());
 		}
 		return true;
 	}

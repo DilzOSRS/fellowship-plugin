@@ -7,9 +7,11 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import javax.inject.Inject;
@@ -25,11 +27,12 @@ import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.GameTick;
+import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.gameval.AnimationID;
 import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.gameval.VarPlayerID;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
@@ -39,6 +42,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
+import net.runelite.client.task.Schedule;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
@@ -60,6 +64,8 @@ public class FellowshipPlugin extends Plugin
 	// Never change these strings without a migration, or players lose their saved progress.
 	static final String CONFIG_GROUP = "fellowship";
 	private static final String TEAM_KEY = "team";
+	/** The last account played (not per account), so the game can be played from the login screen. */
+	private static final String LAST_PROFILE_KEY = "lastProfile";
 	private static final String COINS_KEY = "coins";
 	private static final String ACTIVE_INDEX_KEY = "activeIndex";
 	private static final String GUILD_XP_KEY = "guildXp";
@@ -67,6 +73,7 @@ public class FellowshipPlugin extends Plugin
 	private static final String GUILD_LEVEL_KEY = "guildLevel";
 	private static final String VAULT_KEY = "vault";
 	private static final String RESCUED_KEY = "rescuedFromSwampCaves";
+	private static final String FORTIFIED_KEY = "fortifiedEncampment";
 
 	private static final Color CHAT_TAG_COLOR = new Color(255, 200, 0);
 
@@ -120,6 +127,19 @@ public class FellowshipPlugin extends Plugin
 	 * the 3rd (about 250k). No more than 3.
 	 */
 	private final RareUnlock skillerUnlock = RareUnlock.fromSkilling(CharacterClass.SKILLER, 100_000, 10_000, 4_000);
+	/**
+	 * One more Adventurer joins from combat XP once the encampment has been fortified: 1% per
+	 * 1,000 XP and per level-up (about 100k XP). The first Adventurer is the one every game starts
+	 * with, so only the 2nd can join this way.
+	 */
+	private final RareUnlock adventurerUnlock = RareUnlock.fromCombat(CharacterClass.ADVENTURER, 0, 10_000);
+	/**
+	 * The account whose save is loaded. While logged out it's the last account played, so the
+	 * player can still collect and send followers from the login screen.
+	 */
+	private String profileKey;
+	/** Kills left on the Slayer task, or -1 until the game sends it after logging in. */
+	private int slayerKillsLeft = -1;
 	private FellowshipPanel panel;
 	private VaultPanel vaultPanel;
 	private NavigationButton navButton;
@@ -131,6 +151,8 @@ public class FellowshipPlugin extends Plugin
 	private Guild guild;
 	/** Whether the first Swamp Caves run has rescued someone, which lets Skillers join. Loaded with the team. */
 	private boolean rescued;
+	/** Whether the first Fortify run is done, which lets one more Adventurer join. Loaded with the team. */
+	private boolean fortified;
 	/** The account's unopened bundles and gear storage, loaded with the team. */
 	private Vault vault;
 	/** Characters whose finished expedition has already been announced in chat, so it's said only once. */
@@ -255,6 +277,13 @@ public class FellowshipPlugin extends Plugin
 					sendChatMessage("The man you rescued from the Lumbridge Swamp Caves has decided to join your Fellowship.");
 				}
 			}
+			if (fortified && adventurerUnlock.roll(event.getSkill(), gained, osrsLevelsGained,
+				team.countStartedAs(CharacterClass.ADVENTURER), random))
+			{
+				team.add(CharacterClass.ADVENTURER);
+				announceNewCharacter();
+				sendChatMessage("An adventurer who heard about your encampment has decided to join your Fellowship.");
+			}
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
 			saveTeam();
@@ -325,9 +354,42 @@ public class FellowshipPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onGameTick(GameTick event)
+	public void onVarbitChanged(VarbitChanged event)
 	{
-		// Announce each finished expedition once. The team is small, so checking every tick is cheap.
+		// Slayer task kills: the game's count of kills left goes down by one per kill.
+		if (event.getVarpId() != VarPlayerID.SLAYER_COUNT)
+		{
+			return;
+		}
+		int before = slayerKillsLeft;
+		slayerKillsLeft = event.getValue();
+		if (vault == null || team == null || before < 0)
+		{
+			return;
+		}
+		int bundles = SlayerLoot.bundlesFor(before, slayerKillsLeft, random);
+		for (int i = 0; i < bundles; i++)
+		{
+			vault.addBundle(BundleType.SLAYER);
+			announceBundle(BundleType.SLAYER);
+		}
+		if (bundles > 0)
+		{
+			saveVault();
+			updatePanel();
+		}
+	}
+
+	/** Every game tick's length, logged in or not, so returns and recoveries also show on the login screen. */
+	@Schedule(period = 600, unit = ChronoUnit.MILLIS)
+	public void checkReturns()
+	{
+		clientThread.invokeLater(this::announceReturns);
+	}
+
+	private void announceReturns()
+	{
+		// Announce each finished expedition once. The team is small, so checking often is cheap.
 		if (team == null)
 		{
 			return;
@@ -359,17 +421,18 @@ public class FellowshipPlugin extends Plugin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
-		// Logged out: the next login (maybe on another account) starts a fresh snapshot,
-		// and no XP is counted until that account's team is loaded.
+		// Logged out: the next login (maybe on another account) starts a fresh snapshot. The team
+		// stays loaded, so the game can still be played from the login screen.
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
 			xpTracker.reset();
-			team = null;
-			SwingUtilities.invokeLater(panel::showLoggedOut);
+			slayerKillsLeft = -1;
 		}
 		// Logging back into the same account doesn't count as a profile change, so
-		// onRuneScapeProfileChanged won't load the team again. Load it here instead.
-		else if (event.getGameState() == GameState.LOGGED_IN && team == null)
+		// onRuneScapeProfileChanged won't load the team again. Load it here if it's missing, or if the
+		// login screen was showing a different account.
+		else if (event.getGameState() == GameState.LOGGED_IN
+			&& (team == null || !Objects.equals(configManager.getRSProfileKey(), profileKey)))
 		{
 			loadTeam();
 		}
@@ -508,7 +571,7 @@ public class FellowshipPlugin extends Plugin
 			{
 				injured.add(partyBefore.get(position));
 			}
-			Duration rest = finished.getDuration().dividedBy(Danger.REST_DIVISOR);
+			Duration rest = finished.getDuration(partyBefore.size()).dividedBy(Danger.REST_DIVISOR);
 			for (int member : injured)
 			{
 				team.get(member).injure(now.plus(rest));
@@ -521,6 +584,7 @@ public class FellowshipPlugin extends Plugin
 					+ finished.getOngoingName() + " and came back empty-handed.");
 				announceInjuries(injured, rest);
 				rescueIfFirstSwampCavesRun(finished, party);
+				noticeIfFirstFortifyRun(finished);
 				for (int member : party)
 				{
 					announcedReturns.remove(team.get(member));
@@ -563,6 +627,7 @@ public class FellowshipPlugin extends Plugin
 			}
 			announceInjuries(injured, rest);
 			rescueIfFirstSwampCavesRun(finished, party);
+			noticeIfFirstFortifyRun(finished);
 			announceLevelUps(levelsBefore);
 
 			int levelsGained = 0;
@@ -649,19 +714,24 @@ public class FellowshipPlugin extends Plugin
 
 	/**
 	 * Tell the player about expeditions the team has just unlocked. Unlocks only change when someone
-	 * joins or takes a class advancement, so this is only checked then (and remembered on load).
+	 * joins, takes a class advancement or the Guild levels up, so this is only checked then (and
+	 * remembered on load).
 	 */
 	private void announceNewExpeditions()
 	{
-		for (Expedition expedition : team.unlockedExpeditions())
+		for (Expedition expedition : team.unlockedExpeditions(guild.getLevel()))
 		{
 			if (unlockedExpeditions.add(expedition))
 			{
 				sendChatMessage(expedition.getDisplayName() + " expedition has been unlocked.");
 				if (expedition == Expedition.DORGESHUUN_CAVES)
 				{
-					sendChatMessage("You can now send a team of " + expedition.getPartySize()
+					sendChatMessage("You can now send a team of " + expedition.getMinPartySize()
 						+ " followers into a dungeon.");
+				}
+				if (expedition == Expedition.FORTIFYING_ENCAMPMENT)
+				{
+					sendChatMessage("Your encampment can now be fortified by your Skillers.");
 				}
 			}
 		}
@@ -684,7 +754,7 @@ public class FellowshipPlugin extends Plugin
 			{
 				return;
 			}
-			configManager.setRSProfileConfiguration(CONFIG_GROUP, ACTIVE_INDEX_KEY, index);
+			configManager.setConfiguration(CONFIG_GROUP, profileKey, ACTIVE_INDEX_KEY, index);
 			updatePanel();
 		});
 	}
@@ -840,6 +910,7 @@ public class FellowshipPlugin extends Plugin
 			saveCoins();
 			saveGuild();
 			sendChatMessage("Your Fellowship Guild reached level " + guild.getLevel() + "!");
+			announceNewExpeditions();
 			updatePanel();
 		});
 	}
@@ -872,13 +943,23 @@ public class FellowshipPlugin extends Plugin
 	{
 		team = null;
 		announcedReturns.clear();
-		if (configManager.getRSProfileKey() == null)
+		profileKey = configManager.getRSProfileKey();
+		if (profileKey == null)
 		{
-			// Not logged in yet, so we don't know which account's progress to load.
-			return;
+			// Not logged in (e.g. the client was just opened), so load the last account played.
+			profileKey = configManager.getConfiguration(CONFIG_GROUP, LAST_PROFILE_KEY);
+			if (profileKey == null)
+			{
+				SwingUtilities.invokeLater(panel::showLoggedOut);
+				return;
+			}
+		}
+		else
+		{
+			configManager.setConfiguration(CONFIG_GROUP, LAST_PROFILE_KEY, profileKey);
 		}
 
-		String json = configManager.getRSProfileConfiguration(CONFIG_GROUP, TEAM_KEY);
+		String json = configManager.getConfiguration(CONFIG_GROUP, profileKey, TEAM_KEY);
 		if (json == null)
 		{
 			team = moveOldSaveIntoTeam();
@@ -904,12 +985,9 @@ public class FellowshipPlugin extends Plugin
 					loaded.add(savedCharacter.toCharacter());
 				}
 			}
-			Integer savedActive = configManager.getRSProfileConfiguration(CONFIG_GROUP, ACTIVE_INDEX_KEY, Integer.class);
+			Integer savedActive = configManager.getConfiguration(CONFIG_GROUP, profileKey, ACTIVE_INDEX_KEY, Integer.class);
 			team = new Team(loaded, savedActive == null ? 0 : savedActive);
 		}
-
-		// Expeditions already unlocked aren't announced again.
-		unlockedExpeditions = team.unlockedExpeditions();
 
 		restingCharacters.clear();
 		for (FellowshipCharacter character : team.getCharacters())
@@ -920,17 +998,21 @@ public class FellowshipPlugin extends Plugin
 			}
 		}
 
-		Long savedCoins = configManager.getRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, Long.class);
+		Long savedCoins = configManager.getConfiguration(CONFIG_GROUP, profileKey, COINS_KEY, Long.class);
 		coins = savedCoins == null ? 0 : savedCoins;
 
-		Long savedGuildXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, Long.class);
+		Long savedGuildXp = configManager.getConfiguration(CONFIG_GROUP, profileKey, GUILD_XP_KEY, Long.class);
 		long guildXp = savedGuildXp == null ? 0 : savedGuildXp;
-		Integer savedGuildLevel = configManager.getRSProfileConfiguration(CONFIG_GROUP, GUILD_LEVEL_KEY, Integer.class);
+		Integer savedGuildLevel = configManager.getConfiguration(CONFIG_GROUP, profileKey, GUILD_LEVEL_KEY, Integer.class);
 		guild = new Guild(guildXp, savedGuildLevel == null ? Guild.levelForXp(guildXp) : savedGuildLevel);
 
-		rescued = Boolean.TRUE.equals(configManager.getRSProfileConfiguration(CONFIG_GROUP, RESCUED_KEY, Boolean.class));
+		// Expeditions already unlocked aren't announced again.
+		unlockedExpeditions = team.unlockedExpeditions(guild.getLevel());
 
-		String vaultJson = configManager.getRSProfileConfiguration(CONFIG_GROUP, VAULT_KEY);
+		rescued = Boolean.TRUE.equals(configManager.getConfiguration(CONFIG_GROUP, profileKey, RESCUED_KEY, Boolean.class));
+		fortified = Boolean.TRUE.equals(configManager.getConfiguration(CONFIG_GROUP, profileKey, FORTIFIED_KEY, Boolean.class));
+
+		String vaultJson = configManager.getConfiguration(CONFIG_GROUP, profileKey, VAULT_KEY);
 		vault = Vault.empty();
 		if (vaultJson != null)
 		{
@@ -966,7 +1048,7 @@ public class FellowshipPlugin extends Plugin
 			return;
 		}
 		for (String key : new String[]{TEAM_KEY, COINS_KEY, ACTIVE_INDEX_KEY, GUILD_XP_KEY, GUILD_LEVEL_KEY, VAULT_KEY,
-			RESCUED_KEY})
+			RESCUED_KEY, FORTIFIED_KEY})
 		{
 			configManager.unsetRSProfileConfiguration(CONFIG_GROUP, key);
 		}
@@ -982,11 +1064,11 @@ public class FellowshipPlugin extends Plugin
 	private Team moveOldSaveIntoTeam()
 	{
 		SavedCharacter old = new SavedCharacter();
-		old.characterClass = configManager.getRSProfileConfiguration(CONFIG_GROUP, LEGACY_CLASS_KEY);
-		Long oldXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, LEGACY_XP_KEY, Long.class);
+		old.characterClass = configManager.getConfiguration(CONFIG_GROUP, profileKey, LEGACY_CLASS_KEY);
+		Long oldXp = configManager.getConfiguration(CONFIG_GROUP, profileKey, LEGACY_XP_KEY, Long.class);
 		old.xp = oldXp == null ? 0 : oldXp;
-		old.expedition = configManager.getRSProfileConfiguration(CONFIG_GROUP, LEGACY_EXPEDITION_KEY);
-		old.expeditionStart = configManager.getRSProfileConfiguration(CONFIG_GROUP, LEGACY_EXPEDITION_START_KEY, Long.class);
+		old.expedition = configManager.getConfiguration(CONFIG_GROUP, profileKey, LEGACY_EXPEDITION_KEY);
+		old.expeditionStart = configManager.getConfiguration(CONFIG_GROUP, profileKey, LEGACY_EXPEDITION_START_KEY, Long.class);
 
 		List<FellowshipCharacter> moved = new ArrayList<>();
 		moved.add(old.toCharacter());
@@ -994,10 +1076,10 @@ public class FellowshipPlugin extends Plugin
 
 		// Save the new format first, so progress is never lost if something goes wrong in between.
 		saveTeam();
-		configManager.unsetRSProfileConfiguration(CONFIG_GROUP, LEGACY_XP_KEY);
-		configManager.unsetRSProfileConfiguration(CONFIG_GROUP, LEGACY_CLASS_KEY);
-		configManager.unsetRSProfileConfiguration(CONFIG_GROUP, LEGACY_EXPEDITION_KEY);
-		configManager.unsetRSProfileConfiguration(CONFIG_GROUP, LEGACY_EXPEDITION_START_KEY);
+		configManager.unsetConfiguration(CONFIG_GROUP, profileKey, LEGACY_XP_KEY);
+		configManager.unsetConfiguration(CONFIG_GROUP, profileKey, LEGACY_CLASS_KEY);
+		configManager.unsetConfiguration(CONFIG_GROUP, profileKey, LEGACY_EXPEDITION_KEY);
+		configManager.unsetConfiguration(CONFIG_GROUP, profileKey, LEGACY_EXPEDITION_START_KEY);
 		log.debug("Moved the old Fellowship save into the team format");
 		return team;
 	}
@@ -1010,17 +1092,17 @@ public class FellowshipPlugin extends Plugin
 		{
 			saved[i] = SavedCharacter.from(characters.get(i));
 		}
-		configManager.setRSProfileConfiguration(CONFIG_GROUP, TEAM_KEY, gson.toJson(saved));
+		configManager.setConfiguration(CONFIG_GROUP, profileKey, TEAM_KEY, gson.toJson(saved));
 	}
 
 	private void saveCoins()
 	{
-		configManager.setRSProfileConfiguration(CONFIG_GROUP, COINS_KEY, coins);
+		configManager.setConfiguration(CONFIG_GROUP, profileKey, COINS_KEY, coins);
 	}
 
 	private void saveVault()
 	{
-		configManager.setRSProfileConfiguration(CONFIG_GROUP, VAULT_KEY, gson.toJson(SavedVault.from(vault)));
+		configManager.setConfiguration(CONFIG_GROUP, profileKey, VAULT_KEY, gson.toJson(SavedVault.from(vault)));
 	}
 
 	/**
@@ -1034,16 +1116,31 @@ public class FellowshipPlugin extends Plugin
 			return;
 		}
 		rescued = true;
-		configManager.setRSProfileConfiguration(CONFIG_GROUP, RESCUED_KEY, true);
+		configManager.setConfiguration(CONFIG_GROUP, profileKey, RESCUED_KEY, true);
 		boolean solo = party.size() == 1;
 		sendChatMessage(joinNames(party) + (solo ? " finds" : " find") + " someone trapped in the cave and "
 			+ (solo ? "helps" : "help") + " them out.");
 	}
 
+	/**
+	 * The first Fortify run gets the encampment noticed. It only happens once per account, and
+	 * from then on one more Adventurer can join.
+	 */
+	private void noticeIfFirstFortifyRun(Expedition finished)
+	{
+		if (finished != Expedition.FORTIFYING_ENCAMPMENT || fortified)
+		{
+			return;
+		}
+		fortified = true;
+		configManager.setConfiguration(CONFIG_GROUP, profileKey, FORTIFIED_KEY, true);
+		sendChatMessage("Adventurers have started noticing your encampment.");
+	}
+
 	private void saveGuild()
 	{
-		configManager.setRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, guild.getXp());
-		configManager.setRSProfileConfiguration(CONFIG_GROUP, GUILD_LEVEL_KEY, guild.getLevel());
+		configManager.setConfiguration(CONFIG_GROUP, profileKey, GUILD_XP_KEY, guild.getXp());
+		configManager.setConfiguration(CONFIG_GROUP, profileKey, GUILD_LEVEL_KEY, guild.getLevel());
 	}
 
 	private void updatePanel()
@@ -1052,7 +1149,7 @@ public class FellowshipPlugin extends Plugin
 		List<CharacterView> views = new ArrayList<>();
 		for (int i = 0; i < team.size(); i++)
 		{
-			views.add(new CharacterView(team, i));
+			views.add(new CharacterView(team, i, guild.getLevel()));
 		}
 		long coinsNow = coins;
 		long guildXp = guild.getXp();
@@ -1078,5 +1175,6 @@ public class FellowshipPlugin extends Plugin
 		{
 			xpTracker.update(skill, client.getSkillExperience(skill));
 		}
+		slayerKillsLeft = client.getVarpValue(VarPlayerID.SLAYER_COUNT);
 	}
 }

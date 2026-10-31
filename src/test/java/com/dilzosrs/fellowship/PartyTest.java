@@ -28,10 +28,10 @@ public class PartyTest
 	@Test
 	public void dorgeshuunCavesNeedsThreeAndIsDangerous()
 	{
-		assertEquals(3, Expedition.DORGESHUUN_CAVES.getPartySize());
+		assertEquals(3, Expedition.DORGESHUUN_CAVES.getMinPartySize());
 		assertEquals(8, Expedition.DORGESHUUN_CAVES.getThreatLevel());
 		assertEquals(Duration.ofHours(2), Expedition.DORGESHUUN_CAVES.getDuration());
-		assertEquals(1, Expedition.LUMBRIDGE_SWAMP_CAVES.getPartySize());
+		assertEquals(1, Expedition.LUMBRIDGE_SWAMP_CAVES.getMinPartySize());
 		assertEquals(1, Expedition.LUMBRIDGE_SWAMP_CAVES.getThreatLevel());
 	}
 

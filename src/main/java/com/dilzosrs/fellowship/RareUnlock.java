@@ -72,6 +72,15 @@ public class RareUnlock
 			chancesByOwned);
 	}
 
+	/**
+	 * Rolls on XP and level-ups in combat skills, with its own chance for each one (e.g. the
+	 * 2nd Adventurer). No more join after the last chance.
+	 */
+	public static RareUnlock fromCombat(CharacterClass characterClass, int... chancesByOwned)
+	{
+		return new RareUnlock(characterClass, EnumSet.copyOf(COMBAT_SKILLS), true, false, chancesByOwned);
+	}
+
 	/** Rolls on XP in any skill, but only while the player is in Morytania. No level-up rolls. */
 	public static RareUnlock fromMorytania(CharacterClass characterClass)
 	{

@@ -18,6 +18,8 @@ public class SavedCharacter
 	String expedition;
 	/** Epoch milliseconds. Null when the character is home. */
 	Long expeditionStart;
+	/** How many went on the trip together. Null in older saves, which means the smallest party. */
+	Integer partySize;
 	/** Epoch milliseconds when an injured character is healed. Null if it isn't injured. */
 	Long restingUntil;
 	/** What the character wears. Null for an empty slot. */
@@ -36,6 +38,7 @@ public class SavedCharacter
 		{
 			saved.expedition = character.getExpedition().name();
 			saved.expeditionStart = character.getExpeditionStart().toEpochMilli();
+			saved.partySize = character.getPartySize();
 		}
 		if (character.getRestingUntil() != null)
 		{
@@ -64,7 +67,8 @@ public class SavedCharacter
 		if (savedExpedition != null && expeditionStart != null)
 		{
 			// Timers run in real time, so an expedition can finish while logged out.
-			character.startExpedition(savedExpedition, Instant.ofEpochMilli(expeditionStart));
+			character.startExpedition(savedExpedition, Instant.ofEpochMilli(expeditionStart),
+				partySize == null ? savedExpedition.getMinPartySize() : partySize);
 			character.setCarrying(carrying == null ? null : carrying.toItem());
 		}
 		if (restingUntil != null)

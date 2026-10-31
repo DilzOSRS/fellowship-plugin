@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -285,7 +286,7 @@ public class FellowshipPanel extends PluginPanel
 			chooseItemToTransmute(characterIndex, expedition);
 			return;
 		}
-		if (expedition.getPartySize() <= 1)
+		if (expedition.getMaxPartySize() <= 1)
 		{
 			onSendExpedition.accept(List.of(characterIndex), expedition);
 			return;
@@ -295,28 +296,36 @@ public class FellowshipPanel extends PluginPanel
 			return;
 		}
 
-		int needed = expedition.getPartySize() - 1;
+		int minMore = expedition.getMinPartySize() - 1;
+		int maxMore = expedition.getMaxPartySize() - 1;
+		boolean exact = minMore == maxMore;
 		List<Integer> candidates = new ArrayList<>();
 		for (int i = 0; i < shownTeam.size(); i++)
 		{
-			if (i != characterIndex && shownTeam.get(i).expedition == null && shownTeam.get(i).restingUntil == null)
+			CharacterView other = shownTeam.get(i);
+			if (i != characterIndex && other.expedition == null && other.restingUntil == null
+				&& expedition.allows(other.characterClass))
 			{
 				candidates.add(i);
 			}
 		}
-		if (candidates.size() < needed)
+		if (candidates.size() < minMore)
 		{
 			JOptionPane.showMessageDialog(this, expedition.getDisplayName() + " needs a party of "
-				+ expedition.getPartySize() + ", but only " + (candidates.size() + 1)
+				+ expedition.getMinPartySize() + ", but only " + (candidates.size() + 1)
 				+ " of your followers are home and healthy.",
 				"Expedition", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 
 		JPanel picker = new JPanel(new GridLayout(0, 1, 0, 2));
+		Duration saved = expedition.getDuration().minus(expedition.getDuration(expedition.getMinPartySize() + 1));
+		String shorter = saved.isZero() ? "" : "<br>Each one makes the trip " + saved.toMinutes() + " minutes shorter.";
 		picker.add(new JLabel("<html>" + shownTeam.get(characterIndex).name + " is going to "
-			+ expedition.getDisplayName() + " (threat " + expedition.getThreatLevel() + ").<br>"
-			+ "Pick " + needed + " more to go with them:</html>"));
+			+ expedition.getDisplayName() + " (" + (expedition.getThreatLevel() > 0
+				? "threat " + expedition.getThreatLevel() : "safe") + ").<br>"
+			+ (exact ? "Pick " + minMore + " more to go with them:"
+				: "Pick up to " + maxMore + " more to go with them." + shorter) + "</html>"));
 		List<JCheckBox> boxes = new ArrayList<>();
 		for (int index : candidates)
 		{
@@ -341,10 +350,11 @@ public class FellowshipPanel extends PluginPanel
 				party.add(candidates.get(i));
 			}
 		}
-		if (party.size() != expedition.getPartySize())
+		if (!expedition.allowsPartySize(party.size()))
 		{
-			JOptionPane.showMessageDialog(this, "Pick exactly " + needed + " more " + (needed == 1 ? "follower." : "followers."), "Expedition",
-				JOptionPane.INFORMATION_MESSAGE);
+			String count = exact ? "exactly " + minMore : "up to " + maxMore;
+			JOptionPane.showMessageDialog(this, "Pick " + count + " more " + (maxMore == 1 ? "follower." : "followers."),
+				"Expedition", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 
@@ -352,9 +362,13 @@ public class FellowshipPanel extends PluginPanel
 		double partyAtk = party.stream().mapToDouble(i -> shownTeam.get(i).atk + shownTeam.get(i).mag / 2.0)
 			.average().orElse(0);
 		int failPercent = (int) Math.round(Danger.failChance(expedition.getThreatLevel(), partyAtk) * 100);
-		String odds = String.format("Party ATK %.1f vs threat %d: ", partyAtk, expedition.getThreatLevel())
+		String odds = expedition.getThreatLevel() == 0 ? "It's a safe trip."
+			: String.format("Party ATK %.1f vs threat %d: ", partyAtk, expedition.getThreatLevel())
 			+ (failPercent == 0 ? "they'll clear it." : failPercent + "% chance of failing.\nA failed expedition gives no XP or loot.");
-		int go = JOptionPane.showConfirmDialog(this, odds + "\n\nSend them?", "Expedition", JOptionPane.YES_NO_OPTION);
+		long minutes = expedition.getDuration(party.size()).toMinutes();
+		String back = "\nThey'll be back in " + (minutes >= 60 && minutes % 60 == 0 ? minutes / 60 + "h"
+			: minutes >= 60 ? minutes / 60 + "h " + minutes % 60 + "m" : minutes + " min") + ".";
+		int go = JOptionPane.showConfirmDialog(this, odds + back + "\n\nSend them?", "Expedition", JOptionPane.YES_NO_OPTION);
 		if (go != JOptionPane.YES_OPTION)
 		{
 			return;

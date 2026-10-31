@@ -156,4 +156,18 @@ public class RareUnlockTest
 		assertEquals(1, team.countStartedAs(CharacterClass.ADVENTURER));
 		assertEquals(0, team.countStartedAs(CharacterClass.THIEF));
 	}
+
+	@Test
+	public void oneMoreAdventurerJoinsFromCombatXpOnly()
+	{
+		// Same chances as the plugin: only the 2nd Adventurer can join, at 1%.
+		RareUnlock unlock = RareUnlock.fromCombat(CharacterClass.ADVENTURER, 0, 10_000);
+		assertFalse(unlock.roll(Skill.WOODCUTTING, 50_000, 5, 1, always(0)));
+		assertTrue(unlock.roll(Skill.ATTACK, 1_000, 0, 1, always(9_999)));
+		assertFalse(unlock.roll(Skill.ATTACK, 1_000, 0, 1, always(10_000)));
+		// Level-ups roll too.
+		assertTrue(unlock.roll(Skill.RANGED, 0, 1, 1, always(0)));
+		// None once there are 2.
+		assertFalse(unlock.roll(Skill.ATTACK, 50_000, 5, 2, always(0)));
+	}
 }

@@ -22,10 +22,16 @@ public enum Expedition
 	// Only an Alchemist can go, alone, taking one stored item, which comes back as coins
 	// (TRANSMUTE_MULTIPLIER times its salvage value). Gives no other coins.
 	TRANSMUTING_METALS("Transmute metals", Duration.ofMinutes(10), 500, 0, 0,
-		0, 1, null, 0, 1, 0, CharacterClass.ALCHEMIST);
+		0, 1, null, 0, 1, 0, CharacterClass.ALCHEMIST),
+	// Skillers only (the whole Skiller tree), 1 to 3 of them. Safe. 1.5 hours for one, and each
+	// extra Skiller makes it 30 minutes shorter. Unlocks at Guild level 2 once a Skiller has joined.
+	FORTIFYING_ENCAMPMENT("Secure and Fortify the Encampment", Duration.ofMinutes(90), 5_000, 0, 0,
+		0, 1, 3, Duration.ofMinutes(30), BundleType.GENERIC, 25, 1, 0, CharacterClass.SKILLER);
 
 	/** Transmuting an item gives this many times its salvage value in coins. */
 	static final int TRANSMUTE_MULTIPLIER = 2;
+	/** The Guild level Fortifying the Encampment needs. */
+	static final int FORTIFY_GUILD_LEVEL = 2;
 
 	private final String displayName;
 	private final Duration duration;
@@ -33,7 +39,10 @@ public enum Expedition
 	private final int minCoins;
 	private final int maxCoins;
 	private final int threatLevel;
-	private final int partySize;
+	private final int minPartySize;
+	private final int maxPartySize;
+	/** How much shorter the trip is for each member past the smallest party. */
+	private final Duration shorterPerExtra;
 	/** A bundle that can come back too, or null. */
 	private final BundleType bonusBundle;
 	private final int bonusBundleChance;
@@ -55,6 +64,18 @@ public enum Expedition
 		int threatLevel, int partySize, BundleType bonusBundle, int bonusBundleChance,
 		int bonusBundleCount, int cost, CharacterClass requiredClass)
 	{
+		this(displayName, duration, xpReward, minCoins, maxCoins, threatLevel, partySize, partySize,
+			Duration.ZERO, bonusBundle, bonusBundleChance, bonusBundleCount, cost, requiredClass);
+	}
+
+	Expedition(String displayName, Duration duration, int xpReward, int minCoins, int maxCoins,
+		int threatLevel, int minPartySize, int maxPartySize, Duration shorterPerExtra,
+		BundleType bonusBundle, int bonusBundleChance, int bonusBundleCount, int cost,
+		CharacterClass requiredClass)
+	{
+		this.minPartySize = minPartySize;
+		this.maxPartySize = maxPartySize;
+		this.shorterPerExtra = shorterPerExtra;
 		this.bonusBundleCount = bonusBundleCount;
 		this.cost = cost;
 		this.requiredClass = requiredClass;
@@ -64,7 +85,6 @@ public enum Expedition
 		this.minCoins = minCoins;
 		this.maxCoins = maxCoins;
 		this.threatLevel = threatLevel;
-		this.partySize = partySize;
 		this.bonusBundle = bonusBundle;
 		this.bonusBundleChance = bonusBundleChance;
 	}
@@ -88,14 +108,23 @@ public enum Expedition
 				return "Looting the Dorgeshuun Caves";
 			case TRANSMUTING_METALS:
 				return "Transmuting metals";
+			case FORTIFYING_ENCAMPMENT:
+				return "Fortifying the Encampment";
 			default:
 				return displayName;
 		}
 	}
 
+	/** How long it takes with the smallest party (the longest it can take). */
 	public Duration getDuration()
 	{
 		return duration;
+	}
+
+	/** How long it takes with this many members: shorter for each one past the smallest party. */
+	public Duration getDuration(int partySize)
+	{
+		return duration.minus(shorterPerExtra.multipliedBy(Math.max(0, partySize - minPartySize)));
 	}
 
 	/** Fellowship XP for each party member. Class bonuses don't apply, but the level cap does. */
@@ -116,10 +145,22 @@ public enum Expedition
 		return threatLevel;
 	}
 
-	/** How many characters must go together. */
-	public int getPartySize()
+	/** The fewest characters that can go together. */
+	public int getMinPartySize()
 	{
-		return partySize;
+		return minPartySize;
+	}
+
+	/** The most characters that can go together. */
+	public int getMaxPartySize()
+	{
+		return maxPartySize;
+	}
+
+	/** Whether this many characters can go together. */
+	public boolean allowsPartySize(int size)
+	{
+		return size >= minPartySize && size <= maxPartySize;
 	}
 
 	/** The bonus bundle if its chance hits (rolled once per party), or null. */
@@ -141,17 +182,23 @@ public enum Expedition
 	}
 
 	/**
-	 * Whether the team could ever go: it has enough characters for the party, and one of the
-	 * required class if there is one. The Swamp Caves also wait for the first class advancement.
-	 * Characters never leave or lose a class, so once unlocked it stays unlocked.
+	 * Whether the team could ever go: it has enough characters allowed on it for the smallest
+	 * party. The Swamp Caves also wait for the first class advancement, and Fortifying for Guild
+	 * level 2. Characters never leave, and the Guild never loses a level, so once unlocked it
+	 * stays unlocked.
 	 */
-	public boolean isUnlockedFor(Team team)
+	public boolean isUnlockedFor(Team team, int guildLevel)
 	{
 		if (this == LUMBRIDGE_SWAMP_CAVES && !team.hasAdvancedCharacter())
 		{
 			return false;
 		}
-		return team.size() >= partySize && (requiredClass == null || team.count(requiredClass) > 0);
+		if (this == FORTIFYING_ENCAMPMENT && guildLevel < FORTIFY_GUILD_LEVEL)
+		{
+			return false;
+		}
+		int allowed = requiredClass == null ? team.size() : team.countStartedAs(requiredClass);
+		return allowed >= minPartySize;
 	}
 
 	/** Whether the character takes a stored item along (to transmute it into coins). */
@@ -160,9 +207,9 @@ public enum Expedition
 		return this == TRANSMUTING_METALS;
 	}
 
-	/** Whether a character of this class is allowed to go. */
+	/** Whether a character of this class is allowed to go. Advanced classes count as where they started. */
 	public boolean allows(CharacterClass characterClass)
 	{
-		return requiredClass == null || requiredClass == characterClass;
+		return requiredClass == null || requiredClass == characterClass.getBaseClass();
 	}
 }

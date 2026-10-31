@@ -32,7 +32,7 @@ public class AlchemistTest
 		assertFalse(Expedition.LUMBRIDGE_SWAMP_CAVES.needsItem());
 		assertTrue(transmute.allows(CharacterClass.ALCHEMIST));
 		assertFalse(transmute.allows(CharacterClass.KNIGHT));
-		assertEquals(1, transmute.getPartySize());
+		assertEquals(1, transmute.getMinPartySize());
 		assertEquals(0, transmute.getThreatLevel());
 		assertEquals(Duration.ofMinutes(10), transmute.getDuration());
 		// It brings back no coins of its own: only the transmuted item's.

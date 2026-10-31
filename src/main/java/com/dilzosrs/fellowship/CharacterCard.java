@@ -465,7 +465,9 @@ public class CharacterCard extends JPanel
 				// Every row gets an info line, so all rows are the same height.
 				JLabel info = new JLabel(
 					(option.getThreatLevel() > 0 ? "Threat " + option.getThreatLevel() : "Safe") + ", "
-						+ (option.getPartySize() > 1 ? "party of " + option.getPartySize() : "solo")
+						+ (option.getMaxPartySize() == 1 ? "solo"
+							: "party of " + (option.getMinPartySize() == option.getMaxPartySize() ? ""
+							: option.getMinPartySize() + "-") + option.getMaxPartySize())
 						+ (option.getCost() > 0 ? ", " + option.getCost() + " coins" : ""));
 				info.setFont(FontManager.getRunescapeSmallFont());
 				info.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
@@ -561,7 +563,7 @@ public class CharacterCard extends JPanel
 
 	private void confirmSend(Expedition expedition)
 	{
-		if (expedition.getPartySize() > 1 || expedition.needsItem())
+		if (expedition.getMaxPartySize() > 1 || expedition.needsItem())
 		{
 			// The panel shows a party or item picker instead, which has its own confirm or cancel.
 			onSendExpedition.accept(expedition);

@@ -14,27 +14,30 @@ public class ExpeditionUnlockTest
 	{
 		// A new team has no expeditions until someone takes a class advancement.
 		Team team = new Team(List.of(new FellowshipCharacter(CharacterClass.ADVENTURER, LevelCurve.xpForLevel(10))));
-		assertEquals(EnumSet.noneOf(Expedition.class), team.unlockedExpeditions());
+		assertEquals(EnumSet.noneOf(Expedition.class), team.unlockedExpeditions(1));
 
 		// Three characters make a party for the Dorgeshuun Caves.
 		team.add(CharacterClass.SKILLER);
-		assertEquals(EnumSet.noneOf(Expedition.class), team.unlockedExpeditions());
+		assertEquals(EnumSet.noneOf(Expedition.class), team.unlockedExpeditions(1));
 		team.add(CharacterClass.THIEF);
-		assertEquals(EnumSet.of(Expedition.DORGESHUUN_CAVES), team.unlockedExpeditions());
+		assertEquals(EnumSet.of(Expedition.DORGESHUUN_CAVES), team.unlockedExpeditions(1));
 
 		// The first Merchant unlocks the trade run.
 		team.add(CharacterClass.MERCHANT);
 		assertEquals(EnumSet.of(Expedition.DORGESHUUN_CAVES, Expedition.GRAND_EXCHANGE_TRADE),
-			team.unlockedExpeditions());
+			team.unlockedExpeditions(1));
 
 		// The first Alchemist unlocks Transmuting metals.
 		team.add(CharacterClass.ALCHEMIST);
 		assertEquals(EnumSet.of(Expedition.DORGESHUUN_CAVES, Expedition.GRAND_EXCHANGE_TRADE,
-			Expedition.TRANSMUTING_METALS), team.unlockedExpeditions());
+			Expedition.TRANSMUTING_METALS), team.unlockedExpeditions(1));
 
 		// The first class advancement unlocks the Swamp Caves.
 		assertTrue(team.get(0).evolve(CharacterClass.KNIGHT));
-		assertEquals(EnumSet.allOf(Expedition.class), team.unlockedExpeditions());
+		assertEquals(EnumSet.complementOf(EnumSet.of(Expedition.FORTIFYING_ENCAMPMENT)), team.unlockedExpeditions(1));
+
+		// Guild level 2 with a Skiller on the team unlocks Fortifying the Encampment.
+		assertEquals(EnumSet.allOf(Expedition.class), team.unlockedExpeditions(2));
 	}
 
 	@Test
@@ -53,8 +56,8 @@ public class ExpeditionUnlockTest
 	{
 		Team team = new Team(List.of(new FellowshipCharacter(CharacterClass.KNIGHT, 0),
 			new FellowshipCharacter(CharacterClass.MERCHANT, 0)));
-		assertEquals(List.of(Expedition.LUMBRIDGE_SWAMP_CAVES), new CharacterView(team, 0).expeditions);
+		assertEquals(List.of(Expedition.LUMBRIDGE_SWAMP_CAVES), new CharacterView(team, 0, 1).expeditions);
 		assertEquals(List.of(Expedition.LUMBRIDGE_SWAMP_CAVES, Expedition.GRAND_EXCHANGE_TRADE),
-			new CharacterView(team, 1).expeditions);
+			new CharacterView(team, 1, 1).expeditions);
 	}
 }

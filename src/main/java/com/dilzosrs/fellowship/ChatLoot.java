@@ -8,13 +8,6 @@ import java.util.regex.Pattern;
  */
 public final class ChatLoot
 {
-	/**
-	 * Sent when a Slayer task is finished, e.g. "You've completed 45 tasks and received 15 points,
-	 * giving you a total of 300; return to a Slayer master." Wilderness tasks too.
-	 */
-	private static final Pattern SLAYER_TASK_DONE =
-		Pattern.compile("^You've completed (?:at least )?[\\d,]+ (?:Wilderness )?tasks?\\b");
-
 	/** Sent when a clue scroll is finished, e.g. "You have completed 12 medium Treasure Trails." */
 	private static final Pattern CLUE_DONE =
 		Pattern.compile("^You have completed [\\d,]+ [a-z]+ Treasure Trails?\\.");
@@ -29,10 +22,6 @@ public final class ChatLoot
 	 */
 	public static BundleType bundleFor(String message)
 	{
-		if (SLAYER_TASK_DONE.matcher(message).find())
-		{
-			return BundleType.SLAYER;
-		}
 		if (CLUE_DONE.matcher(message).find())
 		{
 			return BundleType.CLUE;

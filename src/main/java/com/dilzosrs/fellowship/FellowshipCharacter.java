@@ -20,6 +20,8 @@ public class FellowshipCharacter
 	/** The expedition the character is on, or null when it's home. */
 	private Expedition expedition;
 	private Instant expeditionStart;
+	/** How many went on the trip together, which sets how long it takes. */
+	private int partySize;
 	/** A stored item taken along to be transmuted into coins, or null. */
 	private GearItem carrying;
 
@@ -134,7 +136,7 @@ public class FellowshipCharacter
 	/** When the current expedition finishes, or null when the character is home. */
 	public Instant getExpeditionEnd()
 	{
-		return isAway() ? expeditionStart.plus(expedition.getDuration()) : null;
+		return isAway() ? expeditionStart.plus(expedition.getDuration(partySize)) : null;
 	}
 
 	/** Whether the character is resting from an injury at that moment. */
@@ -168,13 +170,31 @@ public class FellowshipCharacter
 	 */
 	public boolean startExpedition(Expedition newExpedition, Instant start)
 	{
+		return startExpedition(newExpedition, start, newExpedition.getMinPartySize());
+	}
+
+	/**
+	 * Send the character on an expedition with a party of this size (it counts itself), or
+	 * restore one loaded from a save.
+	 *
+	 * @return false if the character is already away
+	 */
+	public boolean startExpedition(Expedition newExpedition, Instant start, int partySize)
+	{
 		if (isAway())
 		{
 			return false;
 		}
 		expedition = newExpedition;
 		expeditionStart = start;
+		this.partySize = partySize;
 		return true;
+	}
+
+	/** How many went on the current trip together, or 0 when the character is home. */
+	public int getPartySize()
+	{
+		return isAway() ? partySize : 0;
 	}
 
 	/** The item taken along to be transmuted, or null. */

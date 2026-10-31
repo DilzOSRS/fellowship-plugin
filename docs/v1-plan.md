@@ -1,127 +1,90 @@
 # v1 plan
 
-**Started 2026-10-26.** v1 is the finish of the first build: a complete game, maybe small, with a clear route of progression and an end-game. Anything not listed here is "after v1". Details for each item are in `docs/future-design.md`.
-
-## The plan (decided 2026-10-26)
-
-1. **Build v1** so it feels like a proper game, even if small.
-2. **Focus on the UI** once the v1 features are in.
-3. **Outside playtesters** try it out.
-4. **Then** add more after v1.
-
-Notes:
-- **Don't wait for "perfect" before outside testers.** Other players find problems you can't see yourself. Aim for "complete and playable", not "perfect".
-- **How testers would get it:** either through the Plugin Hub (needs a review by RuneLite, which takes time, and a fresh check of the rules) or by running it from source (needs a dev setup, so only for technical friends). Decide closer to the time.
+**Rewritten 2026-10-31.** v1 is the version we launch on the Plugin Hub: public, enjoyable, and something a player can feel they've **completed**. It ends with an end-game raid. Anything not listed here is "after v1". Details for each part go in `docs/future-design.md`.
 
 ## The route of progression
 
 ```
-Hire / unlock a character
-  → level it from OSRS XP
-  → first class advancement (Knight, Archer, Wizard, Harvester, ...)
-  → second class advancement (Paladin, Berserker, ...)
-
-Expeditions get harder along the way:
-  safe solo trips → Skiller trips → party trips with threat → end-game raid (Barrows)
-
-Gear gets better along the way:
-  bundles drop gear → higher levels let you wear better rarities → stronger parties
+A follower joins from OSRS activity (combat, skilling or a rare unlock)
+  → level it from OSRS XP → class advancement
+  → better gear from bundles
+  → expeditions get harder: safe trips → Skiller trips → dangerous party trips
+  → the end-game: the Barrows Raid
 ```
 
-## In v1
+## What v1 needs (the user's list, 2026-10-31)
 
-**Classes** (the ones designed so far):
-- Built: Adventurer, Knight, Archer, Wizard, Skiller, Harvester, Artisan, Explorer.
-- Second advancements: Paladin, Rune Knight, Berserker / Scout, Hunter, Trickster / Battle Mage, Cleric, Arcane Wizard.
-- Special trees with perks: Thief → Bandit / Assassin → Warlord / Night Blade, and Vyre → Blood Mage / Death Knight / Shadow Lord.
-- **Acolyte (added 2026-10-27):** a rare unlock linked to Prayer. Maybe: choose a god as the first advancement, then 3 classes per god (e.g. Guthix → Guardian of Guthix / Guthixian Dryad / Void Knight). See `docs/future-design.md`.
+### 1. Tags for followers and items (the foundation)
+- **Every follower is Combat or Skiller.** Expeditions say which they take (dangerous ones take Combat, safe ones can take Skillers).
+- **Items get tags**, e.g. a sword tagged *melee* and *shadow*.
+- **Each class lists the tags it can use.** Knights can use *melee*; Vyres can use *shadow*.
+- **The rule (the user's proposal, 2026-10-31, replacing "must match every tag"):** a follower can use an item if it matches **any one** of its tags. Some tags are **combo tags** like *shadow-melee*, which only count if the follower has **both** parts.
+  - A sword tagged *shadow* and *melee*: anyone with shadow **or** melee can use it (versatile).
+  - A sword tagged *shadow-melee*: only followers with shadow **and** melee (exclusive). A Vyre with shadow but not melee can't use it.
+  - Claude's suggestion: keep combos to 2 parts, and use them for rare and unique items so most gear stays easy to share.
+- This replaces today's "which classes can wear this gear type" lists (`GearType`), and is built together with the item list (see the build order).
 
-**Systems:**
-- Second class advancement.
-- Class stat bonuses (stat splits, same budget per tier).
-- Gear level requirements.
-- Perks (special classes only).
-- Rare unlocks (Thief from Thieving/Agility XP, Vyre from XP in Morytania).
-- Armour types (Plate / Leather / Robe): each class lists what it can wear. Replaces gear borrowing (decided 2026-10-27).
-- Expedition rules: unlocks, class requirements, party size ranges.
-- UI: card tabs, Expedition Board, compact roster.
+### 2. Items, tiers and stats
+- Sort out the weapon and item list, the tiers (Bronze to Dragon, etc., plus named uniques) and the numbers.
+- The numbers must reach the end-game: the Barrows Raid is threat 20, and today's best gear gives 15 power. Set the stat scale with threat 20 in mind.
 
-**Expeditions:**
-- **The first four (decided 2026-10-27, numbers in `docs/future-design.md`):** Scout the Encampment Perimeter, Explore Lumbridge Swamp Caves (threat 3), Looting the Dorgeshuun Caves (threat 8, first clear gives a free Skiller and unlocks hiring more with coins), Securing and Fortifying the Encampment (Skillers only). Each one has a bundle chance.
-- Built so far: Swamp Caves (as a safe trip) and Dorgeshuun, both with older numbers.
-- End-game: Plunder Tombs of the Barrow Brothers (needs a Vyre).
-- **Gap:** more expeditions between Dorgeshuun (threat 8) and Barrows, so there's a ladder to climb. To design.
+### 3. Bundles
+- Many kinds of bundle. **What makes each one unique: its item pool** (likely by tags, e.g. a Barrows Bundle drops shadow gear).
+- For v1, aim for one bundle per source (each expedition and each OSRS trigger), not dozens.
 
-**Gear:**
-- **System 1 (decided 2026-10-28):** 7 OSRS tiers per type (3 Common, 2 Uncommon, 2 Rare; e.g. Bronze to Dragon, Normal to Redwood bows, Sapphire to Zenyte trinkets) plus named uniques for Epic and Legendary (e.g. Abyssal whip, Scythe of Vitur). The full table is in `docs/future-design.md`.
-- **To design:** the list of uniques, confirming the leather ladder, and the numbers (power, level requirements).
-- **Not in v1:** System 2 (any rarity on any item, plus random perks). It comes after v1.
+### 4. Fellowship levels
+- More Fellowship (Guild) levels, each one unlocking something (expeditions, storage, followers).
+- **Constructing buildings** alongside the Fellowship level is the user's idea for later; v1 focuses on a plain level system first.
+
+### 5. The expedition ladder and the Barrows Raid
+- Expeditions that bridge the gap from today's trips (Dorgeshuun is threat 8) up to the raid (threat 20).
+- **The Barrows Raid (working title):**
+  - A party of 3 **Combat** followers, threat 20, **needs a Vyre**.
+  - 30 minutes long.
+  - **While it's running, every Barrows chest the player opens in OSRS = 1 Barrows Bundle** for the party when it comes back. Read from the game's own chat message (read-only, allowed).
+  - This is a new kind of expedition: **the player's real play while the party is away decides the loot.**
+- **A quest to unlock the raid (maybe):** a series of expeditions, each asking the player to do something in OSRS while it runs. It reuses the raid's "do X while they're away" mechanic, so build the raid first and the quest after.
+
+### 6. More followers
+- Many more ways to stumble on Combat and Skiller followers.
+- Today there are 8 starting followers: Adventurer, Skiller, Thief, Vyre, Acolyte, Merchant, Sailor and Alchemist.
+
+### Also needed to launch
+- The UI pass (compact roster, cleaner cards).
+- Wipe test saves and delete the old-save migration (see CLAUDE.md).
+- A fresh rules check against the rejected-features wiki.
+
+## Suggested build order (Claude, 2026-10-31)
+
+1. Finish and test the opening path (steps 6 and 7).
+2. **Design the item list on paper** (the user's call, 2026-10-31): every item with its tier, stats and a tags column. Writing the list is what shows which tags are needed.
+3. **Build tags and items together** from that list, with the numbers set for threat 20. Adding a tag later is one line of code, so new items needing new tags is fine; only changing the tag *rule* would be costly.
+4. **Bundles** with their item pools.
+5. **The "do X while they're away" mechanic**, tested on a small expedition first.
+6. **The expedition ladder**, then the **Barrows Raid**.
+7. **Fellowship levels** and what each one unlocks (can be slotted in anywhere, since it's mostly numbers).
+8. **More followers**, added along the way (each one is cheap once tags exist).
+9. Launch prep: UI, save wipe, rules check.
+
+## Open questions
+
+1. **How long should v1 take** a normal player to finish (reach and beat the raid)? A week, a month? This sets every number.
+2. **The raid with no chests:** if the player doesn't do Barrows during the 30 minutes, does the party come back with nothing, or a small base reward?
+3. **Raid failure:** threat 20 can fail. Does a failed raid lose the bundles from the chests the player opened?
+4. **How many followers for v1?** A number to aim for, e.g. 12 starting followers.
+5. **How many tags?** A short list to start (e.g. *melee*, *ranged*, *magic*, *shadow*, *holy*, *skilling*).
+6. **Second class advancements:** still undecided. The user really likes Warlord and Night Blade; one option is a second advancement for the Thief tree only.
 
 ## Not in v1
 
-- Beast Master and other new classes (keep a one-line list of new class ideas, don't design them).
-- Rotating Expedition Board.
+- Constructing buildings (after the plain Fellowship levels).
 - Online features.
 - Everything else in the Ideas Parking Lot in CLAUDE.md, unless moved here.
 
-## Watch the size
+## Older notes (kept for reference)
 
-This is a big v1: about 25 classes, 8 perks and around 8 new systems. That's fine, but build it in the same one-step-at-a-time way as Phases 1–6. If it starts to drag, the first thing to cut is one of the two special trees (Thief or Vyre), saving it for v1.1.
-
-## Proposal: fewer advancements, more characters (2026-10-28, saved, not decided)
-
-**The user's point:** v1 has about 39 classes on paper, but it feels like 5, because players feel each new *character* they get, not each advancement. Better to have more characters than deep advancement trees.
-
-**Why not just add 30 more characters:** the code is cheap (a class is one line, and armour types made gear cheap). The cost is unlock methods (some need new detection code), perks (each is its own build step) and design time (XP skills, stats, gear and a reason to pick each one). A single player would also only see maybe 6–8 characters in v1.
-
-**Claude's suggestion: every character gets exactly one class advancement in v1.**
-- Adventurer → Knight / Archer / Wizard (the 9 second advancements wait)
-- Skiller → Harvester / Artisan / Explorer
-- Thief → Bandit / Assassin (Warlord and Night Blade wait)
-- Vyre → Blood Mage / Death Knight / Shadow Lord
-- Acolyte → choose a god: Guthix / Saradomin / Zamorak Acolyte (the 9 god classes wait)
-
-That's about 20 classes and drops the "second class advancement" system from v1. The saved time goes into more starting characters, built with a cheap recipe: XP-based rare unlock, XP skills, armour and weapon types, stat split, and a perk only if it's special.
-
-**User's response:** might be good, but saved for now. The user definitely wants a second advancement for *some* characters, and really likes **Warlord and Night Blade**. One option to consider: keep the second advancement only for the Thief tree in v1 (still builds the system, but with 2 classes instead of 20).
-
-## Idea: every character comes from OSRS activity (user, 2026-10-28, not decided)
-
-- **All characters are unlocked by doing things in OSRS**, not bought. E.g. Adventurers from combat XP, Skillers from skilling XP, Acolytes from Prayer, Thieves from Thieving and Agility (being built).
-- **Coins pay for class advancements** instead of hires.
-- **The Guild costs coins to level up:** when it has enough Guild XP it waits until you pay (e.g. 100 coins for level 2).
-- **To work out before deciding:**
-  - Guild levels mostly give hires today; without hiring, what does a Guild level give? (Storage, expedition unlocks, maybe a raised cap on characters.)
-  - The first character: does the game still start you with one Adventurer?
-  - The Dorgeshuun free Skiller and the 3-Adventurer cap were decided on 2026-10-27/28 assuming hiring. They'd need rethinking.
-  - Coin sinks need to stay balanced with coin income (178 coins in two days of playtesting).
-
-### The encampment route (user, 2026-10-28, not decided)
-
-Characters keep coming from OSRS grinds, but **character slots** pace the start so new ones feel like an early surprise, not a flood or a long grind. Coins build the slots instead of hiring. Slots only pace the beginning: once a crew is built they shouldn't matter, and **a character who joins is always ready to use**.
-
-The intended path:
-1. Start with one Adventurer and play with it to level 10.
-2. Fellowship (Guild) level 2 unlocks the **Scouting the Encampment** expedition. Each run has about a 25% chance of "We found a suitable place to build our encampment!"
-3. That unlocks **Adventurer housing**: spend coins to build a slot (up to 2 more Adventurers, 3 in total).
-4. With a free slot, **combat XP** can roll for a new Adventurer (like the Thief roll).
-5. **Lumbridge Swamp Caves** becomes a 2-character expedition, with a chance of a **skilling tools** reward that unlocks 1 Skiller slot.
-6. With that slot, **skilling XP** can roll for a Skiller.
-7. Meanwhile the Skiller reaches level 10 and unlocks **Fortifying the Camp**, which unlocks the 3rd Adventurer slot.
-8. Three characters means the party for **Looting the Dorgeshuun Caves**.
-
-Side idea: a building section for the encampment, with Skillers as the builders.
-
-Claude's notes:
-- **No slot, no roll.** If there's no free slot, the game simply doesn't roll for that class, so nobody is ever found and then held back. This keeps "a character is always ready to use" true.
-- **Thieves and other rare characters** don't need slots (decided with the Thief unlock), so slots only gate the basic Adventurers and Skillers.
-- **This replaces** the coin-hiring of Adventurers and Skillers, the "one hire per Guild level" rule, the Skiller prices (500 / 1,000 / 2,000) and the free Dorgeshuun Skiller.
-- **Still open:** the roll odds for Adventurers and Skillers, what a slot costs, what Guild levels give after level 2, and whether more slots open after v1.
-
-## Still to design before building
-
-1. The expedition ladder: the first four are decided (2026-10-27). Still open: a tier between Dorgeshuun (threat 8) and Barrows, Guild unlock levels, and a few draft numbers.
-2. The gear list and its numbers: System 1 is decided (2026-10-28). The tier ladders are decided too. Still open: the uniques, the leather ladder, and the numbers.
-3. Stat bonuses for every class.
-4. Level caps for each advancement.
-5. Build order for all of the above.
+- **2026-10-26 plan:** build v1, then the UI, then outside playtesters. Don't wait for "perfect" before outside testers.
+- **Gear System 1 (decided 2026-10-28):** 7 OSRS tiers per type (3 Common, 2 Uncommon, 2 Rare) plus named uniques for Epic and Legendary. System 2 (any rarity on any item, random perks) is after v1. Full table in `docs/future-design.md`.
+- **Armour types** (Plate / Leather / Robe, decided 2026-10-27) will become tags.
+- **Fewer advancements, more followers** (proposal 2026-10-28, not decided): one class advancement per follower in v1, and spend the saved time on more followers.
+- **The encampment route** (2026-10-28) became the opening path, now built (see CLAUDE.md).

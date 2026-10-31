@@ -31,7 +31,7 @@ public class CharacterView
 	/** The expeditions to offer on the card: unlocked by the team and allowed for this class. */
 	final List<Expedition> expeditions = new ArrayList<>();
 
-	CharacterView(Team team, int index)
+	CharacterView(Team team, int index, int guildLevel)
 	{
 		FellowshipCharacter character = team.get(index);
 		this.name = team.getDisplayName(index);
@@ -48,7 +48,7 @@ public class CharacterView
 		this.atk = character.getAtk();
 		this.def = character.getDef();
 		this.mag = character.getMag();
-		for (Expedition expedition : team.unlockedExpeditions())
+		for (Expedition expedition : team.unlockedExpeditions(guildLevel))
 		{
 			if (expedition.allows(characterClass))
 			{
