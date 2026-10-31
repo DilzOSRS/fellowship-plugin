@@ -33,3 +33,7 @@ Notes from playing, to sort into fixes and tuning after each playtest.
 ## Playtest 2 (2026-10-30)
 
 - **The Vyre felt very quick to get (user, 2026-10-30).** Its odds were not raised for testing: 1% per 1,000 XP in Morytania, all skills added together, so combat there (Attack/Strength plus Hitpoints, and sometimes Slayer) fills it fast. About 63% to have one by 100k Morytania XP. Could just be RNG. **Test it again later** to see if it still feels fast; if so, options are 0.2% per 1,000 XP, or counting non-combat XP only.
+
+## Playtest 3 (2026-10-31, MacBook)
+
+- **Short rests said "0 hours" (user, 2026-10-31).** The injury chat message only counted whole hours, so a 5-minute rest read "must rest for 0 hours" (and 1h 40m read "1 hours"). **Fixed the same day:** it now says e.g. "5 minutes", "1 hour" or "1 hour 40 minutes" (`Danger.describeRest`).
