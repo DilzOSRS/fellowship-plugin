@@ -57,7 +57,20 @@ public enum CharacterClass
 	// A secret rare character that joins when the player opens a shop or the Grand Exchange.
 	// 1x XP in every skill for now (may be slowed later so it's a real grind), cap 10, and no
 	// class advancement yet. It will run the Grand Exchange trade expedition.
-	MERCHANT("Merchant", 10, ItemID.ROYAL_CROWN);
+	MERCHANT("Merchant", 10, ItemID.ROYAL_CROWN),
+	// A rare character that joins from Herblore XP or from casting Low or High Level Alchemy.
+	// 2x Herblore and Magic XP, cap 10, no class advancement yet. It runs Transmuting metals,
+	// which turns a stored item into coins (see Expedition).
+	ALCHEMIST("Alchemist", 10, ItemID.MM_ALCHEMIST_HAT, Skill.HERBLORE, Skill.MAGIC),
+	// A rare character that joins from Sailing XP. 2x Sailing XP, cap 10. At level 10 it becomes
+	// one of three combat classes: the Swashbuckler (melee), the Harpooner (ranged) or the
+	// Navigator (magic). Every class in the tree gets 2x Sailing XP and 1x everything else. They all wear leather, plus swords, bows or
+	// staffs (see GearType). Sailing weapons, sea expeditions and a dungeon that needs a Sailor to
+	// sail the party there come later.
+	SAILOR("Sailor", 10, ItemID.PIRATE_BANDANA_BLUE, Skill.SAILING),
+	SWASHBUCKLER("Swashbuckler", LevelCurve.MAX_LEVEL, ItemID.TRAIL_PIRATE_HAT, Skill.SAILING),
+	HARPOONER("Harpooner", LevelCurve.MAX_LEVEL, ItemID.DRAGON_HARPOON, Skill.SAILING),
+	NAVIGATOR("Navigator", LevelCurve.MAX_LEVEL, ItemID.SAILORS_AMULET, Skill.SAILING);
 
 	/** XP from a class's bonus skills is multiplied by this. */
 	static final int BONUS_XP_MULTIPLIER = 2;
@@ -131,6 +144,10 @@ public enum CharacterClass
 		{
 			return List.of(GUTHIXIAN, SARADOMINIST, ZAMORAKIAN, ZAROSIAN);
 		}
+		if (this == SAILOR)
+		{
+			return List.of(SWASHBUCKLER, HARPOONER, NAVIGATOR);
+		}
 		return Collections.emptyList();
 	}
 
@@ -148,6 +165,22 @@ public enum CharacterClass
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * The class this one's tree starts from, e.g. Thief for a Bandit or a Warlord, and Adventurer
+	 * for a Knight. A class characters start as is its own base.
+	 */
+	public CharacterClass getBaseClass()
+	{
+		for (CharacterClass other : values())
+		{
+			if (other.getEvolutions().contains(this))
+			{
+				return other.getBaseClass();
+			}
+		}
+		return this;
 	}
 
 	/** The god this class worships, whose blessing helps its parties, or null if none. */

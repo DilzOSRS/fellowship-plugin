@@ -34,6 +34,7 @@ public class FellowshipPanel extends PluginPanel
 	private static final String LOGGED_OUT_TEXT = "Log in to see your Fellowship";
 
 	private final BiConsumer<Integer, CharacterClass> onEvolve;
+	private final BiConsumer<Integer, Integer> onTransmute;
 	private final BiConsumer<List<Integer>, Expedition> onSendExpedition;
 	private final IntConsumer onCollect;
 	private final IntConsumer onMakeActive;
@@ -47,6 +48,8 @@ public class FellowshipPanel extends PluginPanel
 
 	private final JLabel coinsLabel = new JLabel();
 	private final JLabel guildLabel = new JLabel();
+	/** Shows once the Guild's XP is full, to pay for the next level. */
+	private final JButton guildLevelUpButton = new JButton();
 	private final JPanel cardsPanel = new JPanel();
 	private final List<CharacterCard> cards = new ArrayList<>();
 	private final VaultPanel vaultPanel;
@@ -63,10 +66,13 @@ public class FellowshipPanel extends PluginPanel
 	 * The callbacks are called on the Swing thread once the player confirms the action.
 	 * The first Integer/int is the character's position in the team; onEquip's second is the
 	 * item's position in storage. onSendExpedition gets everyone going (one character, or a party).
+	 * onTransmute sends an Alchemist off with the item at that storage position. onLevelUpGuild
+	 * pays for the Guild's next level.
 	 */
 	public FellowshipPanel(BiConsumer<Integer, CharacterClass> onEvolve, BiConsumer<List<Integer>, Expedition> onSendExpedition,
 		IntConsumer onCollect, IntConsumer onMakeActive, BiConsumer<Integer, Integer> onEquip,
-		 BiConsumer<Integer, GearType.Slot> onUnequip, VaultPanel vaultPanel,
+		 BiConsumer<Integer, GearType.Slot> onUnequip, BiConsumer<Integer, Integer> onTransmute,
+		Runnable onLevelUpGuild, VaultPanel vaultPanel,
 		ItemManager itemManager, SpriteManager spriteManager)
 	{
 		this.itemManager = itemManager;
@@ -74,6 +80,7 @@ public class FellowshipPanel extends PluginPanel
 		this.vaultPanel = vaultPanel;
 		this.onEquip = onEquip;
 		this.onUnequip = onUnequip;
+		this.onTransmute = onTransmute;
 		this.onEvolve = onEvolve;
 		this.onSendExpedition = onSendExpedition;
 		this.onCollect = onCollect;
@@ -92,7 +99,13 @@ public class FellowshipPanel extends PluginPanel
 		titleRow.add(coinsLabel, BorderLayout.EAST);
 		guildLabel.setFont(FontManager.getRunescapeSmallFont());
 		guildLabel.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		titleRow.add(guildLabel, BorderLayout.SOUTH);
+		guildLevelUpButton.setVisible(false);
+		guildLevelUpButton.addActionListener(e -> onLevelUpGuild.run());
+		JPanel guildRow = new JPanel(new BorderLayout(0, 4));
+		guildRow.setOpaque(false);
+		guildRow.add(guildLabel, BorderLayout.NORTH);
+		guildRow.add(guildLevelUpButton, BorderLayout.SOUTH);
+		titleRow.add(guildRow, BorderLayout.SOUTH);
 		add(titleRow, BorderLayout.NORTH);
 
 		cardsPanel.setLayout(new BoxLayout(cardsPanel, BoxLayout.Y_AXIS));
@@ -157,17 +170,24 @@ public class FellowshipPanel extends PluginPanel
 	/**
 	 * Show the whole team, the coin balance, and the Guild. Must be called on the Swing thread.
 	 */
-	public void showTeam(List<CharacterView> team, long coins, long guildXp, List<GearItem> storage, int capacity)
+	public void showTeam(List<CharacterView> team, long coins, long guildXp, int guildLevel, List<GearItem> storage,
+		int capacity)
 	{
 		shownTeam = team;
 		shownStorage = storage;
 		shownCapacity = capacity;
 		coinsLabel.setText(String.format("%,d coins", coins));
-		int guildLevel = Guild.levelForXp(guildXp);
 		long levelStart = Guild.xpForLevel(guildLevel);
 		long levelEnd = Guild.xpForLevel(guildLevel + 1);
 		guildLabel.setText(String.format("Guild level %d (%d / %d XP)",
 			guildLevel, guildXp - levelStart, levelEnd - levelStart));
+		boolean guildReady = guildXp >= levelEnd;
+		long guildCost = Guild.levelUpCost(guildLevel);
+		guildLevelUpButton.setText(String.format("Level up – %,d coins", guildCost));
+		guildLevelUpButton.setEnabled(coins >= guildCost);
+		guildLevelUpButton.setToolTipText(coins >= guildCost ? null
+			: String.format("You need %,d coins to reach Guild level %d.", guildCost, guildLevel + 1));
+		guildLevelUpButton.setVisible(guildReady);
 
 		if (cards.size() > team.size() || cards.isEmpty())
 		{
@@ -206,6 +226,7 @@ public class FellowshipPanel extends PluginPanel
 		expeditionsPanel.show(shownTeam);
 		coinsLabel.setText("");
 		guildLabel.setText("");
+		guildLevelUpButton.setVisible(false);
 		vaultPanel.setVisible(false);
 		revalidate();
 		repaint();
@@ -259,6 +280,11 @@ public class FellowshipPanel extends PluginPanel
 	 */
 	private void send(int characterIndex, Expedition expedition)
 	{
+		if (expedition.needsItem())
+		{
+			chooseItemToTransmute(characterIndex, expedition);
+			return;
+		}
 		if (expedition.getPartySize() <= 1)
 		{
 			onSendExpedition.accept(List.of(characterIndex), expedition);
@@ -337,6 +363,30 @@ public class FellowshipPanel extends PluginPanel
 	}
 
 	/**
+	 * Let the player pick a stored item for an Alchemist to take on Transmuting metals: opens the
+	 * Bank, and clicking an item sends them off with it. Cancel comes back to the Followers tab.
+	 */
+	private void chooseItemToTransmute(int characterIndex, Expedition expedition)
+	{
+		if (characterIndex >= shownTeam.size())
+		{
+			return;
+		}
+		String name = shownTeam.get(characterIndex).name;
+		String prompt = "Choose an item for " + name + " to transmute. It comes back as "
+			+ Expedition.TRANSMUTE_MULTIPLIER + "x its salvage value in coins, after "
+			+ expedition.getDuration().toMinutes() + " minutes.";
+		if (shownStorage.isEmpty())
+		{
+			prompt += "<br><br>Storage is empty. Open bundles to find items.";
+		}
+		vaultPanel.startChoosing(prompt, "transmute", item -> true,
+			storageIndex -> onTransmute.accept(characterIndex, storageIndex), null,
+			() -> tabs.select(followersTabButton));
+		tabs.select(bankTabButton);
+	}
+
+	/**
 	 * Let the player pick what a character wears in a slot: opens the Bank showing only the items
 	 * that fit. Clicking one equips it; the Bank's banner can also take off what's worn, or cancel.
 	 * Either way it comes back to the Followers tab.
@@ -377,7 +427,7 @@ public class FellowshipPanel extends PluginPanel
 			onUnequip.accept(characterIndex, slot);
 		};
 
-		vaultPanel.startChoosing(prompt, fits, storageIndex -> onEquip.accept(characterIndex, storageIndex), takeOff,
+		vaultPanel.startChoosing(prompt, "equip", fits, storageIndex -> onEquip.accept(characterIndex, storageIndex), takeOff,
 			() -> tabs.select(followersTabButton));
 		tabs.select(bankTabButton);
 	}

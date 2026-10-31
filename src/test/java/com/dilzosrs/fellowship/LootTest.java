@@ -35,7 +35,7 @@ public class LootTest
 		GearItem bow = new GearItem(GearType.BOW, Rarity.RARE);
 		assertEquals("Rare Bow", bow.getName());
 		assertEquals(6, bow.getPower());
-		assertEquals("Archer, ATK 6", bow.getDescription());
+		assertEquals("Archer/Harpooner, ATK 6", bow.getDescription());
 
 		GearItem trinket = new GearItem(GearType.TRINKET, Rarity.LEGENDARY);
 		assertEquals("Legendary Trinket", trinket.getName());

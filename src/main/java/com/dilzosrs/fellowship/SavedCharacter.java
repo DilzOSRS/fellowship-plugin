@@ -24,6 +24,8 @@ public class SavedCharacter
 	SavedVault.SavedGear weapon;
 	SavedVault.SavedGear armour;
 	SavedVault.SavedGear trinket;
+	/** An item taken along to be transmuted into coins. Null if none. */
+	SavedVault.SavedGear carrying;
 
 	public static SavedCharacter from(FellowshipCharacter character)
 	{
@@ -42,6 +44,7 @@ public class SavedCharacter
 		saved.weapon = SavedVault.SavedGear.from(character.getEquipped(GearType.Slot.WEAPON));
 		saved.armour = SavedVault.SavedGear.from(character.getEquipped(GearType.Slot.ARMOUR));
 		saved.trinket = SavedVault.SavedGear.from(character.getEquipped(GearType.Slot.TRINKET));
+		saved.carrying = SavedVault.SavedGear.from(character.getCarrying());
 		return saved;
 	}
 
@@ -62,6 +65,7 @@ public class SavedCharacter
 		{
 			// Timers run in real time, so an expedition can finish while logged out.
 			character.startExpedition(savedExpedition, Instant.ofEpochMilli(expeditionStart));
+			character.setCarrying(carrying == null ? null : carrying.toItem());
 		}
 		if (restingUntil != null)
 		{

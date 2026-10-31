@@ -22,11 +22,13 @@ import net.runelite.api.GameState;
 import net.runelite.api.Player;
 import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.gameval.AnimationID;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatColorType;
@@ -61,6 +63,8 @@ public class FellowshipPlugin extends Plugin
 	private static final String COINS_KEY = "coins";
 	private static final String ACTIVE_INDEX_KEY = "activeIndex";
 	private static final String GUILD_XP_KEY = "guildXp";
+	/** Saved since Guild levels started costing coins. Older saves work it out from the XP. */
+	private static final String GUILD_LEVEL_KEY = "guildLevel";
 	private static final String VAULT_KEY = "vault";
 	private static final String RESCUED_KEY = "rescuedFromSwampCaves";
 
@@ -107,7 +111,15 @@ public class FellowshipPlugin extends Plugin
 	private final List<RareUnlock> rareUnlocks = List.of(
 		RareUnlock.fromSkills(CharacterClass.THIEF, Skill.THIEVING, Skill.AGILITY),
 		RareUnlock.fromSkills(CharacterClass.ACOLYTE, Skill.PRAYER),
+		RareUnlock.fromSkills(CharacterClass.ALCHEMIST, Skill.HERBLORE),
+		RareUnlock.fromSkills(CharacterClass.SAILOR, Skill.SAILING),
 		RareUnlock.fromMorytania(CharacterClass.VYRE));
+	/**
+	 * Skillers join from skilling XP once the first Swamp Caves run has rescued someone: 10% per
+	 * 1,000 XP and per level-up for the 1st (about 10k XP), 1% for the 2nd (about 100k) and 0.4% for
+	 * the 3rd (about 250k). No more than 3.
+	 */
+	private final RareUnlock skillerUnlock = RareUnlock.fromSkilling(CharacterClass.SKILLER, 100_000, 10_000, 4_000);
 	private FellowshipPanel panel;
 	private VaultPanel vaultPanel;
 	private NavigationButton navButton;
@@ -133,7 +145,7 @@ public class FellowshipPlugin extends Plugin
 	{
 		vaultPanel = new VaultPanel(this::openBundle, this::salvage, itemManager, spriteManager);
 		panel = new FellowshipPanel(this::evolve, this::sendOnExpedition, this::collectExpedition, this::makeActive,
-			this::equip, this::unequip, vaultPanel, itemManager, spriteManager);
+			this::equip, this::unequip, this::transmute, this::levelUpGuild, vaultPanel, itemManager, spriteManager);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
 		navButton = NavigationButton.builder()
@@ -216,7 +228,7 @@ public class FellowshipPlugin extends Plugin
 				announceBundle(BundleType.GENERIC);
 			}
 			// XP gives a rare chance of a character joining (a Thief from Thieving and Agility,
-			// an Acolyte from Prayer, a Vyre from any XP in Morytania).
+			// an Acolyte from Prayer, an Alchemist from Herblore, a Sailor from Sailing, a Vyre from any XP in Morytania).
 			int osrsLevelsGained = Experience.getLevelForXp(event.getXp())
 				- Experience.getLevelForXp(event.getXp() - gained);
 			boolean inMorytania = isInMorytania();
@@ -227,16 +239,50 @@ public class FellowshipPlugin extends Plugin
 				{
 					continue;
 				}
-				if (unlock.roll(event.getSkill(), gained, osrsLevelsGained, team.count(found), random))
+				if (unlock.roll(event.getSkill(), gained, osrsLevelsGained, team.countStartedAs(found), random))
 				{
 					team.add(found);
 					announceNewCharacter();
+				}
+			}
+			if (rescued && skillerUnlock.roll(event.getSkill(), gained, osrsLevelsGained,
+				team.countStartedAs(CharacterClass.SKILLER), random))
+			{
+				team.add(CharacterClass.SKILLER);
+				announceNewCharacter();
+				if (team.countStartedAs(CharacterClass.SKILLER) == 1)
+				{
+					sendChatMessage("The man you rescued from the Lumbridge Swamp Caves has decided to join your Fellowship.");
 				}
 			}
 			// Save on every gain, so progress is never lost. This only updates RuneLite's
 			// settings in memory; RuneLite writes them to disk itself.
 			saveTeam();
 			saveVault();
+			updatePanel();
+		}
+	}
+
+	@Subscribe
+	public void onAnimationChanged(AnimationChanged event)
+	{
+		// Casting Low or High Level Alchemy gives a rare chance of an Alchemist joining.
+		// Only the player's own casts count, read from their animation.
+		if (team == null || event.getActor() != client.getLocalPlayer())
+		{
+			return;
+		}
+		int animation = event.getActor().getAnimation();
+		if (animation != AnimationID.HUMAN_CASTHIGHLVLALCHEMY && animation != AnimationID.HUMAN_CASTHIGHLVLALCHEMY_FIRE
+			&& animation != AnimationID.HUMAN_CASTLOWLVLALCHEMY && animation != AnimationID.HUMAN_CASTLOWLVLALCHEMY_FIRE)
+		{
+			return;
+		}
+		if (RareUnlock.rollAlch(team.countStartedAs(CharacterClass.ALCHEMIST), random))
+		{
+			team.add(CharacterClass.ALCHEMIST);
+			announceNewCharacter();
+			saveTeam();
 			updatePanel();
 		}
 	}
@@ -250,7 +296,7 @@ public class FellowshipPlugin extends Plugin
 		{
 			return;
 		}
-		if (RareUnlock.rollInteraction(team.count(CharacterClass.MERCHANT), random))
+		if (RareUnlock.rollInteraction(team.countStartedAs(CharacterClass.MERCHANT), random))
 		{
 			team.add(CharacterClass.MERCHANT);
 			announceNewCharacter();
@@ -354,6 +400,7 @@ public class FellowshipPlugin extends Plugin
 			sendChatMessage(message);
 			showClassPopup(newClass, message);
 			announceNewExpeditions();
+			addGuildXp(1);
 			saveTeam();
 			updatePanel();
 		});
@@ -368,6 +415,11 @@ public class FellowshipPlugin extends Plugin
 		clientThread.invokeLater(() ->
 		{
 			if (team == null)
+			{
+				return;
+			}
+			// Expeditions that take an item along are sent with transmute() instead.
+			if (expedition.needsItem())
 			{
 				return;
 			}
@@ -393,6 +445,29 @@ public class FellowshipPlugin extends Plugin
 	}
 
 	/**
+	 * Called from the panel (on the Swing thread) when the player picks a stored item for an
+	 * Alchemist to transmute: it leaves storage and goes with them on Transmuting metals.
+	 */
+	private void transmute(int characterIndex, int storageIndex)
+	{
+		clientThread.invokeLater(() ->
+		{
+			FellowshipCharacter character = characterAt(characterIndex);
+			if (character == null || vault == null || storageIndex >= vault.getItems().size()
+				|| !team.sendParty(List.of(characterIndex), Expedition.TRANSMUTING_METALS, Instant.now()))
+			{
+				return;
+			}
+			GearItem item = vault.takeItem(storageIndex);
+			character.setCarrying(item);
+			sendChatMessage(team.getDisplayName(characterIndex) + " sets off to transmute the " + item.getName() + ".");
+			saveVault();
+			saveTeam();
+			updatePanel();
+		});
+	}
+
+	/**
 	 * Called from the panel (on the Swing thread) when the player collects a finished expedition.
 	 * The whole party comes home: XP for each member, coins and the bonus bundle rolled once.
 	 */
@@ -406,6 +481,9 @@ public class FellowshipPlugin extends Plugin
 				return;
 			}
 			Expedition finished = character.getExpedition();
+			// An item taken along to be transmuted turns into coins below.
+			GearItem transmuted = character.getCarrying();
+			character.setCarrying(null);
 			int[] levelsBefore = currentLevels();
 			long[] xpBefore = new long[team.size()];
 			for (int i = 0; i < team.size(); i++)
@@ -453,6 +531,10 @@ public class FellowshipPlugin extends Plugin
 				return;
 			}
 			int coinsGained = finished.rollCoins(random);
+			if (transmuted != null)
+			{
+				coinsGained += transmuted.getRarity().getSalvageValue() * Expedition.TRANSMUTE_MULTIPLIER;
+			}
 			coins += coinsGained;
 			BundleType bonus = finished.rollBonusBundle(random);
 			String bundles = null;
@@ -576,6 +658,11 @@ public class FellowshipPlugin extends Plugin
 			if (unlockedExpeditions.add(expedition))
 			{
 				sendChatMessage(expedition.getDisplayName() + " expedition has been unlocked.");
+				if (expedition == Expedition.DORGESHUUN_CAVES)
+				{
+					sendChatMessage("You can now send a team of " + expedition.getPartySize()
+						+ " followers into a dungeon.");
+				}
 			}
 		}
 	}
@@ -622,7 +709,7 @@ public class FellowshipPlugin extends Plugin
 			saveVault();
 			saveCoins();
 			sendChatMessage("You opened a " + bundle.getDisplayName() + ": " + opened.item.getName()
-				+ " (" + opened.item.getDescription() + ")" + (opened.coins > 0 ? " and " + opened.coins + " coins" : "") + "!");
+				+ " (" + opened.item.getStatText() + ")" + (opened.coins > 0 ? " and " + opened.coins + " coins" : "") + "!");
 			Rarity rarity = opened.item.getRarity();
 			String article = rarity == Rarity.UNCOMMON || rarity == Rarity.EPIC ? "an " : "a ";
 			popup.show("You pulled " + article + opened.item.getName() + "!",
@@ -727,13 +814,34 @@ public class FellowshipPlugin extends Plugin
 
 	private void addGuildXp(long amount)
 	{
-		int levelBefore = guild.getLevel();
+		boolean wasReady = guild.isReadyToLevelUp();
 		guild.addXp(amount);
 		saveGuild();
-		if (guild.getLevel() > levelBefore)
+		if (!wasReady && guild.isReadyToLevelUp())
 		{
-			sendChatMessage("Your Fellowship Guild reached level " + guild.getLevel() + "!");
+			sendChatMessage(String.format("Your Fellowship Guild is ready to reach level %d, for %,d coins.",
+				guild.getLevel() + 1, guild.getLevelUpCost()));
 		}
+	}
+
+	/**
+	 * Called from the panel (on the Swing thread) when the player pays to level up the Guild.
+	 */
+	private void levelUpGuild()
+	{
+		clientThread.invokeLater(() ->
+		{
+			long cost = guild.getLevelUpCost();
+			if (coins < cost || !guild.levelUp())
+			{
+				return;
+			}
+			coins -= cost;
+			saveCoins();
+			saveGuild();
+			sendChatMessage("Your Fellowship Guild reached level " + guild.getLevel() + "!");
+			updatePanel();
+		});
 	}
 
 	/**
@@ -816,7 +924,9 @@ public class FellowshipPlugin extends Plugin
 		coins = savedCoins == null ? 0 : savedCoins;
 
 		Long savedGuildXp = configManager.getRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, Long.class);
-		guild = new Guild(savedGuildXp == null ? 0 : savedGuildXp);
+		long guildXp = savedGuildXp == null ? 0 : savedGuildXp;
+		Integer savedGuildLevel = configManager.getRSProfileConfiguration(CONFIG_GROUP, GUILD_LEVEL_KEY, Integer.class);
+		guild = new Guild(guildXp, savedGuildLevel == null ? Guild.levelForXp(guildXp) : savedGuildLevel);
 
 		rescued = Boolean.TRUE.equals(configManager.getRSProfileConfiguration(CONFIG_GROUP, RESCUED_KEY, Boolean.class));
 
@@ -855,7 +965,8 @@ public class FellowshipPlugin extends Plugin
 			log.debug("Can't start a new Fellowship game while logged out");
 			return;
 		}
-		for (String key : new String[]{TEAM_KEY, COINS_KEY, ACTIVE_INDEX_KEY, GUILD_XP_KEY, VAULT_KEY, RESCUED_KEY})
+		for (String key : new String[]{TEAM_KEY, COINS_KEY, ACTIVE_INDEX_KEY, GUILD_XP_KEY, GUILD_LEVEL_KEY, VAULT_KEY,
+			RESCUED_KEY})
 		{
 			configManager.unsetRSProfileConfiguration(CONFIG_GROUP, key);
 		}
@@ -932,6 +1043,7 @@ public class FellowshipPlugin extends Plugin
 	private void saveGuild()
 	{
 		configManager.setRSProfileConfiguration(CONFIG_GROUP, GUILD_XP_KEY, guild.getXp());
+		configManager.setRSProfileConfiguration(CONFIG_GROUP, GUILD_LEVEL_KEY, guild.getLevel());
 	}
 
 	private void updatePanel()
@@ -944,12 +1056,13 @@ public class FellowshipPlugin extends Plugin
 		}
 		long coinsNow = coins;
 		long guildXp = guild.getXp();
+		int guildLevel = guild.getLevel();
 		List<BundleType> bundles = new ArrayList<>(vault.getBundles());
 		List<GearItem> items = new ArrayList<>(vault.getItems());
 		int capacity = vault.getCapacity();
 		SwingUtilities.invokeLater(() ->
 		{
-			panel.showTeam(views, coinsNow, guildXp, items, capacity);
+			panel.showTeam(views, coinsNow, guildXp, guildLevel, items, capacity);
 			vaultPanel.show(bundles, items, capacity);
 			vaultPanel.setVisible(true);
 		});

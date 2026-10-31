@@ -98,6 +98,23 @@ public class Team
 	}
 
 	/** How many characters of a class are on the team. */
+	/**
+	 * How many characters started out as this class, including those who have since taken a class
+	 * advancement (a Harvester still counts as a Skiller). Used for the odds of another joining.
+	 */
+	public int countStartedAs(CharacterClass baseClass)
+	{
+		int count = 0;
+		for (FellowshipCharacter character : characters)
+		{
+			if (character.getCharacterClass().getBaseClass() == baseClass)
+			{
+				count++;
+			}
+		}
+		return count;
+	}
+
 	public int count(CharacterClass characterClass)
 	{
 		int count = 0;

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.FontMetrics;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -51,6 +52,8 @@ public class CharacterCard extends JPanel
 	/** Width and height of the class icon box. Item icons are 36x32, so this leaves a small margin. */
 	private static final int ICON_SIZE = 40;
 	private static final int HEADER_XP_BAR_HEIGHT = 4;
+	// About the text width inside a card in the sidebar, for placing line breaks.
+	private static final int TEXT_WIDTH = 180;
 
 	private final JLabel iconLabel = new JLabel();
 	private final JLabel nameLabel = new JLabel();
@@ -450,7 +453,7 @@ public class CharacterCard extends JPanel
 			String prompt = shownExpeditions.isEmpty()
 				? shownName + " can't go on<br>an expedition just yet.<br><br>Expeditions will appear here<br>as your Fellowship grows."
 				: "Send on an expedition:";
-			expeditionLabel.setText("<html>" + (lastReward == null ? "" : lastReward + "<br><br>") + prompt + "</html>");
+			setExpeditionText("<html>" + (lastReward == null ? "" : lastReward + "<br><br>") + prompt + "</html>");
 			for (Expedition option : shownExpeditions)
 			{
 				// The name gets its own line, because it's too long to fit inside a button.
@@ -498,10 +501,10 @@ public class CharacterCard extends JPanel
 				{
 					// Healed: the plugin announces it and refreshes the card with the Send buttons.
 					countdownTimer.stop();
-					expeditionLabel.setText("Recovered!");
+					setExpeditionText("Recovered!");
 					return;
 				}
-				expeditionLabel.setText("<html>" + (lastReward == null ? "" : lastReward + "<br><br>")
+				setExpeditionText("<html>" + (lastReward == null ? "" : lastReward + "<br><br>")
 					+ "Injured and resting.<br>Healed in " + formatCountdown(rest) + "</html>");
 			}
 			return;
@@ -510,7 +513,7 @@ public class CharacterCard extends JPanel
 		if (left.isNegative() || left.isZero())
 		{
 			countdownTimer.stop();
-			expeditionLabel.setText("<html>Back from<br>" + shownExpedition.getOngoingName() + "!</html>");
+			setExpeditionText("<html>Back from<br>" + shownExpedition.getOngoingName() + "!</html>");
 			roleLabel.setText("Back! Rewards waiting");
 			roleLabel.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
 			if (!expeditionDone)
@@ -520,16 +523,47 @@ public class CharacterCard extends JPanel
 			}
 			return;
 		}
-		// Explicit line breaks: letting Swing wrap long HTML text cuts off the last line.
-		expeditionLabel.setText("<html>Away on an expedition:<br>" + shownExpedition.getOngoingName()
+		setExpeditionText("<html>Away on an expedition:<br>" + shownExpedition.getOngoingName()
 			+ "<br>Back in " + formatCountdown(left) + "</html>");
+	}
+
+	/**
+	 * Sets the Events tab text with its line breaks already in place. Letting Swing wrap long
+	 * HTML text cuts off the last line, and while a countdown ticks it measures the wrapped text
+	 * differently from one second to the next, so the cards below jump up and down.
+	 */
+	private void setExpeditionText(String html)
+	{
+		String text = html.startsWith("<html>") ? html.substring(6, html.length() - 7) : html;
+		FontMetrics metrics = expeditionLabel.getFontMetrics(expeditionLabel.getFont());
+		StringBuilder wrapped = new StringBuilder("<html>");
+		String[] lines = text.split("<br>", -1);
+		for (int i = 0; i < lines.length; i++)
+		{
+			if (i > 0)
+			{
+				wrapped.append("<br>");
+			}
+			StringBuilder line = new StringBuilder();
+			for (String word : lines[i].split(" "))
+			{
+				if (line.length() > 0 && metrics.stringWidth(line + " " + word) > TEXT_WIDTH)
+				{
+					wrapped.append(line).append("<br>");
+					line.setLength(0);
+				}
+				line.append(line.length() > 0 ? " " : "").append(word);
+			}
+			wrapped.append(line);
+		}
+		expeditionLabel.setText(wrapped.append("</html>").toString());
 	}
 
 	private void confirmSend(Expedition expedition)
 	{
-		if (expedition.getPartySize() > 1)
+		if (expedition.getPartySize() > 1 || expedition.needsItem())
 		{
-			// The panel shows a party picker instead, which has its own confirm step.
+			// The panel shows a party or item picker instead, which has its own confirm or cancel.
 			onSendExpedition.accept(expedition);
 			return;
 		}

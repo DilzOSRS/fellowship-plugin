@@ -40,6 +40,8 @@ public class VaultPanel extends JPanel
 	private final JLabel choosePrompt = new JLabel();
 	private final JButton takeOffButton = new JButton("Take off");
 	private Predicate<GearItem> chooseFits;
+	/** What clicking an item does while choosing, e.g. "equip". */
+	private String chooseAction;
 	private IntConsumer onPick;
 	private Runnable onTakeOff;
 	private Runnable onChooseDone;
@@ -187,13 +189,15 @@ public class VaultPanel extends JPanel
 	}
 
 	/**
-	 * Show only the items that fit, with a prompt on top, until the player picks one, takes off
+	 * Show only the items that fit, with a prompt on top (action says what a click does, e.g.
+	 * "equip"), until the player picks one, takes off
 	 * what's worn (takeOff, or null if nothing is worn), or cancels. onDone runs in every case.
 	 * Must be called on the Swing thread.
 	 */
-	public void startChoosing(String prompt, Predicate<GearItem> fits, IntConsumer pick, Runnable takeOff,
-		Runnable onDone)
+	public void startChoosing(String prompt, String action, Predicate<GearItem> fits, IntConsumer pick,
+		Runnable takeOff, Runnable onDone)
 	{
+		chooseAction = action;
 		chooseFits = fits;
 		onPick = pick;
 		onTakeOff = takeOff;
@@ -235,7 +239,7 @@ public class VaultPanel extends JPanel
 				confirmSalvage(item, index);
 			}
 		});
-		cell.show(item, item.getDescription() + (choosing ? ". Click to equip" : ". Click to salvage for "
+		cell.show(item, item.getDescription() + (choosing ? ". Click to " + chooseAction : ". Click to salvage for "
 			+ item.getRarity().getSalvageValue() + " coins"));
 		return cell;
 	}

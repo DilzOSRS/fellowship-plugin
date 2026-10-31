@@ -1,6 +1,8 @@
 package com.dilzosrs.fellowship;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * One piece of gear, e.g. a "Rare Bow". Its type decides the slot, stat and class;
@@ -44,12 +46,19 @@ public final class GearItem
 		return rarity.getPower();
 	}
 
-	/** e.g. "Archer, ATK 6" or "Generic, MAG 3". */
+	/** e.g. "Wizard/Navigator, ATK 6" or "Generic, MAG 3". */
 	public String getDescription()
 	{
-		CharacterClass requiredClass = type.getRequiredClass();
-		String who = requiredClass == null ? "Generic" : requiredClass.getDisplayName();
-		return who + ", " + type.getSlot().getStatName() + " " + getPower();
+		List<CharacterClass> classes = type.getClasses();
+		String who = classes.isEmpty() ? "Generic"
+			: classes.stream().map(CharacterClass::getDisplayName).collect(Collectors.joining("/"));
+		return who + ", " + getStatText();
+	}
+
+	/** e.g. "ATK 6". Short enough for chat, where the list of classes would be too long. */
+	public String getStatText()
+	{
+		return type.getSlot().getStatName() + " " + getPower();
 	}
 
 	@Override

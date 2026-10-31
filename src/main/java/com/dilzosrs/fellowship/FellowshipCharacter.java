@@ -20,6 +20,8 @@ public class FellowshipCharacter
 	/** The expedition the character is on, or null when it's home. */
 	private Expedition expedition;
 	private Instant expeditionStart;
+	/** A stored item taken along to be transmuted into coins, or null. */
+	private GearItem carrying;
 
 	/** When an injured character is healed, or null if it isn't injured. */
 	private Instant restingUntil;
@@ -173,6 +175,17 @@ public class FellowshipCharacter
 		expedition = newExpedition;
 		expeditionStart = start;
 		return true;
+	}
+
+	/** The item taken along to be transmuted, or null. */
+	public GearItem getCarrying()
+	{
+		return carrying;
+	}
+
+	public void setCarrying(GearItem item)
+	{
+		carrying = item;
 	}
 
 	public Instant getExpeditionStart()

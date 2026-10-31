@@ -1,6 +1,8 @@
 package com.dilzosrs.fellowship;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import java.util.Collections;
 import java.util.List;
 import net.runelite.api.Skill;
@@ -29,13 +31,40 @@ public class GuildTest
 	}
 
 	@Test
-	public void addingXpRaisesTheLevel()
+	public void fullXpWaitsForTheLevelUpToBePaidFor()
 	{
-		Guild guild = new Guild(15);
-		assertEquals(1, guild.getLevel());
-		guild.addXp(5);
+		Guild guild = new Guild(15, 1);
+		assertFalse(guild.isReadyToLevelUp());
+		assertFalse(guild.levelUp());
+		// 20 XP fills level 2, and the extra 10 is dropped until the level is paid for.
+		guild.addXp(15);
 		assertEquals(20, guild.getXp());
+		assertEquals(1, guild.getLevel());
+		assertTrue(guild.isReadyToLevelUp());
+
+		assertTrue(guild.levelUp());
 		assertEquals(2, guild.getLevel());
+		assertFalse(guild.isReadyToLevelUp());
+		guild.addXp(100);
+		assertEquals(50, guild.getXp());
+	}
+
+	@Test
+	public void levelUpsCostOneHundredCoinsDoublingEachLevel()
+	{
+		assertEquals(100, Guild.levelUpCost(1));
+		assertEquals(200, Guild.levelUpCost(2));
+		assertEquals(400, Guild.levelUpCost(3));
+		assertEquals(800, new Guild(0, 4).getLevelUpCost());
+	}
+
+	@Test
+	public void oldSavesKeepTheirLevel()
+	{
+		// Saves from before levels cost coins only stored the XP.
+		Guild guild = new Guild(60, Guild.levelForXp(60));
+		assertEquals(3, guild.getLevel());
+		assertEquals(60, guild.getXp());
 	}
 
 	@Test

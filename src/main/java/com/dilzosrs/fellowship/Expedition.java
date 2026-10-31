@@ -18,7 +18,14 @@ public enum Expedition
 		8, 3, BundleType.BOSS, 20),
 	// Only a Merchant can go, alone. It costs coins and brings back no coins, just bundles.
 	GRAND_EXCHANGE_TRADE("Traveling to trade at the Grand Exchange", Duration.ofMinutes(30), 1_000, 0, 0,
-		0, 1, BundleType.TRADE, 100, 5, 100, CharacterClass.MERCHANT);
+		0, 1, BundleType.TRADE, 100, 5, 100, CharacterClass.MERCHANT),
+	// Only an Alchemist can go, alone, taking one stored item, which comes back as coins
+	// (TRANSMUTE_MULTIPLIER times its salvage value). Gives no other coins.
+	TRANSMUTING_METALS("Transmute metals", Duration.ofMinutes(10), 500, 0, 0,
+		0, 1, null, 0, 1, 0, CharacterClass.ALCHEMIST);
+
+	/** Transmuting an item gives this many times its salvage value in coins. */
+	static final int TRANSMUTE_MULTIPLIER = 2;
 
 	private final String displayName;
 	private final Duration duration;
@@ -79,6 +86,8 @@ public enum Expedition
 				return "Exploring the Lumbridge Swamp Caves";
 			case DORGESHUUN_CAVES:
 				return "Looting the Dorgeshuun Caves";
+			case TRANSMUTING_METALS:
+				return "Transmuting metals";
 			default:
 				return displayName;
 		}
@@ -143,6 +152,12 @@ public enum Expedition
 			return false;
 		}
 		return team.size() >= partySize && (requiredClass == null || team.count(requiredClass) > 0);
+	}
+
+	/** Whether the character takes a stored item along (to transmute it into coins). */
+	public boolean needsItem()
+	{
+		return this == TRANSMUTING_METALS;
 	}
 
 	/** Whether a character of this class is allowed to go. */

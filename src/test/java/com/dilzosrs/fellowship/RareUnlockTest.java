@@ -104,4 +104,56 @@ public class RareUnlockTest
 		assertTrue(unlock.roll(Skill.THIEVING, 1_000, 0, 0, always(5_000)));
 		assertFalse(unlock.roll(Skill.THIEVING, 1_000, 0, 1, always(5_000)));
 	}
+
+	private static RareUnlock skiller()
+	{
+		return RareUnlock.fromSkilling(CharacterClass.SKILLER, 100_000, 10_000, 4_000);
+	}
+
+	@Test
+	public void skillersOnlyCountSkillingSkills()
+	{
+		RareUnlock unlock = skiller();
+		assertFalse(unlock.roll(Skill.ATTACK, 50_000, 5, 0, always(0)));
+		assertFalse(unlock.roll(Skill.PRAYER, 50_000, 5, 0, always(0)));
+		assertFalse(unlock.roll(Skill.SLAYER, 50_000, 5, 0, always(0)));
+		assertTrue(unlock.roll(Skill.WOODCUTTING, 1_000, 0, 0, always(0)));
+		assertTrue(skiller().roll(Skill.COOKING, 0, 1, 0, always(0)));
+	}
+
+	@Test
+	public void skillersHaveTheirOwnChanceForEachOne()
+	{
+		// 10% for the 1st, 1% for the 2nd, 0.4% for the 3rd, the same for XP and level-ups.
+		assertTrue(skiller().roll(Skill.MINING, 1_000, 0, 0, always(99_999)));
+		assertFalse(skiller().roll(Skill.MINING, 1_000, 0, 0, always(100_000)));
+		assertTrue(skiller().roll(Skill.MINING, 0, 1, 0, always(99_999)));
+		assertTrue(skiller().roll(Skill.MINING, 1_000, 0, 1, always(9_999)));
+		assertFalse(skiller().roll(Skill.MINING, 1_000, 0, 1, always(10_000)));
+		assertTrue(skiller().roll(Skill.MINING, 1_000, 0, 2, always(3_999)));
+		assertFalse(skiller().roll(Skill.MINING, 1_000, 0, 2, always(4_000)));
+	}
+
+	@Test
+	public void noMoreThanThreeSkillers()
+	{
+		assertFalse(skiller().roll(Skill.MINING, 50_000, 5, 3, always(0)));
+	}
+
+	@Test
+	public void advancedCharactersStillCountAsTheirStartingClass()
+	{
+		assertEquals(CharacterClass.SKILLER, CharacterClass.HARVESTER.getBaseClass());
+		assertEquals(CharacterClass.THIEF, CharacterClass.WARLORD.getBaseClass());
+		assertEquals(CharacterClass.ADVENTURER, CharacterClass.KNIGHT.getBaseClass());
+		assertEquals(CharacterClass.SKILLER, CharacterClass.SKILLER.getBaseClass());
+
+		Team team = new Team(java.util.List.of(
+			new FellowshipCharacter(CharacterClass.KNIGHT, 0),
+			new FellowshipCharacter(CharacterClass.SKILLER, 0),
+			new FellowshipCharacter(CharacterClass.HARVESTER, 0)));
+		assertEquals(2, team.countStartedAs(CharacterClass.SKILLER));
+		assertEquals(1, team.countStartedAs(CharacterClass.ADVENTURER));
+		assertEquals(0, team.countStartedAs(CharacterClass.THIEF));
+	}
 }

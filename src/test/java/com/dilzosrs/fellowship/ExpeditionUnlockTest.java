@@ -27,6 +27,11 @@ public class ExpeditionUnlockTest
 		assertEquals(EnumSet.of(Expedition.DORGESHUUN_CAVES, Expedition.GRAND_EXCHANGE_TRADE),
 			team.unlockedExpeditions());
 
+		// The first Alchemist unlocks Transmuting metals.
+		team.add(CharacterClass.ALCHEMIST);
+		assertEquals(EnumSet.of(Expedition.DORGESHUUN_CAVES, Expedition.GRAND_EXCHANGE_TRADE,
+			Expedition.TRANSMUTING_METALS), team.unlockedExpeditions());
+
 		// The first class advancement unlocks the Swamp Caves.
 		assertTrue(team.get(0).evolve(CharacterClass.KNIGHT));
 		assertEquals(EnumSet.allOf(Expedition.class), team.unlockedExpeditions());
