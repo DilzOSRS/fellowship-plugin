@@ -1,5 +1,6 @@
 package com.dilzosrs.fellowship;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -111,5 +112,20 @@ public final class Danger
 			}
 		}
 		return weights.length - 1;
+	}
+
+	/** e.g. "5 minutes", "1 hour", "1 hour 40 minutes" or "10 hours". Under a minute counts as 1 minute. */
+	static String describeRest(Duration rest)
+	{
+		long totalMinutes = Math.max(1, (rest.getSeconds() + 59) / 60);
+		long hours = totalMinutes / 60;
+		long minutes = totalMinutes % 60;
+		String hourText = hours + (hours == 1 ? " hour" : " hours");
+		String minuteText = minutes + (minutes == 1 ? " minute" : " minutes");
+		if (hours == 0)
+		{
+			return minuteText;
+		}
+		return minutes == 0 ? hourText : hourText + " " + minuteText;
 	}
 }

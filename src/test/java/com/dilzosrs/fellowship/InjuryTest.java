@@ -126,4 +126,14 @@ public class InjuryTest
 		FellowshipCharacter loaded = gson.fromJson(gson.toJson(SavedCharacter.from(knight)), SavedCharacter.class).toCharacter();
 		assertEquals(healed, loaded.getRestingUntil());
 	}
+
+	@Test
+	public void restUnderAnHourIsShownInMinutes()
+	{
+		assertEquals("5 minutes", Danger.describeRest(Duration.ofMinutes(5)));
+		assertEquals("1 minute", Danger.describeRest(Duration.ofSeconds(20)));
+		assertEquals("1 hour", Danger.describeRest(Duration.ofHours(1)));
+		assertEquals("1 hour 40 minutes", Danger.describeRest(Duration.ofMinutes(100)));
+		assertEquals("10 hours", Danger.describeRest(Duration.ofHours(10)));
+	}
 }

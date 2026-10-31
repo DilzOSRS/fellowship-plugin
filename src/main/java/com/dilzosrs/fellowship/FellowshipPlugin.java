@@ -668,7 +668,7 @@ public class FellowshipPlugin extends Plugin
 			return;
 		}
 		sendChatMessage(joinNames(injured) + (injured.size() == 1 ? " was" : " were") + " injured and must rest for "
-			+ rest.toHours() + " hours.");
+			+ Danger.describeRest(rest) + ".");
 	}
 
 	/** e.g. "Knight", "Knight and Archer 2", or "Knight, Archer 2 and Wizard 3". */
