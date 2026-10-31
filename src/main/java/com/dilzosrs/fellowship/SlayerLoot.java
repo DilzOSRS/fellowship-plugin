@@ -9,8 +9,8 @@ import java.util.Random;
  */
 public final class SlayerLoot
 {
-	/** 1 in this many per task kill (0.5%). */
-	static final int KILL_CHANCE_ONE_IN = 200;
+	/** 1 in this many per task kill (1%). */
+	static final int KILL_CHANCE_ONE_IN = 100;
 	/**
 	 * The most the count can drop in one change and still be kills. Bigger drops are a task that was
 	 * cancelled or skipped at a Slayer master, which give nothing.
