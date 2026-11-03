@@ -36,12 +36,23 @@ public class SavedVault
 			return gear;
 		}
 
-		/** The item, or null if the save names gear that doesn't exist (any more). */
+		/**
+		 * The item, or null if the save names gear that doesn't exist (any more). Gear from before
+		 * the item list (2026-11-02) at a tier its type no longer has, e.g. an Epic Sword, becomes
+		 * the nearest lower tier (the Rare sword).
+		 */
 		GearItem toItem()
 		{
 			try
 			{
-				return new GearItem(GearType.valueOf(type), Rarity.valueOf(rarity));
+				GearType gearType = GearType.valueOf(type);
+				Rarity tier = gearType.nearestTier(Rarity.valueOf(rarity));
+				if (tier == null)
+				{
+					log.warn("Saved gear {} {} has no tier at or below it, skipping it", rarity, type);
+					return null;
+				}
+				return new GearItem(gearType, tier);
 			}
 			catch (IllegalArgumentException | NullPointerException e)
 			{

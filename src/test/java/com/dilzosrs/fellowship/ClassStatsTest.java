@@ -11,8 +11,8 @@ public class ClassStatsTest
 		FellowshipCharacter knight = new FellowshipCharacter(CharacterClass.KNIGHT, 0);
 		assertEquals(1, knight.getAtk());
 		assertEquals(3, knight.getDef());
-		knight.equip(new GearItem(GearType.SWORD, Rarity.UNCOMMON));
-		assertEquals(4, knight.getAtk());
+		knight.equip(new GearItem(GearType.SWORD, Rarity.COMMON));
+		assertEquals(3, knight.getAtk());
 	}
 
 	@Test

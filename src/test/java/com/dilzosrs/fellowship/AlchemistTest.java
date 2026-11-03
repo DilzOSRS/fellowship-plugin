@@ -44,13 +44,13 @@ public class AlchemistTest
 	{
 		Team team = new Team(List.of(new FellowshipCharacter(CharacterClass.ALCHEMIST, 0)));
 		assertTrue(team.sendParty(List.of(0), Expedition.TRANSMUTING_METALS, START));
-		GearItem item = new GearItem(GearType.values()[0], Rarity.EPIC);
+		GearItem item = new GearItem(GearType.SWORD, Rarity.RARE);
 		team.get(0).setCarrying(item);
 
 		FellowshipCharacter loaded = SavedCharacter.from(team.get(0)).toCharacter();
 		assertEquals(Expedition.TRANSMUTING_METALS, loaded.getExpedition());
 		assertEquals(item.getName(), loaded.getCarrying().getName());
-		assertEquals(Rarity.EPIC, loaded.getCarrying().getRarity());
+		assertEquals(Rarity.RARE, loaded.getCarrying().getRarity());
 	}
 
 	@Test

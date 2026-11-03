@@ -58,9 +58,9 @@ public class SavedCharacter
 		for (SavedVault.SavedGear gear : new SavedVault.SavedGear[]{weapon, armour, trinket})
 		{
 			GearItem item = gear == null ? null : gear.toItem();
-			if (item != null && character.canEquip(item))
+			if (item != null)
 			{
-				character.equip(item);
+				character.restoreEquipped(item);
 			}
 		}
 		Expedition savedExpedition = parseExpedition(expedition);

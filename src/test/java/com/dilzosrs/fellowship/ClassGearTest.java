@@ -64,6 +64,22 @@ public class ClassGearTest
 	}
 
 	@Test
+	public void comboItemsNeedTheStyleToo()
+	{
+		assertTrue(GearType.CUTLASS.canBeUsedBy(CharacterClass.SWASHBUCKLER));
+		assertFalse(GearType.CUTLASS.canBeUsedBy(CharacterClass.HARPOONER));
+		assertFalse(GearType.CUTLASS.canBeUsedBy(CharacterClass.SAILOR));
+		assertTrue(GearType.HARPOON.canBeUsedBy(CharacterClass.HARPOONER));
+		assertTrue(GearType.TRIDENT.canBeUsedBy(CharacterClass.NAVIGATOR));
+		// The Anchor is plain nautical, so the whole Sailor tree can use it.
+		assertTrue(GearType.ANCHOR.canBeUsedBy(CharacterClass.SAILOR));
+		assertTrue(GearType.ANCHOR.canBeUsedBy(CharacterClass.HARPOONER));
+		assertFalse(GearType.ANCHOR.canBeUsedBy(CharacterClass.KNIGHT));
+		assertEquals("Harpooners can't use nautical-melee gear",
+			ClassGear.whyCantUse(CharacterClass.HARPOONER, GearType.CUTLASS));
+	}
+
+	@Test
 	public void whoCanUse()
 	{
 		assertEquals("Anyone", ClassGear.whoCanUse(GearType.TRINKET));

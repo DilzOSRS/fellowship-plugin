@@ -376,6 +376,7 @@ public class CharacterCard extends JPanel
 	 */
 	private void showGear(CharacterView view)
 	{
+		int level = LevelCurve.levelForXp(view.xp);
 		String stats = "ATK " + view.atk + "   DEF " + view.def + "   MAG " + view.mag;
 		String fromClass = view.characterClass.describeBaseStats();
 		if (!fromClass.isEmpty())
@@ -393,8 +394,11 @@ public class CharacterCard extends JPanel
 		for (GearType.Slot slot : GearType.Slot.values())
 		{
 			GearItem item = view.getEquipped(slot);
-			gearCells[slot.ordinal()].show(item,
-				item == null ? "Click to equip" : item.getTooltip(null, "Click to change"));
+			// Gear above the follower's level (e.g. after a class advancement) stays on, faded, with no stats.
+			boolean tooLow = item != null && level < item.getLevelRequirement();
+			gearCells[slot.ordinal()].show(item, item == null ? "Click to equip" : item.getTooltip(
+				tooLow ? "Needs level " + item.getLevelRequirement() + ": no stats until then" : null, "Click to change"));
+			gearCells[slot.ordinal()].setDimmed(tooLow);
 		}
 	}
 

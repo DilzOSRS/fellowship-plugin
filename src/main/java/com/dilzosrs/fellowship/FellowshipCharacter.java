@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.function.ToIntFunction;
 import net.runelite.api.Skill;
 
 /**
@@ -260,10 +261,25 @@ public class FellowshipCharacter
 		return equipment.get(slot);
 	}
 
-	/** Whether this character's class can use the item (ignores whether it's away). */
-	public boolean canEquip(GearItem item)
+	/** Whether this character's class can use the item, whatever its level. */
+	public boolean canUse(GearItem item)
 	{
 		return item.getType().canBeUsedBy(characterClass);
+	}
+
+	/** Whether the item can be put on: the class can use it and the level is high enough (ignores whether it's away). */
+	public boolean canEquip(GearItem item)
+	{
+		return canUse(item) && meetsLevel(item);
+	}
+
+	/**
+	 * Whether the character is high enough level for the item. Worn gear above its level (e.g.
+	 * after a class advancement resets it to level 1) stays on but gives no stats until it is.
+	 */
+	public boolean meetsLevel(GearItem item)
+	{
+		return getLevel() >= item.getLevelRequirement();
 	}
 
 	/** Gear can't be changed while away, so a party's power is fixed once it sets off. */
@@ -293,6 +309,18 @@ public class FellowshipCharacter
 	}
 
 	/**
+	 * Put back gear loaded from a save. Only the class rule applies: gear above the character's
+	 * level stays on (see {@link #meetsLevel}).
+	 */
+	void restoreEquipped(GearItem item)
+	{
+		if (canUse(item))
+		{
+			equipment.put(item.getType().getSlot(), item);
+		}
+	}
+
+	/**
 	 * Take off the gear in a slot.
 	 *
 	 * @return the gear that was there, or null if the slot was empty or the character is away
@@ -302,22 +330,22 @@ public class FellowshipCharacter
 		return canChangeGear() ? equipment.remove(slot) : null;
 	}
 
-	/** ATK from the class plus the equipped weapon. Can be negative. */
+	/** ATK from the class plus worn gear the character is high enough level for. Can be negative. */
 	public int getAtk()
 	{
-		return characterClass.getBaseAtk() + powerIn(GearType.Slot.WEAPON);
+		return characterClass.getBaseAtk() + gearTotal(GearItem::getAtk);
 	}
 
-	/** DEF from the class plus the equipped armour. Can be negative. */
+	/** DEF from the class plus worn gear the character is high enough level for. Can be negative. */
 	public int getDef()
 	{
-		return characterClass.getBaseDef() + powerIn(GearType.Slot.ARMOUR);
+		return characterClass.getBaseDef() + gearTotal(GearItem::getDef);
 	}
 
-	/** MAG from the class plus the equipped trinket. */
+	/** MAG from the class plus worn gear the character is high enough level for. */
 	public int getMag()
 	{
-		return characterClass.getBaseMag() + powerIn(GearType.Slot.TRINKET);
+		return characterClass.getBaseMag() + gearTotal(GearItem::getMag);
 	}
 
 	/** ATK plus half of MAG, used against an expedition's threat. */
@@ -332,10 +360,10 @@ public class FellowshipCharacter
 		return getDef() + getMag() / 2.0;
 	}
 
-	private int powerIn(GearType.Slot slot)
+	/** One stat added up over the worn gear, leaving out gear above the character's level. */
+	private int gearTotal(ToIntFunction<GearItem> stat)
 	{
-		GearItem item = equipment.get(slot);
-		return item == null ? 0 : item.getPower();
+		return equipment.values().stream().filter(this::meetsLevel).mapToInt(stat).sum();
 	}
 
 	private long maxXp()

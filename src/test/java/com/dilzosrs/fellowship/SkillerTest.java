@@ -47,7 +47,7 @@ public class SkillerTest
 	{
 		FellowshipCharacter harvester = new FellowshipCharacter(CharacterClass.HARVESTER, 0);
 		assertFalse(harvester.canEquip(new GearItem(GearType.SWORD, Rarity.RARE)));
-		assertTrue(harvester.canEquip(new GearItem(GearType.TRINKET, Rarity.RARE)));
+		assertTrue(harvester.canEquip(new GearItem(GearType.TRINKET, Rarity.COMMON)));
 	}
 
 	@Test

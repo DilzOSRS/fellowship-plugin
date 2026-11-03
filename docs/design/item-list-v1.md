@@ -26,8 +26,8 @@ Columns: **Budget** = what the rules give; **Total** = the stats added up (MAG c
 | | R | Ornate cutlass | Lucky cutlass | 8 ATK | 8 | 8 |
 | Harpoon (*nautical-ranged*) | U | Harpoon | Harpoon | 5 ATK | 5 | 5 |
 | | R | Barbed harpoon | Barb-tail harpoon | 8 ATK | 8 | 8 |
-| Trident (*nautical-magic*) | U | Trident | Mermaid's trident | 5 ATK | 5 | 5 |
-| | R | Magic trident | Trident of the seas | 8 ATK | 8 | 8 |
+| Trident (*nautical-magic*) | U | Trident | ~~Mermaid's trident~~ Trident of the seas (changed 2026-11-02: no Mermaid's trident in RuneLite's item names) | 5 ATK | 5 | 5 |
+| | R | Magic trident | ~~Trident of the seas~~ Trident of the seas (e) (changed 2026-11-02, so it differs from the Uncommon one) | 8 ATK | 8 | 8 |
 | Dark weapons (*dark*) | U, R | **On hold** (user: loop back on dark items) | | | | 4 / 7 |
 
 - Sailing weapons are plain ATK (user, 2026-11-01).
@@ -45,15 +45,15 @@ Columns: **Budget** = what the rules give; **Total** = the stats added up (MAG c
 | Robe (*robe*) | C | Apprentice robes | Blue wizard robe | 1 DEF, 1 MAG | 2 | 2 |
 | | U | Magic robes | Blue wizard robe (g) | 1 DEF, 3 MAG | 4 | 4 |
 | | R | Mystic robes | Mystic robe top | 2 DEF, 5 MAG | 7 | 7 |
-| Clothes (Generic) | C | Peasant's clothes | Brown robe top | 1 DEF | 1 | 1 |
-| | U | Traveller's garb | White robe top | 3 DEF | 3 | 3 |
+| Clothes (Generic) | C | Peasant's clothes | ~~Brown robe top~~ Monk's robe top (changed 2026-11-02: no brown robe top) | 1 DEF | 1 | 1 |
+| | U | Traveller's garb | ~~White robe top~~ Priest gown (changed 2026-11-02: no white robe top) | 3 DEF | 3 | 3 |
 
 ## Trinkets
 
 | Type | Tier | Name | Icon | Stats | Total | Budget |
 |---|---|---|---|---|---|---|
 | Trinket (Generic) | C | Brass necklace | Brass necklace | 1 MAG | 1 | 1 |
-| | U | Silver necklace | (check an icon exists) | 3 MAG | 3 | 3 |
+| | U | Silver necklace | ~~(check an icon exists)~~ Silver necklace, the Murder Mystery one (found 2026-11-02) | 3 MAG | 3 | 3 |
 | | R | Gold necklace | Gold necklace | 6 MAG | 6 | 6 |
 
 - Trinkets match the tier budgets for now; **may be tweaked lower** later (user, 2026-11-01).
@@ -67,3 +67,7 @@ Columns: **Budget** = what the rules give; **Total** = the stats added up (MAG c
 - **Staves give MAG**, which (with Robes) makes the Wizard's gear clearly magic.
 - Mixed stats show up on the card as separate lines; the worked-out ATK and DEF (including MAG) is shown too (roadmap Stage C step 2).
 - **Check these icon names exist when building:** silver necklace, the Barrelchest anchor's Bounty Hunter variant, Mermaid's trident, brown robe top, white robe top. If one doesn't exist, pick the closest OSRS item.
+
+## History
+- 2026-11-01: Draft written in claude.ai.
+- 2026-11-02: Built in code and tested in-game, except the dark weapons on hold. Four icons swapped for the closest OSRS item (marked above).

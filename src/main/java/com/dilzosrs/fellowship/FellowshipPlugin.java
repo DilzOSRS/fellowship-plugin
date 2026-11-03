@@ -781,7 +781,7 @@ public class FellowshipPlugin extends Plugin
 			sendChatMessage("You opened a " + bundle.getDisplayName() + ": " + opened.item.getName()
 				+ " (" + opened.item.getStatText() + ")" + (opened.coins > 0 ? " and " + opened.coins + " coins" : "") + "!");
 			Rarity rarity = opened.item.getRarity();
-			String article = rarity == Rarity.UNCOMMON || rarity == Rarity.EPIC ? "an " : "a ";
+			String article = "AEIOU".indexOf(Character.toUpperCase(opened.item.getName().charAt(0))) >= 0 ? "an " : "a ";
 			popup.show("You pulled " + article + opened.item.getName() + "!",
 				itemManager.getImage(opened.item.getIconItemId()), rarity.getColor());
 			SwingUtilities.invokeLater(() -> vaultPanel.showOpened(bundle, opened.item, opened.coins));

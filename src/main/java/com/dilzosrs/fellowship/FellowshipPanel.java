@@ -423,12 +423,22 @@ public class FellowshipPanel extends PluginPanel
 
 		// Storage items that go in this slot. The ones this character's class can't use show faded, with the reason.
 		Predicate<GearItem> inSlot = item -> item.getType().getSlot() == slot;
-		Function<GearItem, String> whyNot = item -> ClassGear.whyCantUse(character.characterClass, item.getType());
+		int level = LevelCurve.levelForXp(character.xp);
+		Function<GearItem, String> whyNot = item ->
+		{
+			String classReason = ClassGear.whyCantUse(character.characterClass, item.getType());
+			if (classReason != null)
+			{
+				return classReason;
+			}
+			return level < item.getLevelRequirement()
+				? character.name + " needs level " + item.getLevelRequirement() + " (now " + level + ")" : null;
+		};
 		String prompt = "Choose a " + slot.getDisplayName().toLowerCase() + " for " + character.name + ":";
 		if (shownStorage.stream().noneMatch(item -> inSlot.test(item) && whyNot.apply(item) == null))
 		{
-			prompt += "<br><br>" + (character.characterClass == CharacterClass.ADVENTURER && slot != GearType.Slot.TRINKET
-				? "Adventurers can only use Generic gear (trinkets) until their class advancement."
+			prompt += "<br><br>" + (character.characterClass == CharacterClass.ADVENTURER
+				? "Adventurers can only use Generic gear (daggers, clothes and trinkets) until their class advancement."
 				: "There's no " + slot.getDisplayName().toLowerCase() + " in storage that " + character.name + " can use.");
 		}
 		Runnable takeOff = equipped == null ? null : () ->

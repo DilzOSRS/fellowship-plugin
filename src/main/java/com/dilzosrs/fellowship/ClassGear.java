@@ -58,7 +58,7 @@ public final class ClassGear
 	}
 
 	private final Set<Tag> tags;
-	/** Hidden for now; combo items (e.g. a nautical-melee Cutlass) will check it. */
+	/** Hidden from players; combo items (e.g. a nautical-melee Cutlass) check it. */
 	private final Set<Style> styles;
 	/** Tags this class can only use with certain styles, e.g. the Bandit's dark melee weapons. */
 	private final Map<Tag, Style> limits = new EnumMap<>(Tag.class);
@@ -120,6 +120,11 @@ public final class ClassGear
 			{
 				return who + " only use " + tag.getDisplayName() + " " + only.getDisplayName() + " weapons";
 			}
+		}
+		// A combo item (e.g. nautical-melee) also needs the follower to fight in its style.
+		if (type.isCombo() && !styles.contains(type.getStyle()))
+		{
+			return who + " can't use " + type.getTagText() + " gear";
 		}
 		return null;
 	}

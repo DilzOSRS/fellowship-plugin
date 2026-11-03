@@ -1,11 +1,14 @@
 package com.dilzosrs.fellowship;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import net.runelite.api.gameval.ItemID;
 
 /**
  * The kinds of loot bundle. Each gives one random item, and most give some coins too. For now every
- * bundle can roll any item; only the rarity odds and coins differ.
+ * bundle can roll any item; only the rarity odds and coins differ (pools per bundle come in Stage C step 4).
  * <p>
  * The enum names are saved per account, so never rename them without a migration.
  */
@@ -83,11 +86,23 @@ public enum BundleType
 		return Rarity.COMMON;
 	}
 
-	/** A random item: rarity from this bundle's odds, then any type of gear. */
+	/**
+	 * A random item: rarity from this bundle's odds, then any type of gear that has that tier. If
+	 * no type has it (Epic and Legendary for now), it drops to the nearest lower tier that exists
+	 * (the empty-tier rule in docs/design/bundles-v1.md). Each bundle's own pool comes later.
+	 */
 	public GearItem rollItem(Random random)
 	{
-		Rarity rarity = rollRarity(random);
-		GearType[] types = GearType.values();
-		return new GearItem(types[random.nextInt(types.length)], rarity);
+		for (int i = rollRarity(random).ordinal(); i >= 0; i--)
+		{
+			Rarity rarity = Rarity.values()[i];
+			List<GearType> types = Arrays.stream(GearType.values()).filter(t -> t.hasTier(rarity))
+				.collect(Collectors.toList());
+			if (!types.isEmpty())
+			{
+				return new GearItem(types.get(random.nextInt(types.size())), rarity);
+			}
+		}
+		throw new IllegalStateException("No Common gear exists");
 	}
 }

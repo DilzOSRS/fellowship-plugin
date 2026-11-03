@@ -63,12 +63,19 @@ public class GearCell extends JPanel
 	public void show(GearItem item, String tooltip)
 	{
 		square.showItem(item);
-		// The name goes on two lines (rarity, then type), since the columns are narrow.
+		// The name goes on two lines, split at its first space, since the columns are narrow.
 		nameLabel.setText("<html><center>" + (item == null
 			? "Empty<br>" + slot.getDisplayName()
-			: item.getRarity().getDisplayName() + "<br>" + item.getType().getDisplayName()) + "</center></html>");
+			: twoLines(item.getName())) + "</center></html>");
 		nameLabel.setForeground(item == null ? ColorScheme.LIGHT_GRAY_COLOR : item.getRarity().getColor());
 		setToolTipText(tooltip);
+	}
+
+	/** e.g. "Mithril<br>sword", or "Staff<br>&nbsp;" so one-word names keep the same height. */
+	private static String twoLines(String name)
+	{
+		int space = name.indexOf(' ');
+		return space < 0 ? name + "<br>&nbsp;" : name.substring(0, space) + "<br>" + name.substring(space + 1);
 	}
 
 	/**
@@ -82,6 +89,5 @@ public class GearCell extends JPanel
 		{
 			nameLabel.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
 		}
-		setCursor(Cursor.getPredefinedCursor(dimmed ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR));
 	}
 }

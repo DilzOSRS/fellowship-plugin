@@ -33,25 +33,55 @@ public class LootTest
 	public void itemNamesAndStats()
 	{
 		GearItem bow = new GearItem(GearType.BOW, Rarity.RARE);
-		assertEquals("Rare Bow", bow.getName());
-		assertEquals(6, bow.getPower());
-		assertEquals("ATK 6", bow.getStatText());
+		assertEquals("Magic shortbow", bow.getName());
+		assertEquals(7, bow.getAtk());
+		assertEquals("7 ATK", bow.getStatText());
 		assertEquals("bow", GearType.BOW.getTagText());
 
-		GearItem trinket = new GearItem(GearType.TRINKET, Rarity.LEGENDARY);
-		assertEquals("Legendary Trinket", trinket.getName());
-		assertEquals("MAG 15", trinket.getStatText());
+		GearItem sword = new GearItem(GearType.SWORD, Rarity.UNCOMMON);
+		assertEquals("Mithril sword", sword.getName());
+		assertEquals("3 ATK, 1 DEF", sword.getStatText());
+
+		GearItem trinket = new GearItem(GearType.TRINKET, Rarity.RARE);
+		assertEquals("Gold necklace", trinket.getName());
+		assertEquals("6 MAG", trinket.getStatText());
 		assertEquals("Generic", GearType.TRINKET.getTagText());
+		assertEquals("nautical-melee", GearType.CUTLASS.getTagText());
 	}
 
 	@Test
-	public void powerByRarity()
+	public void levelToWearByRarity()
 	{
-		assertEquals(1, Rarity.COMMON.getPower());
-		assertEquals(3, Rarity.UNCOMMON.getPower());
-		assertEquals(6, Rarity.RARE.getPower());
-		assertEquals(10, Rarity.EPIC.getPower());
-		assertEquals(15, Rarity.LEGENDARY.getPower());
+		assertEquals(1, Rarity.COMMON.getLevelRequirement());
+		assertEquals(10, Rarity.UNCOMMON.getLevelRequirement());
+		assertEquals(15, Rarity.RARE.getLevelRequirement());
+	}
+
+	@Test
+	public void itemsMatchTheirBudgets()
+	{
+		// Common 2, Uncommon 4, Rare 7 for a single tag; Generic -1, combo +1. The Dagger and Anchor are under on purpose.
+		int[] budget = {2, 4, 7};
+		for (GearType type : GearType.values())
+		{
+			int adjust = type.isGeneric() ? -1 : type.isCombo() ? 1 : 0;
+			for (Rarity rarity : new Rarity[]{Rarity.COMMON, Rarity.UNCOMMON, Rarity.RARE})
+			{
+				GearTier tier = type.getTier(rarity);
+				if (tier == null || type == GearType.DAGGER || type == GearType.ANCHOR)
+				{
+					continue;
+				}
+				assertEquals(type + " " + rarity, budget[rarity.ordinal()] + adjust,
+					tier.getAtk() + tier.getDef() + tier.getMag());
+			}
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void noItemAtAMissingTier()
+	{
+		new GearItem(GearType.ANCHOR, Rarity.COMMON);
 	}
 
 	@Test
@@ -66,9 +96,18 @@ public class LootTest
 	}
 
 	@Test
-	public void thereAre35Items()
+	public void thereAre34Items()
 	{
-		assertEquals(35, GearType.values().length * Rarity.values().length);
+		// The design's 40, minus the 6 dark weapons that are on hold.
+		int items = 0;
+		for (GearType type : GearType.values())
+		{
+			for (Rarity rarity : Rarity.values())
+			{
+				items += type.hasTier(rarity) ? 1 : 0;
+			}
+		}
+		assertEquals(34, items);
 	}
 
 	@Test
@@ -99,7 +138,7 @@ public class LootTest
 	}
 
 	@Test
-	public void anyBundleCanRollAnyTypeAndRarity()
+	public void anyBundleCanRollAnyTypeUpToRare()
 	{
 		Random random = new Random(7);
 		Set<GearType> types = EnumSet.noneOf(GearType.class);
@@ -111,7 +150,8 @@ public class LootTest
 			rarities.add(item.getRarity());
 		}
 		assertEquals(EnumSet.allOf(GearType.class), types);
-		assertEquals(EnumSet.allOf(Rarity.class), rarities);
+		// No Epic or Legendary items exist yet, so those rolls drop to Rare.
+		assertEquals(EnumSet.of(Rarity.COMMON, Rarity.UNCOMMON, Rarity.RARE), rarities);
 	}
 
 	@Test
@@ -148,8 +188,8 @@ public class LootTest
 	@Test
 	public void salvagingGivesCoinsAndFreesASlot()
 	{
-		Vault vault = new Vault(Collections.emptyList(), List.of(new GearItem(GearType.BOW, Rarity.EPIC)), 10, 0);
-		assertEquals(100, vault.salvage(0));
+		Vault vault = new Vault(Collections.emptyList(), List.of(new GearItem(GearType.BOW, Rarity.RARE)), 10, 0);
+		assertEquals(40, vault.salvage(0));
 		assertTrue(vault.getItems().isEmpty());
 		assertEquals(0, vault.salvage(0));
 	}
@@ -179,12 +219,12 @@ public class LootTest
 	{
 		Gson gson = new Gson();
 		Vault original = new Vault(List.of(BundleType.RAID, BundleType.GENERIC),
-			List.of(new GearItem(GearType.STAFF, Rarity.EPIC)), 15, 42_000);
+			List.of(new GearItem(GearType.STAFF, Rarity.RARE)), 15, 42_000);
 
 		Vault loaded = gson.fromJson(gson.toJson(SavedVault.from(original)), SavedVault.class).toVault();
 
 		assertEquals(List.of(BundleType.RAID, BundleType.GENERIC), loaded.getBundles());
-		assertEquals(List.of(new GearItem(GearType.STAFF, Rarity.EPIC)), loaded.getItems());
+		assertEquals(List.of(new GearItem(GearType.STAFF, Rarity.RARE)), loaded.getItems());
 		assertEquals(15, loaded.getCapacity());
 		assertEquals(42_000, loaded.getGenericXpProgress());
 	}
@@ -197,6 +237,17 @@ public class LootTest
 			+ "\"items\":[{\"type\":\"AXE\",\"rarity\":\"RARE\"},{\"type\":\"BOW\",\"rarity\":\"RARE\"}]}", SavedVault.class).toVault();
 		assertEquals(List.of(BundleType.BOSS), loaded.getBundles());
 		assertEquals(List.of(new GearItem(GearType.BOW, Rarity.RARE)), loaded.getItems());
+	}
+
+	@Test
+	public void oldSavedGearMovesToTheNearestTier()
+	{
+		// Saves from before the item list (2026-11-02) can hold Epic and Legendary gear.
+		Gson gson = new Gson();
+		Vault loaded = gson.fromJson("{\"items\":[{\"type\":\"SWORD\",\"rarity\":\"EPIC\"},"
+			+ "{\"type\":\"TRINKET\",\"rarity\":\"LEGENDARY\"}]}", SavedVault.class).toVault();
+		assertEquals(List.of(new GearItem(GearType.SWORD, Rarity.RARE), new GearItem(GearType.TRINKET, Rarity.RARE)),
+			loaded.getItems());
 	}
 
 	@Test

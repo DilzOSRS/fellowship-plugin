@@ -2,6 +2,7 @@ package com.dilzosrs.fellowship;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -254,6 +255,11 @@ public class VaultPanel extends JPanel
 		cell.show(item, item.getTooltip(whyNot, whyNot != null ? null : choosing ? "Click to " + chooseAction
 			: "Click to salvage for " + item.getRarity().getSalvageValue() + " coins"));
 		cell.setDimmed(whyNot != null);
+		if (whyNot != null)
+		{
+			// Can't be picked, so no hand cursor.
+			cell.setCursor(Cursor.getDefaultCursor());
+		}
 		if (!choosing)
 		{
 			// Right-click menu, like OSRS. Picking from it is deliberate enough, so no confirm step.
