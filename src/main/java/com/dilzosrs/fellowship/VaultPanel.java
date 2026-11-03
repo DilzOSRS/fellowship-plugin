@@ -11,7 +11,9 @@ import java.util.function.Predicate;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SpriteManager;
@@ -241,6 +243,15 @@ public class VaultPanel extends JPanel
 		});
 		cell.show(item, item.getDescription() + (choosing ? ". Click to " + chooseAction : ". Click to salvage for "
 			+ item.getRarity().getSalvageValue() + " coins"));
+		if (!choosing)
+		{
+			// Right-click menu, like OSRS. Picking from it is deliberate enough, so no confirm step.
+			JPopupMenu menu = new JPopupMenu();
+			JMenuItem salvage = new JMenuItem("Salvage (" + item.getRarity().getSalvageValue() + " coins)");
+			salvage.addActionListener(e -> onSalvage.accept(index));
+			menu.add(salvage);
+			cell.setComponentPopupMenu(menu);
+		}
 		return cell;
 	}
 

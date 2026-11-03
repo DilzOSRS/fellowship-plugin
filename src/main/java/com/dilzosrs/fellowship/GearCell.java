@@ -7,6 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.ui.ColorScheme;
@@ -36,13 +37,21 @@ public class GearCell extends JPanel
 		nameLabel.setFont(FontManager.getRunescapeSmallFont());
 		nameLabel.setHorizontalAlignment(JLabel.CENTER);
 		add(nameLabel, BorderLayout.CENTER);
+		// A right-click menu (if one is set) shows over the square and the name too.
+		squareHolder.setInheritsPopupMenu(true);
+		square.setInheritsPopupMenu(true);
+		nameLabel.setInheritsPopupMenu(true);
 		setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		addMouseListener(new MouseAdapter()
 		{
 			@Override
 			public void mouseClicked(MouseEvent e)
 			{
-				onClick.run();
+				// Right-clicks are for the menu.
+				if (SwingUtilities.isLeftMouseButton(e))
+				{
+					onClick.run();
+				}
 			}
 		});
 	}
