@@ -70,4 +70,18 @@ public class GearCell extends JPanel
 		nameLabel.setForeground(item == null ? ColorScheme.LIGHT_GRAY_COLOR : item.getRarity().getColor());
 		setToolTipText(tooltip);
 	}
+
+	/**
+	 * Fade the square and name, e.g. for gear the follower can't use. Call after show(), since
+	 * show() sets the name's colour. Must be called on the Swing thread.
+	 */
+	public void setDimmed(boolean dimmed)
+	{
+		square.setDimmed(dimmed);
+		if (dimmed)
+		{
+			nameLabel.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
+		}
+		setCursor(Cursor.getPredefinedCursor(dimmed ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR));
+	}
 }

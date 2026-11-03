@@ -1,7 +1,9 @@
 package com.dilzosrs.fellowship;
 
+import java.awt.AlphaComposite;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -27,6 +29,8 @@ public class GearSlot extends JPanel
 	private BufferedImage outline;
 	private BufferedImage itemImage;
 	private GearItem shownItem;
+	/** Drawn faded, e.g. gear the follower can't use. */
+	private boolean dimmed;
 
 	public GearSlot(ItemManager itemManager, SpriteManager spriteManager, GearType.Slot slot)
 	{
@@ -85,6 +89,13 @@ public class GearSlot extends JPanel
 		repaint();
 	}
 
+	/** Draw the square faded (or not). Must be called on the Swing thread. */
+	public void setDimmed(boolean dimmed)
+	{
+		this.dimmed = dimmed;
+		repaint();
+	}
+
 	private void setTile(BufferedImage image)
 	{
 		tile = image;
@@ -101,6 +112,10 @@ public class GearSlot extends JPanel
 	protected void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
+		if (dimmed)
+		{
+			((Graphics2D) g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
+		}
 		if (tile != null)
 		{
 			g.drawImage(tile, BORDER, BORDER, TILE_SIZE, TILE_SIZE, null);

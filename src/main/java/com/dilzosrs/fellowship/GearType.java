@@ -1,11 +1,14 @@
 package com.dilzosrs.fellowship;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import net.runelite.api.gameval.ItemID;
 
 /**
- * The kinds of gear. Each kind goes in one slot, gives one stat, and is either for certain
- * classes or Generic (anyone can use it, including Adventurers).
+ * The kinds of gear. Each kind goes in one slot and gives one stat. Its tags decide who can use it
+ * (see ClassGear); a kind with no tags is Generic, so anyone can use it, including Adventurers.
  * <p>
  * The enum names are saved per account, so never rename them without a migration.
  */
@@ -13,23 +16,22 @@ public enum GearType
 {
 	// The icons are placeholders until the real item list (OSRS tiers and named uniques) is built:
 	// one OSRS item per rarity, Common to Legendary.
-	// The Sailor's paths all wear leather, and each shares one weapon with an Adventurer path.
-	SWORD("Sword", Slot.WEAPON, List.of(CharacterClass.KNIGHT, CharacterClass.SWASHBUCKLER),
+	SWORD("Sword", Slot.WEAPON, Style.MELEE, EnumSet.of(Tag.SWORD),
 		ItemID.BRONZE_SWORD, ItemID.MITHRIL_SWORD, ItemID.RUNE_SWORD, ItemID.DRAGON_LONGSWORD, ItemID.ABYSSAL_WHIP),
-	PLATE("Plate", Slot.ARMOUR, List.of(CharacterClass.KNIGHT), ItemID.BRONZE_PLATEBODY, ItemID.MITHRIL_PLATEBODY,
+	PLATE("Plate", Slot.ARMOUR, null, EnumSet.of(Tag.PLATE), ItemID.BRONZE_PLATEBODY, ItemID.MITHRIL_PLATEBODY,
 		ItemID.RUNE_PLATEBODY, ItemID.DRAGON_PLATEBODY, ItemID.TORVA_CHEST),
-	BOW("Bow", Slot.WEAPON, List.of(CharacterClass.ARCHER, CharacterClass.HARPOONER),
+	BOW("Bow", Slot.WEAPON, Style.RANGED, EnumSet.of(Tag.BOW),
 		ItemID.SHORTBOW, ItemID.MAPLE_SHORTBOW, ItemID.MAGIC_SHORTBOW, ItemID.DARKBOW, ItemID.TWISTED_BOW),
-	LEATHER("Leather", Slot.ARMOUR,
-		List.of(CharacterClass.ARCHER, CharacterClass.SWASHBUCKLER, CharacterClass.HARPOONER, CharacterClass.NAVIGATOR),
+	LEATHER("Leather", Slot.ARMOUR, null, EnumSet.of(Tag.LEATHER),
 		ItemID.LEATHER_ARMOUR, ItemID.DRAGONHIDE_BODY, ItemID.BLACK_DRAGONHIDE_BODY, ItemID.ARMADYL_CHESTPLATE,
 		ItemID.MASORI_BODY),
-	STAFF("Staff", Slot.WEAPON, List.of(CharacterClass.WIZARD, CharacterClass.NAVIGATOR),
+	STAFF("Staff", Slot.WEAPON, Style.MAGIC, EnumSet.of(Tag.STAFF),
 		ItemID.STAFF_OF_AIR, ItemID.BATTLESTAFF, ItemID.MYSTIC_FIRE_STAFF, ItemID.KODAI_WAND, ItemID.TUMEKENS_SHADOW),
-	ROBE("Robe", Slot.ARMOUR, List.of(CharacterClass.WIZARD), ItemID.WIZARDS_ROBE, ItemID.MYSTIC_ROBE_TOP,
+	ROBE("Robe", Slot.ARMOUR, null, EnumSet.of(Tag.ROBE), ItemID.WIZARDS_ROBE, ItemID.MYSTIC_ROBE_TOP,
 		ItemID.MAGICTRAINING_INFINITYTOP, ItemID.VIRTUS_TOP, ItemID.ANCESTRAL_ROBE_TOP),
-	TRINKET("Trinket", Slot.TRINKET, List.of(), ItemID.STRUNG_SAPPHIRE_AMULET, ItemID.STRUNG_DIAMOND_AMULET,
-		ItemID.STRUNG_DRAGONSTONE_AMULET, ItemID.STRUNG_ONYX_AMULET, ItemID.ZENYTE_AMULET_ENCHANTED);
+	TRINKET("Trinket", Slot.TRINKET, null, EnumSet.noneOf(Tag.class), ItemID.STRUNG_SAPPHIRE_AMULET,
+		ItemID.STRUNG_DIAMOND_AMULET, ItemID.STRUNG_DRAGONSTONE_AMULET, ItemID.STRUNG_ONYX_AMULET,
+		ItemID.ZENYTE_AMULET_ENCHANTED);
 
 	/** Where a piece of gear is worn. Weapons give ATK, armour DEF and trinkets MAG. */
 	public enum Slot
@@ -61,18 +63,21 @@ public enum GearType
 
 	private final String displayName;
 	private final Slot slot;
-	/** The classes that can use it, or empty for Generic gear. */
-	private final List<CharacterClass> classes;
+	/** The hidden style of a weapon, or null for armour and trinkets. */
+	private final Style style;
+	/** The visible tags, or empty for Generic gear. */
+	private final Set<Tag> tags;
 
 	/** One OSRS item icon per rarity, in Rarity order. */
 	private final int[] iconItemIds;
 
-	GearType(String displayName, Slot slot, List<CharacterClass> classes, int... iconItemIds)
+	GearType(String displayName, Slot slot, Style style, Set<Tag> tags, int... iconItemIds)
 	{
 		this.iconItemIds = iconItemIds;
 		this.displayName = displayName;
 		this.slot = slot;
-		this.classes = classes;
+		this.style = style;
+		this.tags = Collections.unmodifiableSet(tags);
 	}
 
 	public String getDisplayName()
@@ -91,14 +96,31 @@ public enum GearType
 		return slot;
 	}
 
-	/** The classes that can use it, or empty for Generic gear. */
-	public List<CharacterClass> getClasses()
+	/** The hidden style of a weapon, or null for armour and trinkets. */
+	public Style getStyle()
 	{
-		return classes;
+		return style;
+	}
+
+	/** The visible tags, or empty for Generic gear. */
+	public Set<Tag> getTags()
+	{
+		return tags;
+	}
+
+	public boolean isGeneric()
+	{
+		return tags.isEmpty();
+	}
+
+	/** e.g. "sword", or "Generic" when it has no tags. */
+	public String getTagText()
+	{
+		return isGeneric() ? "Generic" : tags.stream().map(Tag::getDisplayName).collect(Collectors.joining(", "));
 	}
 
 	public boolean canBeUsedBy(CharacterClass characterClass)
 	{
-		return classes.isEmpty() || classes.contains(characterClass);
+		return ClassGear.whyCantUse(characterClass, this) == null;
 	}
 }

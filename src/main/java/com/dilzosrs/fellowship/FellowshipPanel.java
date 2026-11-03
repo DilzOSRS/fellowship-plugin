@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.function.Predicate;
 import javax.swing.Box;
@@ -394,7 +395,7 @@ public class FellowshipPanel extends PluginPanel
 		{
 			prompt += "<br><br>Storage is empty. Open bundles to find items.";
 		}
-		vaultPanel.startChoosing(prompt, "transmute", item -> true,
+		vaultPanel.startChoosing(prompt, "transmute", item -> true, item -> null,
 			storageIndex -> onTransmute.accept(characterIndex, storageIndex), null,
 			() -> tabs.select(followersTabButton));
 		tabs.select(bankTabButton);
@@ -420,11 +421,11 @@ public class FellowshipPanel extends PluginPanel
 		}
 		GearItem equipped = character.getEquipped(slot);
 
-		// Storage items that go in this slot and that this character's class can use.
-		Predicate<GearItem> fits = item -> item.getType().getSlot() == slot
-			&& item.getType().canBeUsedBy(character.characterClass);
+		// Storage items that go in this slot. The ones this character's class can't use show faded, with the reason.
+		Predicate<GearItem> inSlot = item -> item.getType().getSlot() == slot;
+		Function<GearItem, String> whyNot = item -> ClassGear.whyCantUse(character.characterClass, item.getType());
 		String prompt = "Choose a " + slot.getDisplayName().toLowerCase() + " for " + character.name + ":";
-		if (shownStorage.stream().noneMatch(fits))
+		if (shownStorage.stream().noneMatch(item -> inSlot.test(item) && whyNot.apply(item) == null))
 		{
 			prompt += "<br><br>" + (character.characterClass == CharacterClass.ADVENTURER && slot != GearType.Slot.TRINKET
 				? "Adventurers can only use Generic gear (trinkets) until their class advancement."
@@ -441,7 +442,7 @@ public class FellowshipPanel extends PluginPanel
 			onUnequip.accept(characterIndex, slot);
 		};
 
-		vaultPanel.startChoosing(prompt, "equip", fits, storageIndex -> onEquip.accept(characterIndex, storageIndex), takeOff,
+		vaultPanel.startChoosing(prompt, "equip", inSlot, whyNot, storageIndex -> onEquip.accept(characterIndex, storageIndex), takeOff,
 			() -> tabs.select(followersTabButton));
 		tabs.select(bankTabButton);
 	}

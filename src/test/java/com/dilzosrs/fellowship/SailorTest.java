@@ -56,9 +56,9 @@ public class SailorTest
 		assertFalse(GearType.STAFF.canBeUsedBy(CharacterClass.HARPOONER));
 		assertTrue(GearType.STAFF.canBeUsedBy(CharacterClass.NAVIGATOR));
 		assertFalse(GearType.SWORD.canBeUsedBy(CharacterClass.NAVIGATOR));
-		// A base Sailor only wears trinkets, like other classes before their advancement.
-		assertFalse(GearType.LEATHER.canBeUsedBy(CharacterClass.SAILOR));
-		assertEquals("Wizard/Navigator, ATK 6", new GearItem(GearType.STAFF, Rarity.RARE).getDescription());
+		// Since tags (2026-11-02) the base Sailor wears leather too, but no weapon until nautical ones exist.
+		assertTrue(GearType.LEATHER.canBeUsedBy(CharacterClass.SAILOR));
+		assertFalse(GearType.SWORD.canBeUsedBy(CharacterClass.SAILOR));
 	}
 
 	@Test

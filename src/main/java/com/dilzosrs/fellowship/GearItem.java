@@ -1,11 +1,9 @@
 package com.dilzosrs.fellowship;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
- * One piece of gear, e.g. a "Rare Bow". Its type decides the slot, stat and class;
+ * One piece of gear, e.g. a "Rare Bow". Its type decides the slot, stat and tags;
  * its rarity decides how much of that stat it gives.
  */
 public final class GearItem
@@ -46,13 +44,26 @@ public final class GearItem
 		return rarity.getPower();
 	}
 
-	/** e.g. "Wizard/Navigator, ATK 6" or "Generic, MAG 3". */
-	public String getDescription()
+
+	/**
+	 * The hover text: name, stat, tags and who can use it, then why the follower can't (whyNot, or
+	 * null) and what a click does (or null).
+	 */
+	public String getTooltip(String whyNot, String clickText)
 	{
-		List<CharacterClass> classes = type.getClasses();
-		String who = classes.isEmpty() ? "Generic"
-			: classes.stream().map(CharacterClass::getDisplayName).collect(Collectors.joining("/"));
-		return who + ", " + getStatText();
+		StringBuilder text = new StringBuilder("<html><body style='width: 170px'><b>").append(getName())
+			.append("</b>, ").append(getStatText())
+			.append("<br>Tags: ").append(type.getTagText())
+			.append("<br>Used by: ").append(ClassGear.whoCanUse(type));
+		if (whyNot != null)
+		{
+			text.append("<br><font color='#ff6060'>").append(whyNot).append("</font>");
+		}
+		if (clickText != null)
+		{
+			text.append("<br>").append(clickText);
+		}
+		return text.append("</body></html>").toString();
 	}
 
 	/** e.g. "ATK 6". Short enough for chat, where the list of classes would be too long. */

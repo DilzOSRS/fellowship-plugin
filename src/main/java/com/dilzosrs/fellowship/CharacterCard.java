@@ -386,7 +386,7 @@ public class CharacterCard extends JPanel
 		{
 			GearItem item = view.getEquipped(slot);
 			gearCells[slot.ordinal()].show(item,
-				item == null ? "Click to equip" : item.getDescription() + ". Click to change");
+				item == null ? "Click to equip" : item.getTooltip(null, "Click to change"));
 		}
 	}
 

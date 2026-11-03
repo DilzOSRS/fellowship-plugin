@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -37,11 +38,13 @@ public class VaultPanel extends JPanel
 	private final JPanel itemRows = new JPanel();
 	private final JPanel bundleSection = new JPanel(new BorderLayout(0, 4));
 
-	// While a character is picking gear: a banner on top, and only the items that fit.
+	// While a character is picking gear: a banner on top, and only the items for that slot.
 	private final JPanel chooseBanner = new JPanel(new BorderLayout(0, 4));
 	private final JLabel choosePrompt = new JLabel();
 	private final JButton takeOffButton = new JButton("Take off");
-	private Predicate<GearItem> chooseFits;
+	private Predicate<GearItem> chooseShows;
+	/** Why the character can't use an item, or null if it can. Those items show faded. */
+	private Function<GearItem, String> chooseWhyNot;
 	/** What clicking an item does while choosing, e.g. "equip". */
 	private String chooseAction;
 	private IntConsumer onPick;
@@ -120,7 +123,7 @@ public class VaultPanel extends JPanel
 		shownItems = items;
 		shownCapacity = capacity;
 		boolean full = items.size() >= capacity;
-		boolean choosing = chooseFits != null;
+		boolean choosing = chooseShows != null;
 		chooseBanner.setVisible(choosing);
 		bundleSection.setVisible(!choosing);
 
@@ -156,11 +159,11 @@ public class VaultPanel extends JPanel
 
 		storageTitle.setText("Storage (" + items.size() + "/" + capacity + ")");
 		itemRows.removeAll();
-		// While choosing, only the items that fit are shown. Each keeps its real storage position.
+		// While choosing, only the items for that slot are shown. Each keeps its real storage position.
 		List<Integer> shown = new ArrayList<>();
 		for (int i = 0; i < items.size(); i++)
 		{
-			if (!choosing || chooseFits.test(items.get(i)))
+			if (!choosing || chooseShows.test(items.get(i)))
 			{
 				shown.add(i);
 			}
@@ -191,16 +194,17 @@ public class VaultPanel extends JPanel
 	}
 
 	/**
-	 * Show only the items that fit, with a prompt on top (action says what a click does, e.g.
-	 * "equip"), until the player picks one, takes off
-	 * what's worn (takeOff, or null if nothing is worn), or cancels. onDone runs in every case.
-	 * Must be called on the Swing thread.
+	 * Show only the items that shows accepts, with a prompt on top (action says what a click does,
+	 * e.g. "equip"), until the player picks one, takes off what's worn (takeOff, or null if nothing
+	 * is worn), or cancels. Items whyNot gives a reason for are faded and can't be picked, and the
+	 * reason shows on hover. onDone runs in every case. Must be called on the Swing thread.
 	 */
-	public void startChoosing(String prompt, String action, Predicate<GearItem> fits, IntConsumer pick,
-		Runnable takeOff, Runnable onDone)
+	public void startChoosing(String prompt, String action, Predicate<GearItem> shows,
+		Function<GearItem, String> whyNot, IntConsumer pick, Runnable takeOff, Runnable onDone)
 	{
 		chooseAction = action;
-		chooseFits = fits;
+		chooseShows = shows;
+		chooseWhyNot = whyNot;
 		onPick = pick;
 		onTakeOff = takeOff;
 		onChooseDone = onDone;
@@ -212,12 +216,13 @@ public class VaultPanel extends JPanel
 	/** Leave choosing and show the whole Bank again. Safe to call when not choosing. */
 	public void stopChoosing()
 	{
-		if (chooseFits == null)
+		if (chooseShows == null)
 		{
 			return;
 		}
 		Runnable done = onChooseDone;
-		chooseFits = null;
+		chooseShows = null;
+		chooseWhyNot = null;
 		onPick = null;
 		onTakeOff = null;
 		onChooseDone = null;
@@ -228,8 +233,13 @@ public class VaultPanel extends JPanel
 	/** One stored item: its slot square with the name under it. Click to equip it while choosing, else salvage. */
 	private GearCell buildItemCell(GearItem item, int index, boolean choosing)
 	{
+		String whyNot = choosing ? chooseWhyNot.apply(item) : null;
 		GearCell cell = new GearCell(itemManager, spriteManager, item.getType().getSlot(), () ->
 		{
+			if (whyNot != null)
+			{
+				return;
+			}
 			if (choosing)
 			{
 				IntConsumer pick = onPick;
@@ -241,8 +251,9 @@ public class VaultPanel extends JPanel
 				confirmSalvage(item, index);
 			}
 		});
-		cell.show(item, item.getDescription() + (choosing ? ". Click to " + chooseAction : ". Click to salvage for "
-			+ item.getRarity().getSalvageValue() + " coins"));
+		cell.show(item, item.getTooltip(whyNot, whyNot != null ? null : choosing ? "Click to " + chooseAction
+			: "Click to salvage for " + item.getRarity().getSalvageValue() + " coins"));
+		cell.setDimmed(whyNot != null);
 		if (!choosing)
 		{
 			// Right-click menu, like OSRS. Picking from it is deliberate enough, so no confirm step.
