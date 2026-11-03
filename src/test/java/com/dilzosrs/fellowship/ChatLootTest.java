@@ -15,9 +15,26 @@ public class ChatLootTest
 	}
 
 	@Test
+	public void raidCompletions()
+	{
+		assertEquals(BundleType.RAID, ChatLoot.bundleFor("Your completed Chambers of Xeric count is: 12."));
+		assertEquals(BundleType.RAID, ChatLoot.bundleFor("Your completed Theatre of Blood count is: 1,204."));
+		assertEquals(BundleType.RAID, ChatLoot.bundleFor("Your completed Tombs of Amascut: Expert Mode count is: 3."));
+	}
+
+	@Test
+	public void bossKills()
+	{
+		assertEquals(BundleType.BOSS, ChatLoot.bundleFor("Your Zulrah kill count is: 5."));
+		assertEquals(BundleType.BOSS, ChatLoot.bundleFor("Your Grotesque Guardians kill count is: 1,050."));
+	}
+
+	@Test
 	public void otherMessagesDropNothing()
 	{
-		assertNull(ChatLoot.bundleFor("Your Zulrah kill count is: 5."));
+		// Barrows gets its own bundle later.
+		assertNull(ChatLoot.bundleFor("Your Barrows chest count is: 40."));
+		assertNull(ChatLoot.bundleFor("Player123: Your Zulrah kill count is: 5."));
 		assertNull(ChatLoot.bundleFor("Congratulations, you've just advanced your Slayer level. You are now level 80."));
 		assertNull(ChatLoot.bundleFor("You're assigned to kill abyssal demons; only 120 more to go."));
 		// Slayer Bundles come from task kills now (SlayerLoot), not chat.

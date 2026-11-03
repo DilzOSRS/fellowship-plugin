@@ -18,7 +18,7 @@ Odds are Common / Uncommon / Rare / Epic / Legendary, in percent.
 | **Basic Bundle** (renamed from Generic Bundle) | Every 10,000 OSRS XP; Swamp Caves success; Fortify | 25% per 10k XP; 100% per Swamp Caves success; 25% Fortify. **50% chance it holds an item** | 80 / 15 / 5 / 0 / 0 |
 | **Slayer** | Each Slayer task kill, plus one on the final kill | 1% per kill + guaranteed on the final kill | 50 / 30 / 15 / 4 / 1 |
 | **Clue** | Any finished clue scroll | 100% | 30 / 45 / 20 / 4 / 1 |
-| **Boss** | Any boss kill; Dorgeshuun | **5% per boss kill**; 100% per Dorgeshuun run | 20 / 45 / 30 / 5 / 1 (adds up to 101: drop one point somewhere, e.g. Epic to 4) |
+| **Boss** | Any boss kill; Dorgeshuun | **5% per boss kill**; 100% per Dorgeshuun run | 20 / 45 / 30 / ~~5~~ 4 / 1 (changed 2026-11-02 when built: it added up to 101, so Epic went to 4 as suggested) |
 | **Raid** | Any in-game raid | 100% | 5 / 40 / 40 / 10 / 5 |
 | **Trade** | The Merchant's GE trip (5 per trip) | Always | 40 / 50 / 10 / 0 / 0 |
 | **Trade+** (new) | A new "Trade+" expedition (to design) | ? | 0 / 40 / 50 / 7 / 3 (user may revise) |
@@ -64,7 +64,7 @@ Inside a tier, every item normally has the same chance. A **weight** makes some 
 | 4 / 1 | 18% | 3.1% | 0.8% |
 
 - Without weights, the "rare" special weapons would be almost half of all Rare drops, because there are 7 of them.
-- The exact weights are a tuning choice (Claude's suggestion: start Boss and Raid at 4 / 1).
+- The exact weights are a tuning choice (Claude's suggestion: start Boss and Raid at 4 / 1). **Built at 4 / 1 (2026-11-02)**, to tune in playtesting.
 
 ## Notes
 - **Drop chances went up a lot overall** (Clue 25% → 100%, Boss 1% → 5%, Raid 10% → 100%). That fits "finding bundles is fun" (tutorial note). **Storage** (10 slots) will fill fast, so "salvage all Common" or a bigger starting Bank moves up the list. The Basic Bundle's 50/50 item chance helps a little.
@@ -80,3 +80,8 @@ Inside a tier, every item normally has the same chance. A **weight** makes some 
 | Clue | Beginner/easy give a Basic Bundle; medium and up a Clue Bundle | Quick clues could be farmed |
 | Barrows | 0 / 60 / 30 / 8 / 2 | Commons are salvage for an end-game party; many chests per raid keeps odds modest |
 | Sailing 1 | 0 / 60 / 35 / 4 / 1 | No Common nautical items exist |
+
+## History
+- 2026-11-02: Sources, odds and pools decided in claude.ai.
+- 2026-11-02: Built in code (Stage C step 4, not tested in-game yet) for the bundles that exist: Basic (renamed from Generic, 50% item chance), Slayer, Clue, Boss, Raid and Trade. Trade+, Barrows and Sailing 1 wait for their expeditions. Boss Epic 5 → 4 so the odds add up to 100. Weights 4 / 1 for Boss and Raid. Found: Uncommon nautical weapons (Anchor, Cutlass, Harpoon, Trident) are in no pool until Sailing 1 exists, so the Sailor tree only gets Rare ones from Boss and Raid Bundles. Boss and raid kill triggers (5.4) still aren't built, so only Dorgeshuun gives Boss Bundles today.
+- 2026-11-02: Boss and raid kill triggers built (boss kill count message 5%, raid completion message 100%), so Boss Bundles no longer come only from Dorgeshuun. Uncommon nautical: the user will change it later (in the CLAUDE.md Parking Lot).

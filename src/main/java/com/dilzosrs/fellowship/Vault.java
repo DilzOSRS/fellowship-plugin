@@ -13,13 +13,13 @@ public class Vault
 {
 	public static final int STARTING_CAPACITY = 10;
 
-	/** OSRS XP needed for each Generic Bundle roll. The chance is in {@link BundleType#GENERIC}. */
+	/** OSRS XP needed for each Basic Bundle roll. The chance is in {@link BundleType#GENERIC}. */
 	static final long GENERIC_BUNDLE_XP = 10_000;
 
 	private final List<BundleType> bundles;
 	private final List<GearItem> items;
 	private final int capacity;
-	/** OSRS XP gained towards the next Generic Bundle roll. */
+	/** OSRS XP gained towards the next Basic Bundle roll. */
 	private long genericXpProgress;
 
 	public Vault(List<BundleType> bundles, List<GearItem> items, int capacity, long genericXpProgress)
@@ -71,9 +71,9 @@ public class Vault
 	}
 
 	/**
-	 * Count OSRS XP towards Generic Bundles: every {@link #GENERIC_BUNDLE_XP} gives one roll of the Generic chance.
+	 * Count OSRS XP towards Basic Bundles: every {@link #GENERIC_BUNDLE_XP} gives one roll of the Basic chance.
 	 *
-	 * @return how many Generic Bundles were found (they're added to the vault)
+	 * @return how many Basic Bundles were found (they're added to the vault)
 	 */
 	public int addXpForGenericBundles(long osrsXp, Random random)
 	{
@@ -92,7 +92,8 @@ public class Vault
 	}
 
 	/**
-	 * Open one bundle of this type: its item goes into storage. The caller adds the coins.
+	 * Open one bundle of this type: its item (if it holds one) goes into storage. The caller adds the coins.
+	 * Storage needs a free slot even for a bundle that turns out to hold no item.
 	 *
 	 * @return what was inside, or null if there's no such bundle or storage is full
 	 */
@@ -102,8 +103,11 @@ public class Vault
 		{
 			return null;
 		}
-		GearItem item = bundle.rollItem(random);
-		items.add(item);
+		GearItem item = bundle.rollHasItem(random) ? bundle.rollItem(random) : null;
+		if (item != null)
+		{
+			items.add(item);
+		}
 		return new Opened(item, bundle.rollCoins(random));
 	}
 
@@ -153,6 +157,7 @@ public class Vault
 	/** What came out of a bundle. */
 	public static final class Opened
 	{
+		/** Null when the bundle held no item (the Basic Bundle, half the time). */
 		public final GearItem item;
 		public final int coins;
 

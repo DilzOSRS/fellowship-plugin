@@ -12,6 +12,12 @@ public final class ChatLoot
 	private static final Pattern CLUE_DONE =
 		Pattern.compile("^You have completed [\\d,]+ [a-z]+ Treasure Trails?\\.");
 
+	/** Sent when a raid is finished, e.g. "Your completed Chambers of Xeric count is: 12." */
+	private static final Pattern RAID_DONE = Pattern.compile("^Your completed .+ count is: [\\d,]+\\.");
+
+	/** Sent when a boss dies, e.g. "Your Zulrah kill count is: 5." */
+	private static final Pattern BOSS_KILL = Pattern.compile("^Your .+ kill count is: [\\d,]+\\.");
+
 	private ChatLoot()
 	{
 	}
@@ -25,6 +31,14 @@ public final class ChatLoot
 		if (CLUE_DONE.matcher(message).find())
 		{
 			return BundleType.CLUE;
+		}
+		if (RAID_DONE.matcher(message).find())
+		{
+			return BundleType.RAID;
+		}
+		if (BOSS_KILL.matcher(message).find())
+		{
+			return BundleType.BOSS;
 		}
 		return null;
 	}

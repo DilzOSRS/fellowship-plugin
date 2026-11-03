@@ -185,13 +185,14 @@ public class VaultPanel extends JPanel
 	}
 
 	/**
-	 * Show what the last bundle gave. Must be called on the Swing thread.
+	 * Show what the last bundle gave (item is null if it held none). Must be called on the Swing thread.
 	 */
 	public void showOpened(BundleType bundle, GearItem item, int coins)
 	{
 		// Trade Bundles give no coins, so there's nothing to add for them.
-		lastOpenedLabel.setText("<html>" + bundle.getDisplayName() + ":<br>" + item.getName()
-			+ (coins > 0 ? " and " + coins + " coins" : "") + "!</html>");
+		lastOpenedLabel.setText("<html>" + bundle.getDisplayName() + ":<br>" + (item == null
+			? coins + " coins, but no item this time."
+			: item.getName() + (coins > 0 ? " and " + coins + " coins" : "") + "!") + "</html>");
 	}
 
 	/**

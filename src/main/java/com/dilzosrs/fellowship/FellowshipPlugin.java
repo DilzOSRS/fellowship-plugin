@@ -243,7 +243,7 @@ public class FellowshipPlugin extends Plugin
 				// Every character level-up is worth 1 Guild XP.
 				addGuildXp(levelsGained);
 			}
-			// Every Vault.GENERIC_BUNDLE_XP of OSRS XP (all skills together) gives a chance of a Generic Bundle.
+			// Every Vault.GENERIC_BUNDLE_XP of OSRS XP (all skills together) gives a chance of a Basic Bundle.
 			int bundlesFound = vault.addXpForGenericBundles(gained, random);
 			for (int i = 0; i < bundlesFound; i++)
 			{
@@ -778,6 +778,15 @@ public class FellowshipPlugin extends Plugin
 			coins += opened.coins;
 			saveVault();
 			saveCoins();
+			if (opened.item == null)
+			{
+				// The Basic Bundle holds an item only half the time.
+				sendChatMessage("You opened a " + bundle.getDisplayName() + ": " + opened.coins + " coins, but no item this time.");
+				popup.show("No item this time, just " + opened.coins + " coins.");
+				SwingUtilities.invokeLater(() -> vaultPanel.showOpened(bundle, null, opened.coins));
+				updatePanel();
+				return;
+			}
 			sendChatMessage("You opened a " + bundle.getDisplayName() + ": " + opened.item.getName()
 				+ " (" + opened.item.getStatText() + ")" + (opened.coins > 0 ? " and " + opened.coins + " coins" : "") + "!");
 			Rarity rarity = opened.item.getRarity();

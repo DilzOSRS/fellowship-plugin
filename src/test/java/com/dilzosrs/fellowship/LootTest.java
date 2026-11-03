@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -113,47 +112,121 @@ public class LootTest
 	@Test
 	public void rarityOddsAddUpToOneHundred()
 	{
-		// Rolling every number from 0 to 99 must give a rarity each time, matching the odds.
-		for (BundleType bundle : BundleType.values())
+		// Rolling every number from 0 to 99 must land on a rarity with that many rolls each.
+		int[][] odds = {
+			{80, 15, 5, 0, 0}, {50, 30, 15, 4, 1}, {5, 40, 40, 10, 5}, {20, 45, 30, 4, 1}, {30, 45, 20, 4, 1}, {40, 50, 10, 0, 0}};
+		BundleType[] bundles = {BundleType.GENERIC, BundleType.SLAYER, BundleType.RAID, BundleType.BOSS, BundleType.CLUE,
+			BundleType.TRADE};
+		for (int b = 0; b < bundles.length; b++)
 		{
-			int legendaries = 0;
+			int[] counts = new int[Rarity.values().length];
 			for (int roll = 0; roll < 100; roll++)
 			{
-				if (bundle.rollRarity(always(roll)) == Rarity.LEGENDARY)
+				counts[bundles[b].rollRarity(always(roll)).ordinal()]++;
+			}
+			assertEquals(bundles[b].toString(), java.util.Arrays.toString(odds[b]), java.util.Arrays.toString(counts));
+		}
+	}
+
+	@Test
+	public void basicBundleHasNoTrinketsOrNauticalGear()
+	{
+		for (GearItem item : BundleType.GENERIC.getPoolItems())
+		{
+			assertFalse(item.getType() == GearType.TRINKET);
+			assertFalse(item.getType().getTags().contains(Tag.NAUTICAL));
+		}
+		assertTrue(BundleType.GENERIC.getPoolItems().contains(new GearItem(GearType.DAGGER, Rarity.COMMON)));
+	}
+
+	@Test
+	public void bossBundlePool()
+	{
+		List<GearItem> pool = BundleType.BOSS.getPoolItems();
+		// Generic gear from Uncommon up, no Common Dagger.
+		assertFalse(pool.contains(new GearItem(GearType.DAGGER, Rarity.COMMON)));
+		assertTrue(pool.contains(new GearItem(GearType.DAGGER, Rarity.UNCOMMON)));
+		// Trinkets at Common and Rare, not Uncommon.
+		assertTrue(pool.contains(new GearItem(GearType.TRINKET, Rarity.COMMON)));
+		assertFalse(pool.contains(new GearItem(GearType.TRINKET, Rarity.UNCOMMON)));
+		// Nautical weapons at Rare only.
+		assertTrue(pool.contains(new GearItem(GearType.CUTLASS, Rarity.RARE)));
+		assertFalse(pool.contains(new GearItem(GearType.CUTLASS, Rarity.UNCOMMON)));
+	}
+
+	@Test
+	public void nauticalWeaponsAreRarerInBossBundles()
+	{
+		// Rare pool: 6 Adventurer, Rune dagger, Gold necklace at 4 tickets each (32) and 4 nautical at 1 (4).
+		Random random = new Random(3);
+		int rares = 0;
+		int nautical = 0;
+		for (int i = 0; i < 50_000; i++)
+		{
+			GearItem item = BundleType.BOSS.rollItem(random);
+			if (item.getRarity() == Rarity.RARE)
+			{
+				rares++;
+				nautical += item.getType().getTags().contains(Tag.NAUTICAL) ? 1 : 0;
+			}
+		}
+		double share = nautical / (double) rares;
+		assertTrue("nautical share " + share, share > 0.08 && share < 0.14);
+	}
+
+	@Test
+	public void tradeBundlesDropToUncommon()
+	{
+		// Trade's pool stops at Uncommon, so its 10% Rare rolls give an Uncommon item.
+		Random random = new Random(5);
+		for (int i = 0; i < 5_000; i++)
+		{
+			GearItem item = BundleType.TRADE.rollItem(random);
+			assertTrue(item.getRarity() != Rarity.RARE);
+		}
+	}
+
+	@Test
+	public void basicBundleHoldsAnItemHalfTheTime()
+	{
+		assertTrue(BundleType.GENERIC.rollHasItem(always(49)));
+		assertFalse(BundleType.GENERIC.rollHasItem(always(50)));
+		assertTrue(BundleType.BOSS.rollHasItem(always(99)));
+	}
+
+	@Test
+	public void anEmptyBundleStillGivesCoins()
+	{
+		Vault vault = Vault.empty();
+		vault.addBundle(BundleType.GENERIC);
+		Vault.Opened opened = vault.open(BundleType.GENERIC, always(99));
+		assertNotNull(opened);
+		assertNull(opened.item);
+		assertTrue(vault.getItems().isEmpty());
+		assertEquals(30, opened.coins);
+	}
+
+	@Test
+	public void everyItemDropsSomewhere()
+	{
+		Set<GearItem> dropped = new java.util.HashSet<>();
+		for (BundleType bundle : BundleType.values())
+		{
+			dropped.addAll(bundle.getPoolItems());
+		}
+		// Uncommon nautical weapons wait for the planned Sailing 1 Bundle.
+		for (GearType type : GearType.values())
+		{
+			for (Rarity rarity : Rarity.values())
+			{
+				boolean waitsForSailing = type.getTags().contains(Tag.NAUTICAL) && rarity == Rarity.UNCOMMON;
+				if (type.hasTier(rarity) && !waitsForSailing)
 				{
-					legendaries++;
+					assertTrue(type + " " + rarity, dropped.contains(new GearItem(type, rarity)));
 				}
 			}
-			assertTrue(bundle + " has no legendary chance", legendaries > 0);
 		}
 	}
-
-	@Test
-	public void raidBundlesNeverGiveCommons()
-	{
-		for (int roll = 0; roll < 100; roll++)
-		{
-			assertFalse(BundleType.RAID.rollRarity(always(roll)) == Rarity.COMMON);
-		}
-	}
-
-	@Test
-	public void anyBundleCanRollAnyTypeUpToRare()
-	{
-		Random random = new Random(7);
-		Set<GearType> types = EnumSet.noneOf(GearType.class);
-		Set<Rarity> rarities = EnumSet.noneOf(Rarity.class);
-		for (int i = 0; i < 20_000; i++)
-		{
-			GearItem item = BundleType.GENERIC.rollItem(random);
-			types.add(item.getType());
-			rarities.add(item.getRarity());
-		}
-		assertEquals(EnumSet.allOf(GearType.class), types);
-		// No Epic or Legendary items exist yet, so those rolls drop to Rare.
-		assertEquals(EnumSet.of(Rarity.COMMON, Rarity.UNCOMMON, Rarity.RARE), rarities);
-	}
-
 	@Test
 	public void openingPutsTheItemInStorage()
 	{
