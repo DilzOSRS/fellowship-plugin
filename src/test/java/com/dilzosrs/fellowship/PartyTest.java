@@ -32,7 +32,7 @@ public class PartyTest
 		assertEquals(8, Expedition.DORGESHUUN_CAVES.getThreatLevel());
 		assertEquals(Duration.ofHours(2), Expedition.DORGESHUUN_CAVES.getDuration());
 		assertEquals(1, Expedition.LUMBRIDGE_SWAMP_CAVES.getMinPartySize());
-		assertEquals(1, Expedition.LUMBRIDGE_SWAMP_CAVES.getThreatLevel());
+		assertEquals(3, Expedition.LUMBRIDGE_SWAMP_CAVES.getThreatLevel());
 	}
 
 	@Test

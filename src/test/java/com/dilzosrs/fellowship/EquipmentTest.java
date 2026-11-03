@@ -21,8 +21,9 @@ public class EquipmentTest
 	{
 		FellowshipCharacter knight = new FellowshipCharacter(CharacterClass.KNIGHT, 0);
 		assertNull(knight.getEquipped(GearType.Slot.WEAPON));
-		assertEquals(0, knight.getAtk());
-		assertEquals(0, knight.getDef());
+		// Only the Knight's class stats.
+		assertEquals(1, knight.getAtk());
+		assertEquals(3, knight.getDef());
 		assertEquals(0, knight.getMag());
 	}
 
@@ -33,8 +34,9 @@ public class EquipmentTest
 		knight.equip(RARE_SWORD);
 		knight.equip(EPIC_PLATE);
 		knight.equip(UNCOMMON_TRINKET);
-		assertEquals(6, knight.getAtk());
-		assertEquals(10, knight.getDef());
+		// Gear plus the Knight's 1 ATK and 3 DEF.
+		assertEquals(7, knight.getAtk());
+		assertEquals(13, knight.getDef());
 		assertEquals(3, knight.getMag());
 	}
 

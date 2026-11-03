@@ -12,8 +12,9 @@ import java.util.Random;
  */
 public enum Expedition
 {
+	// Threat 3 since 2026-11-02 (was 1): with class stats, a fresh t2 plus one Common weapon is about safe.
 	LUMBRIDGE_SWAMP_CAVES("Explore the Lumbridge Swamp Caves", Duration.ofMinutes(15), 1_000, 10, 50,
-		1, 1, BundleType.GENERIC, 100),
+		3, 1, BundleType.GENERIC, 100),
 	DORGESHUUN_CAVES("Loot the Dorgeshuun Caves", Duration.ofHours(2), 3_000, 40, 100,
 		8, 3, BundleType.BOSS, 20),
 	// Only a Merchant can go, alone. It costs coins and brings back no coins, just bundles.

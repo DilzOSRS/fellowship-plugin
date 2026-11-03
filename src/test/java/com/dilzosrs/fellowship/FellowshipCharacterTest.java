@@ -14,62 +14,56 @@ public class FellowshipCharacterTest
 {
 	private static final Instant START = Instant.parse("2026-10-25T20:00:00Z");
 
-	private static final long CAP_XP = LevelCurve.xpForLevel(CharacterClass.ADVENTURER.getLevelCap());
+	private static final long ADVANCE_XP = LevelCurve.xpForLevel(CharacterClass.ADVANCEMENT_LEVEL);
 
 	@Test
-	public void gainsXpBelowTheCap()
+	public void gainsXp()
 	{
 		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 0);
 		character.addXp(2_000);
 		assertEquals(2_000, character.getXp());
 		assertEquals(2, character.getLevel());
-		assertFalse(character.isAtLevelCap());
 	}
 
 	@Test
-	public void xpStopsAtTheCap()
+	public void noLevelCapBeforeTheClassAdvancement()
 	{
-		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, CAP_XP - 100);
+		// Since 2026-11-02 an Adventurer keeps levelling past 10 and chooses when to advance.
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, ADVANCE_XP - 100);
 		character.addXp(5_000);
-		assertEquals(CAP_XP, character.getXp());
-		assertEquals(10, character.getLevel());
-		assertTrue(character.isAtLevelCap());
+		assertEquals(ADVANCE_XP + 4_900, character.getXp());
+		character.addXp(500_000);
+		assertTrue(character.getLevel() > 10);
+		assertTrue(character.canEvolve());
 	}
 
 	@Test
-	public void xpAtTheCapIsWasted()
+	public void xpStopsAtLevel99()
 	{
-		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, CAP_XP);
+		long max = LevelCurve.xpForLevel(LevelCurve.MAX_LEVEL);
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, max + 1_000);
+		assertEquals(max, character.getXp());
 		character.addXp(1_000);
-		assertEquals(CAP_XP, character.getXp());
+		assertEquals(max, character.getXp());
 	}
-
 	@Test
-	public void savedXpOverTheCapIsTrimmed()
+	public void cantEvolveBelowLevelTen()
 	{
-		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, 500_000);
-		assertEquals(CAP_XP, character.getXp());
-	}
-
-	@Test
-	public void cantEvolveBelowTheCap()
-	{
-		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, CAP_XP - 1);
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, ADVANCE_XP - 1);
 		assertFalse(character.canEvolve());
 		assertFalse(character.evolve(CharacterClass.KNIGHT));
 		assertEquals(CharacterClass.ADVENTURER, character.getCharacterClass());
 	}
 
 	@Test
-	public void evolvingResetsToLevelOneWithAHigherCap()
+	public void evolvingResetsToLevelOne()
 	{
-		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, CAP_XP);
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, ADVANCE_XP);
 		assertTrue(character.canEvolve());
 		assertTrue(character.evolve(CharacterClass.WIZARD));
 		assertEquals(CharacterClass.WIZARD, character.getCharacterClass());
 		assertEquals(0, character.getXp());
 		assertEquals(1, character.getLevel());
-		assertEquals(99, character.getLevelCap());
 	}
 
 	@Test
@@ -191,7 +185,7 @@ public class FellowshipCharacterTest
 	@Test
 	public void cantEvolveWhileAway()
 	{
-		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, CAP_XP);
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, ADVANCE_XP);
 		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
 		assertFalse(character.canEvolve());
 		assertFalse(character.evolve(CharacterClass.KNIGHT));
@@ -232,14 +226,6 @@ public class FellowshipCharacterTest
 		assertEquals(1_000, character.getXp());
 	}
 
-	@Test
-	public void expeditionXpRespectsTheLevelCap()
-	{
-		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, CAP_XP - 400);
-		character.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
-		character.collectExpedition(START.plus(Duration.ofMinutes(15)));
-		assertEquals(CAP_XP, character.getXp());
-	}
 
 	@Test
 	public void coinRewardIsBetweenTenAndFifty()
@@ -262,7 +248,7 @@ public class FellowshipCharacterTest
 	@Test
 	public void cantEvolveIntoAdventurer()
 	{
-		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, CAP_XP);
+		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER, ADVANCE_XP);
 		assertFalse(character.evolve(CharacterClass.ADVENTURER));
 	}
 }

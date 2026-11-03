@@ -21,7 +21,6 @@ public class AlchemistTest
 		assertEquals(2, CharacterClass.ALCHEMIST.getXpMultiplier(Skill.HERBLORE));
 		assertEquals(2, CharacterClass.ALCHEMIST.getXpMultiplier(Skill.MAGIC));
 		assertEquals(1, CharacterClass.ALCHEMIST.getXpMultiplier(Skill.WOODCUTTING));
-		assertEquals(10, CharacterClass.ALCHEMIST.getLevelCap());
 	}
 
 	@Test

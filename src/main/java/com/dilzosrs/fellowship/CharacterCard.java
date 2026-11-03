@@ -270,7 +270,6 @@ public class CharacterCard extends JPanel
 	public void show(CharacterView view)
 	{
 		int level = LevelCurve.levelForXp(view.xp);
-		int levelCap = view.characterClass.getLevelCap();
 		shownName = view.name;
 		shownActive = view.active;
 		if (view.characterClass != shownClass)
@@ -302,17 +301,18 @@ public class CharacterCard extends JPanel
 		shownExpeditions = view.expeditions;
 		showExpedition(view.expedition, view.expeditionEnd);
 
-		if (level >= levelCap)
+		// No level caps: a follower can keep levelling past its class advancement and choose when to take it.
+		String advancement = !view.canEvolve ? ""
+			: "<br>Class advancement ready!<br>"
+				+ (view.characterClass == CharacterClass.ACOLYTE ? "Choose your god:" : "Choose a path:");
+		if (level >= LevelCurve.MAX_LEVEL)
 		{
 			xpBar.setMaximumValue(1);
 			xpBar.setValue(1);
 			xpBar.setCenterLabel("Max");
 			headerXpBar.setMaximumValue(1);
 			headerXpBar.setValue(1);
-			xpLabel.setText(view.canEvolve
-				? "<html>Class advancement ready!<br>"
-					+ (view.characterClass == CharacterClass.ACOLYTE ? "Choose your god:" : "Choose a path:") + "</html>"
-				: String.format("Max level (%,d XP)", view.xp));
+			xpLabel.setText(String.format("<html>Max level (%,d XP)%s</html>", view.xp, advancement));
 			return;
 		}
 
@@ -325,7 +325,7 @@ public class CharacterCard extends JPanel
 		xpBar.setCenterLabel(xpBar.getPercentage() + "%");
 		headerXpBar.setMaximumValue(levelSize);
 		headerXpBar.setValue(progress);
-		xpLabel.setText(String.format("%,d / %,d XP", progress, levelSize));
+		xpLabel.setText(String.format("<html>%,d / %,d XP%s</html>", progress, levelSize, advancement));
 	}
 
 	/**
@@ -377,17 +377,31 @@ public class CharacterCard extends JPanel
 	private void showGear(CharacterView view)
 	{
 		String stats = "ATK " + view.atk + "   DEF " + view.def + "   MAG " + view.mag;
+		String fromClass = view.characterClass.describeBaseStats();
+		if (!fromClass.isEmpty())
+		{
+			stats += "<br>" + fromClass + " from class";
+		}
+		// MAG counts half to ATK and half to DEF, so the card does the sum for the player.
+		String expedition = "<br>On expeditions: ATK " + formatStat(view.atk + view.mag / 2.0)
+			+ ", DEF " + formatStat(view.def + view.mag / 2.0);
 		Blessing blessing = view.characterClass.getBlessing();
-		infoStatsLabel.setText(blessing == null ? stats
-			: "<html>" + stats + "<br>Blessing of " + blessing.getGodName() + ":<br>"
-				+ blessing.describe() + " on every expedition</html>");
-		gearStatsLabel.setText(stats);
+		infoStatsLabel.setText("<html>" + stats + expedition + (blessing == null ? ""
+			: "<br>Blessing of " + blessing.getGodName() + ":<br>" + blessing.describe() + " on every expedition")
+			+ "</html>");
+		gearStatsLabel.setText("<html>" + stats + "</html>");
 		for (GearType.Slot slot : GearType.Slot.values())
 		{
 			GearItem item = view.getEquipped(slot);
 			gearCells[slot.ordinal()].show(item,
 				item == null ? "Click to equip" : item.getTooltip(null, "Click to change"));
 		}
+	}
+
+	/** e.g. "7" or "2.5": half points only show when MAG makes them. */
+	private static String formatStat(double value)
+	{
+		return value == Math.rint(value) ? String.valueOf((long) value) : String.format("%.1f", value);
 	}
 
 	/**

@@ -80,7 +80,7 @@ public class GuildTest
 	public void noLevelsGainedAtTheCap()
 	{
 		FellowshipCharacter character = new FellowshipCharacter(CharacterClass.ADVENTURER,
-			LevelCurve.xpForLevel(10));
+			LevelCurve.xpForLevel(LevelCurve.MAX_LEVEL));
 		assertEquals(0, character.addXp(50_000));
 	}
 

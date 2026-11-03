@@ -11,7 +11,7 @@ public class ThiefTreeTest
 	/** A character of a class, at its level cap. */
 	private static FellowshipCharacter atCap(CharacterClass characterClass)
 	{
-		return new FellowshipCharacter(characterClass, LevelCurve.xpForLevel(characterClass.getLevelCap()));
+		return new FellowshipCharacter(characterClass, LevelCurve.xpForLevel(CharacterClass.ADVANCEMENT_LEVEL));
 	}
 
 	@Test
@@ -43,8 +43,6 @@ public class ThiefTreeTest
 	{
 		assertTrue(CharacterClass.WARLORD.getEvolutions().isEmpty());
 		assertTrue(CharacterClass.NIGHT_BLADE.getEvolutions().isEmpty());
-		assertEquals(LevelCurve.MAX_LEVEL, CharacterClass.WARLORD.getLevelCap());
-		assertEquals(LevelCurve.MAX_LEVEL, CharacterClass.NIGHT_BLADE.getLevelCap());
 	}
 
 	@Test

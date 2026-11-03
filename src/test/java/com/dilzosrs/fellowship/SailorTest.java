@@ -11,11 +11,10 @@ import org.junit.Test;
 public class SailorTest
 {
 	@Test
-	public void sailorsGetDoubleSailingAndCapAtTen()
+	public void sailorsGetDoubleSailing()
 	{
 		assertEquals(2, CharacterClass.SAILOR.getXpMultiplier(Skill.SAILING));
 		assertEquals(1, CharacterClass.SAILOR.getXpMultiplier(Skill.ATTACK));
-		assertEquals(10, CharacterClass.SAILOR.getLevelCap());
 	}
 
 	@Test
@@ -30,7 +29,6 @@ public class SailorTest
 			assertEquals(1, path.getXpMultiplier(Skill.STRENGTH));
 			assertEquals(1, path.getXpMultiplier(Skill.RANGED));
 			assertEquals(1, path.getXpMultiplier(Skill.MAGIC));
-			assertEquals(LevelCurve.MAX_LEVEL, path.getLevelCap());
 			assertEquals(CharacterClass.SAILOR, path.getBaseClass());
 		}
 

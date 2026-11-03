@@ -10,7 +10,7 @@ public class VyreTest
 {
 	private static FellowshipCharacter vyreAtCap()
 	{
-		return new FellowshipCharacter(CharacterClass.VYRE, LevelCurve.xpForLevel(CharacterClass.VYRE.getLevelCap()));
+		return new FellowshipCharacter(CharacterClass.VYRE, LevelCurve.xpForLevel(CharacterClass.ADVANCEMENT_LEVEL));
 	}
 
 	@Test
@@ -23,7 +23,6 @@ public class VyreTest
 			assertTrue(vyre.evolve(path));
 			assertEquals(1, vyre.getLevel());
 			assertTrue(path.getEvolutions().isEmpty());
-			assertEquals(LevelCurve.MAX_LEVEL, path.getLevelCap());
 		}
 		assertFalse(vyreAtCap().evolve(CharacterClass.KNIGHT));
 	}

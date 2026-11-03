@@ -7,8 +7,8 @@ import java.util.Map;
 import net.runelite.api.Skill;
 
 /**
- * A Fellowship character. Its level comes from its total Fellowship XP, and its class
- * sets its level cap. It can be away on an expedition, and earns no OSRS-based XP while away.
+ * A Fellowship character. Its level comes from its total Fellowship XP, up to level 99 for every
+ * class. It can be away on an expedition, and earns no OSRS-based XP while away.
  */
 public class FellowshipCharacter
 {
@@ -47,10 +47,6 @@ public class FellowshipCharacter
 		return xp;
 	}
 
-	public int getLevelCap()
-	{
-		return characterClass.getLevelCap();
-	}
 
 	/**
 	 * Add Fellowship XP for OSRS XP gained in a skill, at full share.
@@ -96,14 +92,10 @@ public class FellowshipCharacter
 		return LevelCurve.levelForXp(xp);
 	}
 
-	public boolean isAtLevelCap()
-	{
-		return getLevel() >= getLevelCap();
-	}
-
+	/** Home, at {@link CharacterClass#ADVANCEMENT_LEVEL} or above, and the class has somewhere to advance to. */
 	public boolean canEvolve()
 	{
-		return !isAway() && isAtLevelCap() && !characterClass.getEvolutions().isEmpty();
+		return !isAway() && getLevel() >= CharacterClass.ADVANCEMENT_LEVEL && !characterClass.getEvolutions().isEmpty();
 	}
 
 	/**
@@ -310,22 +302,22 @@ public class FellowshipCharacter
 		return canChangeGear() ? equipment.remove(slot) : null;
 	}
 
-	/** ATK Power from the equipped weapon. */
+	/** ATK from the class plus the equipped weapon. Can be negative. */
 	public int getAtk()
 	{
-		return powerIn(GearType.Slot.WEAPON);
+		return characterClass.getBaseAtk() + powerIn(GearType.Slot.WEAPON);
 	}
 
-	/** DEF Power from the equipped armour. */
+	/** DEF from the class plus the equipped armour. Can be negative. */
 	public int getDef()
 	{
-		return powerIn(GearType.Slot.ARMOUR);
+		return characterClass.getBaseDef() + powerIn(GearType.Slot.ARMOUR);
 	}
 
-	/** MAG Power from the equipped trinket. */
+	/** MAG from the class plus the equipped trinket. */
 	public int getMag()
 	{
-		return powerIn(GearType.Slot.TRINKET);
+		return characterClass.getBaseMag() + powerIn(GearType.Slot.TRINKET);
 	}
 
 	/** ATK plus half of MAG, used against an expedition's threat. */
@@ -348,6 +340,6 @@ public class FellowshipCharacter
 
 	private long maxXp()
 	{
-		return LevelCurve.xpForLevel(getLevelCap());
+		return LevelCurve.xpForLevel(LevelCurve.MAX_LEVEL);
 	}
 }

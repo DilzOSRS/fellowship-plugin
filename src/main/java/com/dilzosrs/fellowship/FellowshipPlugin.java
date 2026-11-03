@@ -877,7 +877,9 @@ public class FellowshipPlugin extends Plugin
 			{
 				String name = team.getDisplayName(i);
 				sendChatMessage(name + " reached level " + character.getLevel() + "!"
-					+ (character.canEvolve() ? " " + name + "'s class advancement is ready." : ""));
+					// Said once, when it first becomes ready, not on every level after.
+					+ (character.canEvolve() && levelsBefore[i] < CharacterClass.ADVANCEMENT_LEVEL
+						? " " + name + "'s class advancement is ready." : ""));
 			}
 		}
 	}

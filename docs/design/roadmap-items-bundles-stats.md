@@ -58,7 +58,7 @@ Order (decided 2026-11-01): tags, then class stats, then the item budget, then c
 ## Stage C: the build (code, one step at a time, each tested in-game)
 
 1. **Tags in code**, plus the hover tooltip (shows visible tags, who can use it, level requirement, and why not, e.g. "Bandits only use dark weapons"). (built 2026-11-02, tested in-game 2026-11-02: the level requirement and combo items wait for step 3, since neither exists before the new item list. Warlord and Night Blade borrow the Bandit's and Assassin's tags until t3 is designed.)
-2. **Class base stats** (small: a few numbers per class, shown on the card as "+3 DEF from class"; negative stats too, e.g. "-2 DEF"). The card also shows the **worked-out ATK and DEF** including MAG (e.g. "ATK 7, DEF -1"), so players don't do the sum themselves. Includes renaming Shadow Lord to Shadow Stalker (display name only; keep the saved name or add a migration), Swamp Caves to threat 3, and removing level caps.
+2. **Class base stats** (small: a few numbers per class, shown on the card as "+3 DEF from class"; negative stats too, e.g. "-2 DEF"). The card also shows the **worked-out ATK and DEF** including MAG (e.g. "ATK 7, DEF -1"), so players don't do the sum themselves. Includes renaming Shadow Lord to Shadow Stalker (display name only; keep the saved name or add a migration), Swamp Caves to threat 3, and removing level caps. (built 2026-11-02, tested in-game 2026-11-02. Warlord and Night Blade borrow the Bandit's and Assassin's 3 ATK until t3 is designed.)
 3. **The new item list** with budgets, stats and level requirements (fine to change the save format; test saves get wiped).
 4. **Bundle pools.**
 5. **Playtest and tune** the budget tables, level requirements, then the bundle odds.
@@ -255,3 +255,5 @@ Why it helps: every item's power can be explained by one line of maths, new item
 ## History
 - 2026-11-02: Stage C step 1 (tags in code) built; level requirement and combo items moved to step 3.
 - 2026-11-02: Step 1 tested in-game. Works; the tooltip looks plain, fine as a placeholder.
+- 2026-11-02: Step 2 (class base stats, no level caps, Swamp Caves threat 3, Shadow Stalker) built.
+- 2026-11-02: Step 2 tested in-game, all good.

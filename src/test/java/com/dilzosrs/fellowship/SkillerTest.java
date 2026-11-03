@@ -18,7 +18,6 @@ public class SkillerTest
 		FellowshipCharacter skiller = team.get(1);
 		assertEquals(CharacterClass.SKILLER, skiller.getCharacterClass());
 		assertEquals(0, skiller.getXp());
-		assertEquals(10, skiller.getLevelCap());
 		// No bonus before their class advancement.
 		assertEquals(1, CharacterClass.SKILLER.getXpMultiplier(Skill.WOODCUTTING));
 	}
@@ -31,7 +30,6 @@ public class SkillerTest
 		FellowshipCharacter skiller = new FellowshipCharacter(CharacterClass.SKILLER, LevelCurve.xpForLevel(10));
 		assertFalse(skiller.evolve(CharacterClass.KNIGHT));
 		assertTrue(skiller.evolve(CharacterClass.HARVESTER));
-		assertEquals(99, skiller.getLevelCap());
 	}
 
 	@Test

@@ -66,8 +66,9 @@ public class DangerTest
 		FellowshipCharacter wizard = new FellowshipCharacter(CharacterClass.WIZARD, 0);
 		wizard.equip(new GearItem(GearType.STAFF, Rarity.RARE));
 		wizard.equip(new GearItem(GearType.TRINKET, Rarity.EPIC));
-		assertEquals(6 + 5, wizard.getEffectiveAtk(), 0.0001);
-		assertEquals(0 + 5, wizard.getEffectiveDef(), 0.0001);
+		// MAG 14 (10 from the trinket, 4 from the Wizard class) gives 7 to each.
+		assertEquals(6 + 7, wizard.getEffectiveAtk(), 0.0001);
+		assertEquals(0 + 7, wizard.getEffectiveDef(), 0.0001);
 	}
 
 	@Test
@@ -79,8 +80,8 @@ public class DangerTest
 			new FellowshipCharacter(CharacterClass.KNIGHT, 0)));
 		team.get(0).equip(new GearItem(GearType.SWORD, Rarity.LEGENDARY));
 		team.get(1).equip(new GearItem(GearType.SWORD, Rarity.RARE));
-		// 15 + 6 + 0 = 21, averaged over 3 = 7.
-		assertEquals(7, team.averageAtk(List.of(0, 1, 2)), 0.0001);
+		// Each Knight adds 1 ATK from its class: 16 + 7 + 1 = 24, averaged over 3 = 8.
+		assertEquals(8, team.averageAtk(List.of(0, 1, 2)), 0.0001);
 	}
 
 	@Test
@@ -107,7 +108,7 @@ public class DangerTest
 		knight.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
 		assertFalse(knight.canChangeGear());
 		assertNull(knight.unequip(GearType.Slot.WEAPON));
-		assertEquals(1, knight.getAtk());
+		assertEquals(2, knight.getAtk());
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -129,6 +130,6 @@ public class DangerTest
 		FellowshipCharacter loaded = gson.fromJson(gson.toJson(SavedCharacter.from(knight)), SavedCharacter.class).toCharacter();
 
 		assertTrue(loaded.isAway());
-		assertEquals(6, loaded.getAtk());
+		assertEquals(7, loaded.getAtk());
 	}
 }
