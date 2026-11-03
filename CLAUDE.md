@@ -79,6 +79,12 @@ The compact roster / UI redesign is also waiting.
 
 **Item, stat and bundle design (2026-10-31 to 2026-11-02, brainstormed in claude.ai, not built yet)** is in `docs/design/`. Start with `docs/design/README.md` and `docs/design/roadmap-items-bundles-stats.md`. It covers v1-plan steps 2–4 (tags, items, bundles) on paper, and its Stage C is the build order for them. It's rough and will change with playtesting. Where it disagrees with this file, this file describes what's built and `docs/design/` what's planned.
 
+**Design docs keep their history (user, 2026-11-02).** Never delete or silently overwrite anything in `docs/design/`, even after it's built. The user wants to look back and see why something was added, how it changed and whether it's still needed. When something changes:
+- Keep the old version struck through, followed by the new one and a dated reason: `~~3 DEF~~ 5 DEF (2026-11-05: Knights died too often)`.
+- Removed things stay, struck through, with `(removed 2026-11-05: why)`.
+- When something gets built, mark it `(built 2026-11-05)` and leave it in place.
+- Add one line to the doc's **History** section at the bottom (create it if missing): `- 2026-11-05: Knight DEF 3 → 5, Knights died too often.`
+
 Phase 4b, done: **chat messages** (only the player sees them; nothing is sent to the server) for level-ups and class advancement being ready, class advancement, a character coming back from an expedition, the rewards collected, the Guild levelling up, and a new hire. E.g. "Adventurer 2 reached level 5!"
 
 Phase 5–6 plan (gear, loot and dangerous expeditions; structure decided 2026-10-25). Why: rare gear makes individual characters feel strong. **The full design, item table and draft numbers are in `docs/phase5-design.md`; keep it up to date.** In short:
@@ -168,6 +174,7 @@ Phase 1 steps, all done (each one ended with the user testing it in the dev clie
 ## Open questions
 
 ## Ideas Parking Lot (not now)
+- **A design timeline view (user, 2026-11-02).** When the design docs pile up changes, Claude reads their History sections and explains how something evolved, or draws a timeline chart of it, so the user doesn't have to read through strikethroughs.
 - Characters with different XP rules: combat-only, skilling-only, or skill multipliers.
 - Area-based XP, e.g. a vampire who only gains XP in Morytania.
 - More expeditions, item rewards, and RNG-based unlocks. Expeditions should get RNG item loot at some point.

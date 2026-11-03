@@ -14,3 +14,14 @@ The originals live in the "Fellowship Plugin" Project on claude.ai; these are co
 | `brainstorm-2026-10-31-items-bundles-followers.md` | The first brainstorm: inspirations, the tag system, Sailor tree, Slayer Master, parked follower ideas |
 
 Build order: Stage C in the roadmap. Code work starts there, one step at a time, each tested in-game.
+
+## Keeping the history
+
+These docs are also a timeline of how the design changed, so nothing here gets deleted or silently overwritten, even after it's built:
+- **Changed:** keep the old version struck through, then the new one and a dated reason: `~~3 DEF~~ 5 DEF (2026-11-05: Knights died too often)`.
+- **Removed:** leave it struck through with `(removed 2026-11-05: why)`.
+- **Built:** mark it `(built 2026-11-05)` and leave it in place.
+- **History:** every doc ends with a History section, one dated line per change, newest at the bottom.
+
+## History
+- 2026-11-02: Docs copied from claude.ai into the repo. History rule added.
