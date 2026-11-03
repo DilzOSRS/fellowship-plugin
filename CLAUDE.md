@@ -22,12 +22,12 @@ Sources: Plugin Hub README, RuneLite "Rejected or Rolled Back Features" wiki, Ja
 - Re-check the rejected-features wiki before submitting, since it changes.
 - Before launch, all test saves get wiped. The one-time migration from the old single-character save (in `FellowshipPlugin.moveOldSaveIntoTeam`) can be deleted then, since no real player will have the old format.
 
-## Where we are (2026-10-31, moving from the Windows PC to the MacBook)
-**The opening path is finished: steps 6 and 7 were tested in-game on 2026-10-31 (MacBook).** Next in `docs/v1-plan.md`'s build order: design the item list on paper. Test results:
+## Where we are (2026-11-02, Windows PC)
+**The opening path is finished: steps 6 and 7 were tested in-game on 2026-10-31 (MacBook).** The item list was designed on paper in claude.ai (`docs/design/`), so next is Stage C step 1 of `docs/design/roadmap-items-bundles-stats.md` (tags in code). Also done 2026-11-02: a right-click "Salvage" menu on Bank items (no confirm step; left-click still asks), tested in-game. The user is playtesting 2026-11-02 and will check Fortify with 2 and 3 Skillers and the clue triggers. Test results:
 1. **Fortify the Encampment (step 6).** Done, tested in-game 2026-10-31 with the trip temporarily shortened (1 Skiller only; 2 and 3 Skillers not checked). Reach Guild level 2 and get a Skiller, then check that the expedition unlocks with a chat message. Send 1, 2 and 3 Skillers (any advanced Skiller class should count too) and check the trip takes 1.5 h, 1 h and 30 min. Check that it's safe, gives 5,000 XP each and no coins, and sometimes drops a Generic Bundle (25%). For testing, temporarily shorten the trip.
 2. **The second Adventurer (step 7).** Done, tested in-game 2026-10-31: the message showed once and a second Adventurer joined. After the first Fortify run, the chat should say "Adventurers have started noticing your encampment." Then combat XP (Prayer and Slayer count) should be able to bring one more Adventurer (1% per 1,000 XP and per level-up; turn it up temporarily for testing). A third Adventurer should never join this way.
 3. **The Slayer bundle change.** Done, tested in-game 2026-10-31 on the MacBook. 1% per task kill (raised from 0.5% the same day), plus one guaranteed bundle on the final kill; checking a finished task gives none.
-4. **Playing from the login screen.** Done, tested in-game 2026-10-31 (switching to a different account not checked yet). Log out (or close the client and reopen it without logging in). The panel should show the last account played, and returns and recoveries should still tick down. Logging into a different account should switch to that account's save.
+4. **Playing from the login screen.** Done, tested in-game 2026-10-31; switching to a different account tested 2026-11-02. Log out (or close the client and reopen it without logging in). The panel should show the last account played, and returns and recoveries should still tick down. Logging into a different account should switch to that account's save.
 5. **Clue triggers (5.3).** Still untested from earlier; whenever a clue gets done.
 
 ## Roadmap
