@@ -327,8 +327,11 @@ public class FellowshipPanel extends PluginPanel
 		{
 			couldGo.add(shownTeam.get(index).characterClass);
 		}
-		String shorter = Expedition.countSkillers(couldGo) == 0 ? ""
-			: "<br>Each Skiller in the party makes the trip " + Expedition.SKILLER_PERCENT_OFF + "% shorter.";
+		String shorter = (expedition.getPercentOffPerHelper() == 0 ? ""
+				: "<br>Each one makes the trip " + expedition.getPercentOffPerHelper() + "% shorter, but the "
+				+ String.format("%,d", expedition.getXpReward()) + " XP is shared.")
+			+ (Expedition.countSkillers(couldGo) == 0 ? ""
+				: "<br>Each Skiller in the party makes the trip " + Expedition.SKILLER_PERCENT_OFF + "% shorter.");
 		picker.add(new JLabel("<html>" + shownTeam.get(characterIndex).name + " is going to "
 			+ expedition.getDisplayName() + " (" + (expedition.getThreatLevel() > 0
 				? "threat " + expedition.getThreatLevel() : "safe") + ").<br>"
@@ -378,7 +381,7 @@ public class FellowshipPanel extends PluginPanel
 		{
 			partyClasses.add(shownTeam.get(i).characterClass);
 		}
-		long minutes = expedition.getDuration(Expedition.countSkillers(partyClasses)).toMinutes();
+		long minutes = expedition.getDuration(party.size(), Expedition.countSkillers(partyClasses)).toMinutes();
 		String back = "\nThey'll be back in " + (minutes >= 60 && minutes % 60 == 0 ? minutes / 60 + "h"
 			: minutes >= 60 ? minutes / 60 + "h " + minutes % 60 + "m" : minutes + " min") + ".";
 		int go = JOptionPane.showConfirmDialog(this, odds + back + "\n\nSend them?", "Expedition", JOptionPane.YES_NO_OPTION);

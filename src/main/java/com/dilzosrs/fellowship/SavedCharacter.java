@@ -18,10 +18,9 @@ public class SavedCharacter
 	String expedition;
 	/** Epoch milliseconds. Null when the character is home. */
 	Long expeditionStart;
-	/**
-	 * How many Skiller-tree followers went on the trip, which sets how long it takes. Null in older
-	 * saves, which means none. (Saves before 2026-11-03 had partySize instead; it's ignored now.)
-	 */
+	/** How many went on the trip together. Null in older saves, which means the smallest party. */
+	Integer partySize;
+	/** How many Skiller-tree followers went on the trip. Null in older saves, which means none. */
 	Integer skillers;
 	/** Epoch milliseconds when an injured character is healed. Null if it isn't injured. */
 	Long restingUntil;
@@ -41,6 +40,7 @@ public class SavedCharacter
 		{
 			saved.expedition = character.getExpedition().name();
 			saved.expeditionStart = character.getExpeditionStart().toEpochMilli();
+			saved.partySize = character.getPartySize();
 			saved.skillers = character.getSkillersInParty();
 		}
 		if (character.getRestingUntil() != null)
@@ -71,7 +71,7 @@ public class SavedCharacter
 		{
 			// Timers run in real time, so an expedition can finish while logged out.
 			character.startExpedition(savedExpedition, Instant.ofEpochMilli(expeditionStart),
-				skillers == null ? 0 : skillers);
+				partySize == null ? savedExpedition.getMinPartySize() : partySize, skillers == null ? 0 : skillers);
 			character.setCarrying(carrying == null ? null : carrying.toItem());
 		}
 		if (restingUntil != null)

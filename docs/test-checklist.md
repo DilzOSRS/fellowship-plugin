@@ -30,3 +30,11 @@ Each Skiller-tree follower (Skiller, Harvester, Artisan, Explorer) in a party ta
 - [ ] **A Skiller's card** shows the shorter time on its Send buttons (e.g. Swamp Caves 11 min instead of 15). Other followers' cards show the full time.
 - [ ] **Dorgeshuun with a Skiller** in the party takes about 22 min. Without one, 30 min. The Skiller hint doesn't show when no Skiller could go.
 - [ ] An injury after a sped-up trip still rests a third of the **full** trip (e.g. Dorgeshuun 10 min, with or without a Skiller).
+
+## Prep for voyage (built 2026-11-03)
+- [ ] **Unlock:** getting the first Sailor (any of the Sailor tree) says "Prep for voyage expedition has been unlocked." and "Your Sailor can start building a ship. …"
+- [ ] It shows only on Sailor-tree cards ("Safe, party of 1-5", Send (1h)). Anyone home can be picked to help.
+- [ ] The party picker says each one makes it 10% shorter and the 10,000 XP is shared (plus the Skiller line when a Skiller could go).
+- [ ] **Lengths:** Sailor alone 1 h; + 1 helper 54 min; + 4 helpers 36 min; + 2 Skillers 24 min.
+- [ ] **XP:** 10,000 split evenly (Sailor + 1 = 5,000 each; party of 5 = 2,000 each), and the chat says so.
+- [ ] **One-time:** the first return says "Your ship is built and ready to set sail." and Prep for voyage is gone from every card, also after a restart. "Start a new game" brings it back.

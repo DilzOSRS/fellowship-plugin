@@ -34,9 +34,14 @@ public class ExpeditionUnlockTest
 
 		// The first class advancement unlocks the Swamp Caves.
 		assertTrue(team.get(0).evolve(CharacterClass.KNIGHT));
-		assertEquals(EnumSet.complementOf(EnumSet.of(Expedition.FORTIFYING_ENCAMPMENT)), team.unlockedExpeditions(1));
+		assertEquals(EnumSet.complementOf(EnumSet.of(Expedition.FORTIFYING_ENCAMPMENT,
+			Expedition.PREPPING_FOR_VOYAGE)), team.unlockedExpeditions(1));
 
 		// Guild level 2 with a Skiller on the team unlocks Fortifying the Encampment.
+		assertEquals(EnumSet.complementOf(EnumSet.of(Expedition.PREPPING_FOR_VOYAGE)), team.unlockedExpeditions(2));
+
+		// The first Sailor unlocks Prep for voyage.
+		team.add(CharacterClass.SAILOR);
 		assertEquals(EnumSet.allOf(Expedition.class), team.unlockedExpeditions(2));
 	}
 

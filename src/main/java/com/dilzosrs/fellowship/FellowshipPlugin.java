@@ -74,6 +74,7 @@ public class FellowshipPlugin extends Plugin
 	private static final String VAULT_KEY = "vault";
 	private static final String RESCUED_KEY = "rescuedFromSwampCaves";
 	private static final String FORTIFIED_KEY = "fortifiedEncampment";
+	private static final String VOYAGE_PREPARED_KEY = "preparedForVoyage";
 
 	private static final Color CHAT_TAG_COLOR = new Color(255, 200, 0);
 
@@ -586,6 +587,7 @@ public class FellowshipPlugin extends Plugin
 				announceInjuries(injured, rest);
 				rescueIfFirstSwampCavesRun(finished, party);
 				noticeIfFirstFortifyRun(finished);
+				finishVoyagePrepIfFirstRun(finished);
 				for (int member : party)
 				{
 					announcedReturns.remove(team.get(member));
@@ -616,7 +618,7 @@ public class FellowshipPlugin extends Plugin
 			// The main haul is coins, or the bundles on expeditions that give no coins (the trade run).
 			String haul = coinsGained > 0 ? coinsGained + " coins" : bundles;
 
-			long xpEach = finished.getXpReward();
+			long xpEach = finished.getXpReward(party.size());
 			sendChatMessage(joinNames(party) + " brought back "
 				+ String.format("%,d XP", xpEach) + (party.size() > 1 ? " each" : "")
 				+ (haul != null ? " and " + haul : "") + " from " + finished.getOngoingName() + "!"
@@ -629,6 +631,7 @@ public class FellowshipPlugin extends Plugin
 			announceInjuries(injured, rest);
 			rescueIfFirstSwampCavesRun(finished, party);
 			noticeIfFirstFortifyRun(finished);
+			finishVoyagePrepIfFirstRun(finished);
 			announceLevelUps(levelsBefore);
 
 			int levelsGained = 0;
@@ -733,6 +736,10 @@ public class FellowshipPlugin extends Plugin
 				if (expedition == Expedition.FORTIFYING_ENCAMPMENT)
 				{
 					sendChatMessage("Your encampment can now be fortified by your Skillers.");
+				}
+				if (expedition == Expedition.PREPPING_FOR_VOYAGE)
+				{
+					sendChatMessage("Your Sailor can start building a ship. Every extra pair of hands makes it quicker.");
 				}
 			}
 		}
@@ -1018,6 +1025,9 @@ public class FellowshipPlugin extends Plugin
 		Integer savedGuildLevel = configManager.getConfiguration(CONFIG_GROUP, profileKey, GUILD_LEVEL_KEY, Integer.class);
 		guild = new Guild(guildXp, savedGuildLevel == null ? Guild.levelForXp(guildXp) : savedGuildLevel);
 
+		team.setVoyagePrepared(Boolean.TRUE.equals(
+			configManager.getConfiguration(CONFIG_GROUP, profileKey, VOYAGE_PREPARED_KEY, Boolean.class)));
+
 		// Expeditions already unlocked aren't announced again.
 		unlockedExpeditions = team.unlockedExpeditions(guild.getLevel());
 
@@ -1060,7 +1070,7 @@ public class FellowshipPlugin extends Plugin
 			return;
 		}
 		for (String key : new String[]{TEAM_KEY, COINS_KEY, ACTIVE_INDEX_KEY, GUILD_XP_KEY, GUILD_LEVEL_KEY, VAULT_KEY,
-			RESCUED_KEY, FORTIFIED_KEY})
+			RESCUED_KEY, FORTIFIED_KEY, VOYAGE_PREPARED_KEY})
 		{
 			configManager.unsetRSProfileConfiguration(CONFIG_GROUP, key);
 		}
@@ -1147,6 +1157,21 @@ public class FellowshipPlugin extends Plugin
 		fortified = true;
 		configManager.setConfiguration(CONFIG_GROUP, profileKey, FORTIFIED_KEY, true);
 		sendChatMessage("Adventurers have started noticing your encampment.");
+	}
+
+	/**
+	 * The first Prep for voyage run gets the ship ready. It only happens once per account, and
+	 * Prep for voyage is gone from then on.
+	 */
+	private void finishVoyagePrepIfFirstRun(Expedition finished)
+	{
+		if (finished != Expedition.PREPPING_FOR_VOYAGE || team.isVoyagePrepared())
+		{
+			return;
+		}
+		team.setVoyagePrepared(true);
+		configManager.setConfiguration(CONFIG_GROUP, profileKey, VOYAGE_PREPARED_KEY, true);
+		sendChatMessage("Your ship is built and ready to set sail.");
 	}
 
 	private void saveGuild()

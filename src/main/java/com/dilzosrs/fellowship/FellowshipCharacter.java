@@ -22,6 +22,8 @@ public class FellowshipCharacter
 	/** The expedition the character is on, or null when it's home. */
 	private Expedition expedition;
 	private Instant expeditionStart;
+	/** How many went on the trip together (itself included), which sets its length and XP share. */
+	private int partySize;
 	/** How many Skiller-tree followers went on the trip (itself included), which sets how long it takes. */
 	private int skillers;
 	/** A stored item taken along to be transmuted into coins, or null. */
@@ -136,7 +138,7 @@ public class FellowshipCharacter
 	/** How long the current trip takes, with the party's Skiller speed-up. Null when the character is home. */
 	public Duration getTripLength()
 	{
-		return isAway() ? expedition.getDuration(skillers) : null;
+		return isAway() ? expedition.getDuration(partySize, skillers) : null;
 	}
 
 	/** Whether the character is resting from an injury at that moment. */
@@ -170,17 +172,17 @@ public class FellowshipCharacter
 	 */
 	public boolean startExpedition(Expedition newExpedition, Instant start)
 	{
-		return startExpedition(newExpedition, start,
+		return startExpedition(newExpedition, start, 1,
 			Expedition.countSkillers(Collections.singletonList(characterClass)));
 	}
 
 	/**
-	 * Send the character on an expedition with this many Skiller-tree followers in the party
-	 * (it counts itself), or restore one loaded from a save.
+	 * Send the character on an expedition with a party of this size, this many of them from the
+	 * Skiller tree (it counts itself in both), or restore one loaded from a save.
 	 *
 	 * @return false if the character is already away
 	 */
-	public boolean startExpedition(Expedition newExpedition, Instant start, int skillers)
+	public boolean startExpedition(Expedition newExpedition, Instant start, int partySize, int skillers)
 	{
 		if (isAway())
 		{
@@ -188,8 +190,15 @@ public class FellowshipCharacter
 		}
 		expedition = newExpedition;
 		expeditionStart = start;
+		this.partySize = partySize;
 		this.skillers = skillers;
 		return true;
+	}
+
+	/** How many went on the current trip together (itself included), or 0 when home. */
+	public int getPartySize()
+	{
+		return isAway() ? partySize : 0;
 	}
 
 	/** How many Skiller-tree followers are on the current trip (itself included), or 0 when home. */
@@ -247,7 +256,7 @@ public class FellowshipCharacter
 		expeditionStart = null;
 		if (success)
 		{
-			addXp(finished.getXpReward());
+			addXp(finished.getXpReward(partySize));
 		}
 		return finished;
 	}

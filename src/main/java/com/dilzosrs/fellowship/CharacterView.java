@@ -50,7 +50,7 @@ public class CharacterView
 		this.mag = character.getMag();
 		for (Expedition expedition : team.unlockedExpeditions(guildLevel))
 		{
-			if (expedition.allows(characterClass))
+			if (expedition.canLead(characterClass))
 			{
 				expeditions.add(expedition);
 			}

@@ -414,7 +414,7 @@ public class CharacterCard extends JPanel
 	/** How long the trip takes if this follower goes alone (or leads with no Skillers along). */
 	private Duration soloDuration(Expedition expedition)
 	{
-		return expedition.getDuration(Expedition.countSkillers(Collections.singletonList(shownClass)));
+		return expedition.getDuration(1, Expedition.countSkillers(Collections.singletonList(shownClass)));
 	}
 
 	private void showEvolveButtons(CharacterClass evolvingFrom)

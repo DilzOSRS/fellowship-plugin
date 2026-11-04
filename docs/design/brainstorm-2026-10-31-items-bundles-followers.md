@@ -67,7 +67,7 @@ Examples:
 
 ### Sailor tree (user, 2026-11-01)
 The Vyre works because it unlocks one piece of content (the Barrows Raid) that drops its own gear. The Sailor gets the same kind of anchor. Stats for the whole tree are in the roadmap (Sailor 1/1; Swashbuckler 4 ATK 1 DEF; Harpooner 5 ATK; Navigator 1 ATK 1 DEF 3 MAG). The whole tree has the *nautical* tag.
-- **Step 1: "Prepping for Sailing Dungeon"** (working name; the user called it "Build a Ship/Boat"). A safe skilling expedition that the Sailor unlocks. Like Fortifying the Encampment, it gets faster with Skillers in the party, up to a max party size.
+- **Step 1: "Prepping for Sailing Dungeon"** (working name; the user called it "Build a Ship/Boat"). A safe skilling expedition that the Sailor unlocks. ~~Like Fortifying the Encampment, it gets faster with Skillers in the party, up to a max party size.~~ (built 2026-11-03 as **"Prep for voyage"**: any follower helps, 10% off each, then Skillers' 25%; up to 5; one-time.)
 - **Step 2: once the boat is built, it becomes the "Sailing Dungeon Voyage"** (working name; real name to come). A **medium-tier dangerous expedition** (threat 15–17, see `expedition-chart.md`) that drops **Sailing Bundles** with *nautical* gear.
 
 **The voyage has stages (user, 2026-11-01).** One expedition, shown in three parts:
@@ -114,3 +114,6 @@ The user likes the idea but isn't fully bought in yet; it may grow once it's pla
 - **Support followers** as a third kind (alongside Combat and Skiller): an idea, only if it excites.
 - **Joining a running expedition** (see the Skiller speed-up rule).
 - **Item perks** (user, 2026-11-01): parked, low priority.
+
+## History
+- 2026-11-03: Sailor step 1 built as "Prep for voyage"; any follower helps (10% each), not only Skillers.

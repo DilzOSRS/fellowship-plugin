@@ -30,7 +30,12 @@ public enum Expedition
 	// speed-up (since 2026-11-03; it used to be 30 minutes shorter per extra Skiller).
 	// Unlocks at Guild level 2 once a Skiller has joined.
 	FORTIFYING_ENCAMPMENT("Secure and Fortify the Encampment", Duration.ofMinutes(90), 5_000, 0, 0,
-		0, 1, 3, BundleType.GENERIC, 25, 1, 0, CharacterClass.SKILLER);
+		0, 1, 3, BundleType.GENERIC, 25, 1, 0, CharacterClass.SKILLER),
+	// One-time: building the ship. Needs one of the Sailor tree, who leads; anyone can help, up to 5
+	// in all. Each helper takes 10% off, and 10,000 XP is split across the party. Safe, no coins.
+	// Unlocks with the first Sailor and is gone once done (the voyage replaces it).
+	PREPPING_FOR_VOYAGE("Prep for voyage", Duration.ofHours(1), 10_000, 0, 0,
+		0, 1, 5, null, 0, 1, 0, null);
 
 	/** Transmuting an item gives this many times its salvage value in coins. */
 	static final int TRANSMUTE_MULTIPLIER = 2;
@@ -40,6 +45,8 @@ public enum Expedition
 	static final int SKILLER_PERCENT_OFF = 25;
 	/** Only this many Skillers count, so a trip never gets shorter than a quarter of its length. */
 	static final int MAX_SKILLERS_COUNTED = 3;
+	/** Each follower past the first takes this percent off Prep for voyage. */
+	static final int VOYAGE_PREP_PERCENT_OFF_PER_HELPER = 10;
 
 	private final String displayName;
 	private final Duration duration;
@@ -114,6 +121,8 @@ public enum Expedition
 				return "Transmuting metals";
 			case FORTIFYING_ENCAMPMENT:
 				return "Fortifying the Encampment";
+			case PREPPING_FOR_VOYAGE:
+				return "Prepping for the voyage";
 			default:
 				return displayName;
 		}
@@ -125,11 +134,23 @@ public enum Expedition
 		return duration;
 	}
 
-	/** How long it takes with this many Skiller-tree followers in the party: 25% less for each, up to 3. */
-	public Duration getDuration(int skillers)
+	/**
+	 * How long it takes for a party of this size with this many Skiller-tree followers in it.
+	 * The expedition's own bonus comes first (Prep for voyage: 10% off per helper), then the
+	 * followers' perks are taken off what's left (25% off per Skiller, up to 3).
+	 */
+	public Duration getDuration(int partySize, int skillers)
 	{
+		int helpers = Math.max(0, partySize - 1);
 		int counted = Math.max(0, Math.min(skillers, MAX_SKILLERS_COUNTED));
-		return duration.multipliedBy(100 - SKILLER_PERCENT_OFF * counted).dividedBy(100);
+		return duration.multipliedBy(100 - getPercentOffPerHelper() * helpers).dividedBy(100)
+			.multipliedBy(100 - SKILLER_PERCENT_OFF * counted).dividedBy(100);
+	}
+
+	/** The percent each follower past the first takes off this expedition. 0 for most. */
+	public int getPercentOffPerHelper()
+	{
+		return this == PREPPING_FOR_VOYAGE ? VOYAGE_PREP_PERCENT_OFF_PER_HELPER : 0;
 	}
 
 	/** How many of these classes are in the Skiller tree (an advanced Harvester still counts). */
@@ -138,10 +159,35 @@ public enum Expedition
 		return (int) classes.stream().filter(c -> c.getBaseClass() == CharacterClass.SKILLER).count();
 	}
 
-	/** Fellowship XP for each party member. Class bonuses don't apply, but the level cap does. */
+	/** Fellowship XP for each party member when one goes alone. Class bonuses don't apply. */
 	public int getXpReward()
 	{
 		return xpReward;
+	}
+
+	/** Fellowship XP for each member of a party this size: Prep for voyage splits its XP across the party. */
+	public int getXpReward(int partySize)
+	{
+		return this == PREPPING_FOR_VOYAGE ? xpReward / Math.max(1, partySize) : xpReward;
+	}
+
+	/** A class tree the party must have at least one of (who leads it), or null. Anyone else can help. */
+	public CharacterClass getNeededClass()
+	{
+		return this == PREPPING_FOR_VOYAGE ? CharacterClass.SAILOR : null;
+	}
+
+	/** Whether a follower of this class can start (lead) this expedition from its card. */
+	public boolean canLead(CharacterClass characterClass)
+	{
+		return allows(characterClass)
+			&& (getNeededClass() == null || getNeededClass() == characterClass.getBaseClass());
+	}
+
+	/** Whether a party with these classes has the class it needs, if any. */
+	public boolean hasNeededClass(Collection<CharacterClass> party)
+	{
+		return getNeededClass() == null || party.stream().anyMatch(c -> c.getBaseClass() == getNeededClass());
 	}
 
 	/** A random number of coins between the minimum and maximum, both included. Rolled once per party. */
@@ -196,7 +242,7 @@ public enum Expedition
 	 * Whether the team could ever go: it has enough characters allowed on it for the smallest
 	 * party. The Swamp Caves also wait for the first class advancement, and Fortifying for Guild
 	 * level 2. Characters never leave, and the Guild never loses a level, so once unlocked it
-	 * stays unlocked.
+	 * stays unlocked, except Prep for voyage, which needs a Sailor and is gone once done.
 	 */
 	public boolean isUnlockedFor(Team team, int guildLevel)
 	{
@@ -207,6 +253,11 @@ public enum Expedition
 		if (this == FORTIFYING_ENCAMPMENT && guildLevel < FORTIFY_GUILD_LEVEL)
 		{
 			return false;
+		}
+		if (this == PREPPING_FOR_VOYAGE)
+		{
+			// One-time: it's gone once the ship is ready.
+			return !team.isVoyagePrepared() && team.countStartedAs(CharacterClass.SAILOR) > 0;
 		}
 		int allowed = requiredClass == null ? team.size() : team.countStartedAs(requiredClass);
 		return allowed >= minPartySize;

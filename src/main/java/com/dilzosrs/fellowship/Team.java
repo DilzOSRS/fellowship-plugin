@@ -19,6 +19,8 @@ public class Team
 	static final int INACTIVE_XP_PERCENT = 10;
 
 	private final List<FellowshipCharacter> characters;
+	/** Whether Prep for voyage has been done once. */
+	private boolean voyagePrepared;
 	private int activeIndex;
 
 	/**
@@ -68,6 +70,17 @@ public class Team
 	public void add(CharacterClass startingClass)
 	{
 		characters.add(new FellowshipCharacter(startingClass, 0));
+	}
+
+	/** Whether the ship is ready: Prep for voyage has been done once. Saved by the plugin. */
+	public boolean isVoyagePrepared()
+	{
+		return voyagePrepared;
+	}
+
+	public void setVoyagePrepared(boolean voyagePrepared)
+	{
+		this.voyagePrepared = voyagePrepared;
 	}
 
 	/** The expeditions this team has unlocked (see {@link Expedition#isUnlockedFor}). */
@@ -171,7 +184,7 @@ public class Team
 	 * they're known to be one party later (even after a restart).
 	 *
 	 * @return false (and nobody is sent) if the party is the wrong size, has repeats, or anyone is
-	 *     away, resting from an injury or not allowed on it
+	 *     away, resting from an injury or not allowed on it, or it lacks a class it needs (a Sailor)
 	 */
 	public boolean sendParty(List<Integer> indexes, Expedition expedition, Instant start)
 	{
@@ -192,10 +205,14 @@ public class Team
 		{
 			classes.add(characters.get(index).getCharacterClass());
 		}
+		if (!expedition.hasNeededClass(classes))
+		{
+			return false;
+		}
 		int skillers = Expedition.countSkillers(classes);
 		for (int index : indexes)
 		{
-			characters.get(index).startExpedition(expedition, start, skillers);
+			characters.get(index).startExpedition(expedition, start, indexes.size(), skillers);
 		}
 		return true;
 	}

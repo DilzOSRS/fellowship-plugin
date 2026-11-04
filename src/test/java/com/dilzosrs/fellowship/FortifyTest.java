@@ -17,9 +17,9 @@ public class FortifyTest
 	public void eachSkillerTakesAQuarterOff()
 	{
 		assertEquals(Duration.ofMinutes(90), FORTIFY.getDuration());
-		assertEquals(Duration.ofMinutes(67).plusSeconds(30), FORTIFY.getDuration(1));
-		assertEquals(Duration.ofMinutes(45), FORTIFY.getDuration(2));
-		assertEquals(Duration.ofMinutes(22).plusSeconds(30), FORTIFY.getDuration(3));
+		assertEquals(Duration.ofMinutes(67).plusSeconds(30), FORTIFY.getDuration(1, 1));
+		assertEquals(Duration.ofMinutes(45), FORTIFY.getDuration(2, 2));
+		assertEquals(Duration.ofMinutes(22).plusSeconds(30), FORTIFY.getDuration(3, 3));
 		assertTrue(FORTIFY.allowsPartySize(1));
 		assertTrue(FORTIFY.allowsPartySize(3));
 		assertFalse(FORTIFY.allowsPartySize(4));
@@ -73,13 +73,13 @@ public class FortifyTest
 		assertEquals(START.plus(Duration.ofMinutes(22).plusSeconds(30)), team.get(0).getExpeditionEnd());
 
 		// Nobody from the Skiller tree: full length. A Skiller alone: a quarter off.
-		assertEquals(Duration.ofMinutes(15), Expedition.LUMBRIDGE_SWAMP_CAVES.getDuration(0));
+		assertEquals(Duration.ofMinutes(15), Expedition.LUMBRIDGE_SWAMP_CAVES.getDuration(1, 0));
 		FellowshipCharacter skiller = new FellowshipCharacter(CharacterClass.ARTISAN, 0);
 		skiller.startExpedition(Expedition.LUMBRIDGE_SWAMP_CAVES, START);
 		assertEquals(START.plus(Duration.ofMinutes(11).plusSeconds(15)), skiller.getExpeditionEnd());
 
 		// A fourth Skiller would add nothing, so a trip never drops below a quarter of its length.
-		assertEquals(FORTIFY.getDuration(3), FORTIFY.getDuration(4));
+		assertEquals(FORTIFY.getDuration(3, 3), FORTIFY.getDuration(4, 4));
 	}
 
 	@Test
