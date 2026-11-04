@@ -11,6 +11,7 @@ The originals live in the "Fellowship Plugin" Project on claude.ai; these are co
 | `bundles-v1.md` | Every bundle: sources, drop chances, rarity odds, item pools, weights |
 | `tutorial-phase.md` | The opening path as the tutorial, and Swamp Caves at threat 3 |
 | `expedition-chart.md` | Every expedition, built and planned, plus Sailing Dungeon threat numbers |
+| `expedition-types.md` | The kinds of expedition (safe, dangerous, dungeon, skilling, class-only, "do X while away", multi-stage, unlock) |
 | `brainstorm-2026-10-31-items-bundles-followers.md` | The first brainstorm: inspirations, the tag system, Sailor tree, Slayer Master, parked follower ideas |
 
 Build order: Stage C in the roadmap. Code work starts there, one step at a time, each tested in-game.
@@ -25,3 +26,4 @@ These docs are also a timeline of how the design changed, so nothing here gets d
 
 ## History
 - 2026-11-02: Docs copied from claude.ai into the repo. History rule added.
+- 2026-11-03: Added `expedition-types.md`.

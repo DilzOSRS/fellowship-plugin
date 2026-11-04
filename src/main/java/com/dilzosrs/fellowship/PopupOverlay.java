@@ -56,12 +56,6 @@ public class PopupOverlay extends OverlayPanel
 		setPosition(OverlayPosition.TOP_CENTER);
 	}
 
-	/** Show a message for a few seconds, replacing any message already showing. */
-	public void show(String message)
-	{
-		show(message, null);
-	}
-
 	/**
 	 * Show a message with an icon beside it for a few seconds, replacing any message already showing.
 	 * The icon may still be loading; it's drawn once it's ready.

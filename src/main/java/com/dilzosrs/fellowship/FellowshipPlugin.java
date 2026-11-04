@@ -780,9 +780,9 @@ public class FellowshipPlugin extends Plugin
 			saveCoins();
 			if (opened.item == null)
 			{
-				// The Basic Bundle holds an item only half the time.
-				sendChatMessage("You opened a " + bundle.getDisplayName() + ": " + opened.coins + " coins, but no item this time.");
-				popup.show("No item this time, just " + opened.coins + " coins.");
+				// The Basic Bundle holds an item only half the time. Just a chat message, no pop-up.
+				sendChatMessage("You opened a " + bundle.getDisplayName() + " and find " + opened.coins
+					+ " coins but no items this time.");
 				SwingUtilities.invokeLater(() -> vaultPanel.showOpened(bundle, null, opened.coins));
 				updatePanel();
 				return;

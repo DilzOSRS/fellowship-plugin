@@ -8,7 +8,7 @@ Things built but not tested in-game yet. The user keeps building, then tests eve
 
 ## Stage C step 4: bundle pools (built 2026-11-02)
 - [ ] The Bank says **"Basic Bundle"** instead of "Generic Bundle".
-- [ ] **Opening Basic Bundles:** about half give coins only, with "no item this time" in chat, a pop-up and the Bank. The rest give an item.
+- [ ] **Opening Basic Bundles:** about half give coins only: **no pop-up**, just the chat message "You opened a Basic Bundle and find 16 coins but no items this time." (changed 2026-11-03 from playtest notes), and the Bank's last-opened line. The rest give an item.
 - [ ] Basic Bundles never give trinkets or nautical weapons.
 - [ ] **Clue:** finishing a clue always gives a Clue Bundle.
 - [ ] **Dorgeshuun:** every successful run brings back a Boss Bundle.

@@ -37,3 +37,10 @@ Notes from playing, to sort into fixes and tuning after each playtest.
 ## Playtest 3 (2026-10-31, MacBook)
 
 - **Short rests said "0 hours" (user, 2026-10-31).** The injury chat message only counted whole hours, so a 5-minute rest read "must rest for 0 hours" (and 1h 40m read "1 hours"). **Fixed the same day:** it now says e.g. "5 minutes", "1 hour" or "1 hour 40 minutes" (`Danger.describeRest`).
+
+## Playtest 4 (2026-11-03, Windows PC)
+
+- **Empty bundles shouldn't pop up (user, 2026-11-03).** When a bundle holds no item, skip the pop-up and only say in chat: "You opened a Basic Bundle and find 16 coins but no items this time." **Changed the same day** (not tested in-game yet, on `docs/test-checklist.md`).
+- **The first Skiller is hard to get for combat players (user, 2026-11-03).** After the Swamp Caves rescue, Skillers only join from skilling XP (10% per 1,000 XP and per level-up), so someone doing lots of combat may never get one, and the tutorial stalls (Fortify needs a Skiller). The first Skiller needs other ways to join. Not decided yet.
+  - Options floated (Claude, 2026-11-03): (1) the Swamp Caves rescue is the first Skiller; (2) combat XP also counts for the first Skiller at a lower rate (e.g. 2% per 1,000 vs 10% for skilling); (3) a safety net after a few Swamp Caves runs.
+  - **The user's view:** all follower unlocks should come from in-game (OSRS) activity, so (1) and (3) don't fit. Combat XP is an option; the user is thinking it over.
