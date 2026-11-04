@@ -148,6 +148,9 @@ public class ExpeditionsPanel extends JPanel
 	{
 		final JPanel panel = new JPanel(new BorderLayout(0, 4));
 		final Instant end;
+		final Expedition expedition;
+		final Duration tripLength;
+		final JLabel name = new JLabel();
 		final JLabel countdown = new JLabel();
 		final JButton collect = new JButton("Collect");
 
@@ -155,12 +158,13 @@ public class ExpeditionsPanel extends JPanel
 		{
 			CharacterView first = team.get(members.get(0));
 			end = first.expeditionEnd;
+			expedition = first.expedition;
+			tripLength = first.tripLength;
 
 			panel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 			panel.setBorder(new EmptyBorder(6, 6, 6, 6));
 			panel.setAlignmentX(LEFT_ALIGNMENT);
 
-			JLabel name = new JLabel("<html>" + first.expedition.getOngoingName() + "</html>");
 			name.setForeground(Color.WHITE);
 			panel.add(name, BorderLayout.NORTH);
 
@@ -193,6 +197,13 @@ public class ExpeditionsPanel extends JPanel
 			Duration left = Duration.between(now, end);
 			boolean done = left.isNegative() || left.isZero();
 			countdown.setText(done ? "Back!" : CharacterCard.formatCountdown(left));
+			String stage = done ? null : expedition.getStageName(left, tripLength);
+			String text = "<html>" + expedition.getOngoingName() + (stage == null ? "" : "<br>" + stage) + "</html>";
+			if (!text.equals(name.getText()))
+			{
+				name.setText(text);
+				panel.revalidate();
+			}
 			countdown.setForeground(done ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.LIGHT_GRAY_COLOR);
 			if (collect.isVisible() != done)
 			{

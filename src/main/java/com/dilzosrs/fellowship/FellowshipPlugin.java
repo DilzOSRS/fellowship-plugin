@@ -741,6 +741,11 @@ public class FellowshipPlugin extends Plugin
 				{
 					sendChatMessage("Your Sailor can start building a ship. Every extra pair of hands makes it quicker.");
 				}
+				if (expedition == Expedition.SAILING_VOYAGE)
+				{
+					sendChatMessage("Your Sailor can now take a party of " + expedition.getMinPartySize()
+						+ " out to sea.");
+				}
 			}
 		}
 	}

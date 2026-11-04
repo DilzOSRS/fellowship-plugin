@@ -11,6 +11,7 @@ Every expedition, built and planned. The built ones are copied from the code (`E
 | Loot the Dorgeshuun Caves | Anyone | Exactly 3 | ~~2 h~~ 30 min (2026-11-03: user wanted it shorter; rewards kept the same) | 8 (user: fine as is) | 3,000 | 40–100 | 20% Boss | You have 3 followers |
 | Traveling to trade at the Grand Exchange | Merchant only | 1 | 30 min | Safe | 1,000 | Costs 100, gives none | 5 Trade Bundles | First Merchant |
 | Transmute metals | Alchemist only | 1 | 10 min | Safe | 500 | 2× the salvage value of the item it carries | None | First Alchemist |
+| Sailing Voyage (built 2026-11-03) | Needs one of the Sailor tree (leads) + 2 others | Exactly 3 | 90 min in 3 stages (sail there / dungeon / sail home, a third each), with the Skiller speed-up | 15 | 5,000 | 60–150 | Sailing Bundle, every success | The ship is built (Prep for voyage done) and 3 followers |
 | Prep for voyage (built 2026-11-03) | Needs one of the Sailor tree (leads); anyone helps | 1–5 | 1 h, −10% per helper, then the Skiller speed-up | Safe | 10,000 shared across the party | None | None | First Sailor. One-time: gone after the first run (saved as `preparedForVoyage`); the voyage replaces it |
 
 ## Planned
@@ -18,7 +19,7 @@ Every expedition, built and planned. The built ones are copied from the code (`E
 | Expedition | Who can go | Threat | Length | Rewards | Status |
 |---|---|---|---|---|---|
 | ~~Prepping for Sailing Dungeon~~ | ~~Sailor + Skillers~~ | ~~Safe~~ | ~~Faster with Skillers~~ | ~~Builds the boat, unlocks the voyage~~ | (built 2026-11-03 as "Prep for voyage", see above; any follower helps, not just Skillers) |
-| Sailing Dungeon Voyage | Party with a Sailor (likely) | **15–17** (pushed up from ~12; user felt 12 too low) | 3 stages: 30 / 30 / 30 min | Sailing Bundles (*nautical* gear) | Designed, name TBD |
+| ~~Sailing Dungeon Voyage~~ | ~~Party with a Sailor (likely)~~ | ~~**15–17**~~ | ~~3 stages: 30 / 30 / 30 min~~ | ~~Sailing Bundles (*nautical* gear)~~ | (built 2026-11-03 as "Sailing Voyage", threat 15; see above. Stage perks not built yet) |
 | Slayer Master's hunt | Slayer Master | TBD (safe or flat threat) | As long as your real Slayer task | Your kills decide the loot | Idea |
 | Barrows Raid | 3 Combat, needs a Vyre | 20 | 30 min | 1 Barrows Bundle per real Barrows chest opened while it runs | v1 end-game |
 | One or two rungs between 8 and 15 | ? | ~10–12 | ? | ? | **Needed** |
@@ -51,3 +52,4 @@ Every expedition, built and planned. The built ones are copied from the code (`E
 - 2026-11-03: Fortify no longer gets 30 min shorter per extra Skiller; always 1.5 h until the Skiller speed-up (upcoming-changes item 3).
 - 2026-11-03: Skiller speed-up built: 25% less time per Skiller-tree follower, stacking, on every expedition, only 3 count (user's choices).
 - 2026-11-03: Prep for voyage built (user's numbers): 1 h, up to 5, 10,000 XP shared, 10% off per helper; any follower can help, not just Skillers.
+- 2026-11-03: Sailing Voyage built: threat 15 (picked from 15–17), exactly 3 with one Sailor, 90 min in 3 shown stages, 5,000 XP, 60–150 coins, Sailing Bundle every success. Stage perks (Navigator, Swashbuckler, Harpooner) not built.

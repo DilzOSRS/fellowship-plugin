@@ -35,7 +35,12 @@ public enum Expedition
 	// in all. Each helper takes 10% off, and 10,000 XP is split across the party. Safe, no coins.
 	// Unlocks with the first Sailor and is gone once done (the voyage replaces it).
 	PREPPING_FOR_VOYAGE("Prep for voyage", Duration.ofHours(1), 10_000, 0, 0,
-		0, 1, 5, null, 0, 1, 0, null);
+		0, 1, 5, null, 0, 1, 0, null),
+	// Replaces Prep for voyage once the ship is built. Exactly 3: one of the Sailor tree (who leads)
+	// and 2 others. Threat 15. Three stages of equal length (sail there, the dungeon, sail home),
+	// shown while away; it's still one timer and one success roll. Every success brings a Sailing Bundle.
+	SAILING_VOYAGE("Sailing Voyage", Duration.ofMinutes(90), 5_000, 60, 150,
+		15, 3, BundleType.SAILING, 100);
 
 	/** Transmuting an item gives this many times its salvage value in coins. */
 	static final int TRANSMUTE_MULTIPLIER = 2;
@@ -47,6 +52,8 @@ public enum Expedition
 	static final int MAX_SKILLERS_COUNTED = 3;
 	/** Each follower past the first takes this percent off Prep for voyage. */
 	static final int VOYAGE_PREP_PERCENT_OFF_PER_HELPER = 10;
+	/** The Sailing Voyage's stages, in order. Each takes a third of the trip. */
+	private static final String[] VOYAGE_STAGES = {"Sailing to the dungeon", "In the dungeon", "Sailing home"};
 
 	private final String displayName;
 	private final Duration duration;
@@ -128,6 +135,22 @@ public enum Expedition
 		}
 	}
 
+	/**
+	 * The stage the trip is on, e.g. "Stage 1/3: Sailing to the dungeon", or null if this
+	 * expedition has no stages. Only the Sailing Voyage has them: three equal parts of the trip.
+	 */
+	public String getStageName(Duration left, Duration tripLength)
+	{
+		if (this != SAILING_VOYAGE || left == null || tripLength == null || tripLength.isZero())
+		{
+			return null;
+		}
+		long elapsed = tripLength.minus(left).toMillis();
+		int stage = (int) Math.max(0, Math.min(VOYAGE_STAGES.length - 1,
+			elapsed * VOYAGE_STAGES.length / tripLength.toMillis()));
+		return "Stage " + (stage + 1) + "/" + VOYAGE_STAGES.length + ": " + VOYAGE_STAGES[stage];
+	}
+
 	/** How long it takes with no Skillers along (the longest it can take). */
 	public Duration getDuration()
 	{
@@ -174,7 +197,7 @@ public enum Expedition
 	/** A class tree the party must have at least one of (who leads it), or null. Anyone else can help. */
 	public CharacterClass getNeededClass()
 	{
-		return this == PREPPING_FOR_VOYAGE ? CharacterClass.SAILOR : null;
+		return this == PREPPING_FOR_VOYAGE || this == SAILING_VOYAGE ? CharacterClass.SAILOR : null;
 	}
 
 	/** Whether a follower of this class can start (lead) this expedition from its card. */
@@ -242,7 +265,8 @@ public enum Expedition
 	 * Whether the team could ever go: it has enough characters allowed on it for the smallest
 	 * party. The Swamp Caves also wait for the first class advancement, and Fortifying for Guild
 	 * level 2. Characters never leave, and the Guild never loses a level, so once unlocked it
-	 * stays unlocked, except Prep for voyage, which needs a Sailor and is gone once done.
+	 * stays unlocked, except Prep for voyage, which needs a Sailor and is gone once done (the
+	 * Sailing Voyage takes its place, once the team also has 3 followers).
 	 */
 	public boolean isUnlockedFor(Team team, int guildLevel)
 	{
@@ -258,6 +282,14 @@ public enum Expedition
 		{
 			// One-time: it's gone once the ship is ready.
 			return !team.isVoyagePrepared() && team.countStartedAs(CharacterClass.SAILOR) > 0;
+		}
+		if (this == SAILING_VOYAGE && !team.isVoyagePrepared())
+		{
+			return false;
+		}
+		if (getNeededClass() != null && team.countStartedAs(getNeededClass()) == 0)
+		{
+			return false;
 		}
 		int allowed = requiredClass == null ? team.size() : team.countStartedAs(requiredClass);
 		return allowed >= minPartySize;

@@ -38,3 +38,10 @@ Each Skiller-tree follower (Skiller, Harvester, Artisan, Explorer) in a party ta
 - [ ] **Lengths:** Sailor alone 1 h; + 1 helper 54 min; + 4 helpers 36 min; + 2 Skillers 24 min.
 - [ ] **XP:** 10,000 split evenly (Sailor + 1 = 5,000 each; party of 5 = 2,000 each), and the chat says so.
 - [ ] **One-time:** the first return says "Your ship is built and ready to set sail." and Prep for voyage is gone from every card, also after a restart. "Start a new game" brings it back.
+
+## Sailing Voyage and the Sailing Bundle (built 2026-11-03)
+- [ ] **Unlock:** after Prep for voyage's first run (with 3 or more followers) the chat says "Sailing Voyage expedition has been unlocked." and "Your Sailor can now take a party of 3 out to sea." Prep for voyage is gone; the voyage shows only on Sailor-tree cards ("Threat 15, party of 3", Send (1h 30m)).
+- [ ] The party picker asks for exactly 2 more, shows party ATK vs threat 15 and the fail chance.
+- [ ] **Stages:** the card and the Events tab show "Stage 1/3: Sailing to the dungeon", then "Stage 2/3: In the dungeon" after a third of the trip, then "Stage 3/3: Sailing home". A Skiller shortens every stage.
+- [ ] **Success:** 5,000 XP each, 60–150 coins and a **Sailing Bundle** (rum crate icon in the pop-up and the Bank). **Failure:** nothing, as usual.
+- [ ] **Opening Sailing Bundles:** always an item: Dagger/Clothes (Common, Uncommon), Anchor/Cutlass/Harpoon/Trident (Uncommon, Rare), Plate/Leather/Robe (Common to Rare). Never swords, bows, staffs or trinkets.

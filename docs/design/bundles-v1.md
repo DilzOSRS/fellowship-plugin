@@ -23,7 +23,7 @@ Odds are Common / Uncommon / Rare / Epic / Legendary, in percent.
 | **Trade** | The Merchant's GE trip (5 per trip) | Always | 40 / 50 / 10 / 0 / 0 |
 | **Trade+** (new) | A new "Trade+" expedition (to design) | ? | 0 / 40 / 50 / 7 / 3 (user may revise) |
 | **Barrows** (planned) | The Barrows Raid: 1 per real Barrows chest opened while it runs | 1 per chest | 10 / 60 / 25 / 4 / 1 |
-| **Sailing 1** (planned) | The Sailing Dungeon | ? | 50 / 30 / 15 / 4 / 1 |
+| **Sailing 1** ~~(planned)~~ (built 2026-11-03, shown as "Sailing Bundle") | The Sailing ~~Dungeon~~ Voyage | ~~?~~ 100% per success | 50 / 30 / 15 / 4 / 1 |
 
 - **The user's rarity odds are used everywhere for now** (2026-11-02). Claude's alternatives are kept at the bottom for reference.
 - **Clue Bundles, later (user):** maybe several kinds of Clue Bundle, or more bundles for higher clue tiers (e.g. an elite clue gives more than a beginner one). That would also stop quick beginner clues being the best way to farm them.
@@ -85,3 +85,4 @@ Inside a tier, every item normally has the same chance. A **weight** makes some 
 - 2026-11-02: Sources, odds and pools decided in claude.ai.
 - 2026-11-02: Built in code (Stage C step 4, not tested in-game yet) for the bundles that exist: Basic (renamed from Generic, 50% item chance), Slayer, Clue, Boss, Raid and Trade. Trade+, Barrows and Sailing 1 wait for their expeditions. Boss Epic 5 → 4 so the odds add up to 100. Weights 4 / 1 for Boss and Raid. Found: Uncommon nautical weapons (Anchor, Cutlass, Harpoon, Trident) are in no pool until Sailing 1 exists, so the Sailor tree only gets Rare ones from Boss and Raid Bundles. Boss and raid kill triggers (5.4) still aren't built, so only Dorgeshuun gives Boss Bundles today.
 - 2026-11-02: Boss and raid kill triggers built (boss kill count message 5%, raid completion message 100%), so Boss Bundles no longer come only from Dorgeshuun. Uncommon nautical: the user will change it later (in the CLAUDE.md Parking Lot).
+- 2026-11-03: Sailing 1 built as the "Sailing Bundle" (100% per Sailing Voyage success, 15–40 coins, always an item). Pool as designed; nautical weapons get normal weight here. Placeholder icon: a crate of smuggled rum. Uncommon nautical weapons now drop from it.

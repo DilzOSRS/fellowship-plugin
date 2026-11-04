@@ -86,6 +86,8 @@ public class CharacterCard extends JPanel
 	private boolean shownActive;
 	private Expedition shownExpedition;
 	private Instant shownExpeditionEnd;
+	/** How long the shown trip takes in all, for the voyage's stage. */
+	private Duration shownTripLength;
 	/** True once the shown expedition's time is up and the rewards are waiting. */
 	private boolean expeditionDone;
 	/** When the shown character's injury heals, or null if it isn't resting. */
@@ -299,6 +301,7 @@ public class CharacterCard extends JPanel
 		showGear(view);
 		shownRestingUntil = view.restingUntil;
 		shownExpeditions = view.expeditions;
+		shownTripLength = view.tripLength;
 		showExpedition(view.expedition, view.expeditionEnd);
 
 		// No level caps: a follower can keep levelling past its class advancement and choose when to take it.
@@ -549,8 +552,9 @@ public class CharacterCard extends JPanel
 			}
 			return;
 		}
+		String stage = shownExpedition.getStageName(left, shownTripLength);
 		setExpeditionText("<html>Away on an expedition:<br>" + shownExpedition.getOngoingName()
-			+ "<br>Back in " + formatCountdown(left) + "</html>");
+			+ (stage == null ? "" : "<br>" + stage) + "<br>Back in " + formatCountdown(left) + "</html>");
 	}
 
 	/**

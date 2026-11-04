@@ -1,5 +1,6 @@
 package com.dilzosrs.fellowship;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,8 @@ public class CharacterView
 	final Expedition expedition;
 	/** Null when the character is home. */
 	final Instant expeditionEnd;
+	/** How long the current trip takes in all, or null when home. Sets the voyage's stage. */
+	final Duration tripLength;
 	/** When an injured character is healed; null if it isn't resting. */
 	final Instant restingUntil;
 	/** Equipped gear; null for an empty slot. */
@@ -41,6 +44,7 @@ public class CharacterView
 		this.canEvolve = character.canEvolve();
 		this.expedition = character.getExpedition();
 		this.expeditionEnd = character.getExpeditionEnd();
+		this.tripLength = character.getTripLength();
 		this.restingUntil = character.isResting(Instant.now()) ? character.getRestingUntil() : null;
 		this.weapon = character.getEquipped(GearType.Slot.WEAPON);
 		this.armour = character.getEquipped(GearType.Slot.ARMOUR);

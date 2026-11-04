@@ -28,12 +28,16 @@ public enum BundleType
 	CLUE("Clue Bundle", ItemID.TRAIL_REWARD_CASKET_HARD, 100, 15, 40, 100, 30, 45, 20, 4, 1),
 	// Bought on the Merchant's Grand Exchange trip. It never drops, and gives an item but no coins,
 	// so the trip can't make more coins than it costs.
-	TRADE("Trade Bundle", ItemID.TRAIL_REWARD_CASKET_BEGINNER, 0, 0, 0, 100, 40, 50, 10, 0, 0);
+	TRADE("Trade Bundle", ItemID.TRAIL_REWARD_CASKET_BEGINNER, 0, 0, 0, 100, 40, 50, 10, 0, 0),
+	// "Sailing 1" in the design. Only from the Sailing Voyage (every success). Placeholder icon:
+	// a crate of smuggled rum. No Common nautical items exist, so a Common roll gives other gear.
+	SAILING("Sailing Bundle", ItemID.SAILING_CHARTING_DRINK_CRATE_SMUGGLED_RUM, 0, 15, 40, 100, 50, 30, 15, 4, 1);
 
 	// Item groups from the design's pools.
 	private static final List<GearType> ADVENTURER_GEAR = List.of(GearType.SWORD, GearType.BOW, GearType.STAFF,
 		GearType.PLATE, GearType.LEATHER, GearType.ROBE);
 	private static final List<GearType> GENERIC_GEAR = List.of(GearType.DAGGER, GearType.CLOTHES);
+	private static final List<GearType> ADVENTURER_ARMOUR = List.of(GearType.PLATE, GearType.LEATHER, GearType.ROBE);
 	private static final List<GearType> TRINKETS = List.of(GearType.TRINKET);
 	private static final List<GearType> NAUTICAL_WEAPONS = List.of(GearType.ANCHOR, GearType.CUTLASS,
 		GearType.HARPOON, GearType.TRIDENT);
@@ -67,6 +71,11 @@ public enum BundleType
 		RAID.add(NAUTICAL_WEAPONS, SPECIAL, Rarity.RARE, Rarity.EPIC);
 
 		TRADE.add(ADVENTURER_GEAR, NORMAL, Rarity.COMMON, Rarity.UNCOMMON);
+
+		// Nautical weapons are the main event here, so they get normal weight.
+		SAILING.add(GENERIC_GEAR, NORMAL, Rarity.COMMON, Rarity.UNCOMMON);
+		SAILING.add(NAUTICAL_WEAPONS, NORMAL, Rarity.UNCOMMON, Rarity.RARE);
+		SAILING.add(ADVENTURER_ARMOUR, NORMAL, Rarity.COMMON, Rarity.UNCOMMON, Rarity.RARE);
 	}
 
 	private final String displayName;
