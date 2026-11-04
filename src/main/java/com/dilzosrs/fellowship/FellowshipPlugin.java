@@ -571,7 +571,8 @@ public class FellowshipPlugin extends Plugin
 			{
 				injured.add(partyBefore.get(position));
 			}
-			Duration rest = finished.getDuration(partyBefore.size()).dividedBy(Danger.REST_DIVISOR);
+			// Rest comes from the full trip length: the Skiller speed-up doesn't shorten it.
+			Duration rest = finished.getDuration().dividedBy(Danger.REST_DIVISOR);
 			for (int member : injured)
 			{
 				team.get(member).injure(now.plus(rest));

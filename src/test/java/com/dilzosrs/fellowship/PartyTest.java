@@ -13,7 +13,7 @@ import org.junit.Test;
 public class PartyTest
 {
 	private static final Instant START = Instant.parse("2026-10-26T20:00:00Z");
-	private static final Instant BACK = START.plus(Duration.ofHours(2));
+	private static final Instant BACK = START.plus(Duration.ofMinutes(30));
 
 	private static Team teamOf(int size)
 	{
@@ -30,7 +30,7 @@ public class PartyTest
 	{
 		assertEquals(3, Expedition.DORGESHUUN_CAVES.getMinPartySize());
 		assertEquals(8, Expedition.DORGESHUUN_CAVES.getThreatLevel());
-		assertEquals(Duration.ofHours(2), Expedition.DORGESHUUN_CAVES.getDuration());
+		assertEquals(Duration.ofMinutes(30), Expedition.DORGESHUUN_CAVES.getDuration());
 		assertEquals(1, Expedition.LUMBRIDGE_SWAMP_CAVES.getMinPartySize());
 		assertEquals(3, Expedition.LUMBRIDGE_SWAMP_CAVES.getThreatLevel());
 	}

@@ -1,6 +1,7 @@
 package com.dilzosrs.fellowship;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Random;
 
 /**
@@ -15,7 +16,8 @@ public enum Expedition
 	// Threat 3 since 2026-11-02 (was 1): with class stats, a fresh t2 plus one Common weapon is about safe.
 	LUMBRIDGE_SWAMP_CAVES("Explore the Lumbridge Swamp Caves", Duration.ofMinutes(15), 1_000, 10, 50,
 		3, 1, BundleType.GENERIC, 100),
-	DORGESHUUN_CAVES("Loot the Dorgeshuun Caves", Duration.ofHours(2), 3_000, 40, 100,
+	// 30 minutes since 2026-11-03 (was 2 hours); the user kept its rewards the same.
+	DORGESHUUN_CAVES("Loot the Dorgeshuun Caves", Duration.ofMinutes(30), 3_000, 40, 100,
 		8, 3, BundleType.BOSS, 100),
 	// Only a Merchant can go, alone. It costs coins and brings back no coins, just bundles.
 	GRAND_EXCHANGE_TRADE("Traveling to trade at the Grand Exchange", Duration.ofMinutes(30), 1_000, 0, 0,
@@ -24,15 +26,20 @@ public enum Expedition
 	// (TRANSMUTE_MULTIPLIER times its salvage value). Gives no other coins.
 	TRANSMUTING_METALS("Transmute metals", Duration.ofMinutes(10), 500, 0, 0,
 		0, 1, null, 0, 1, 0, CharacterClass.ALCHEMIST),
-	// Skillers only (the whole Skiller tree), 1 to 3 of them. Safe. 1.5 hours for one, and each
-	// extra Skiller makes it 30 minutes shorter. Unlocks at Guild level 2 once a Skiller has joined.
+	// Skillers only (the whole Skiller tree), 1 to 3 of them. Safe. 1.5 hours before the Skiller
+	// speed-up (since 2026-11-03; it used to be 30 minutes shorter per extra Skiller).
+	// Unlocks at Guild level 2 once a Skiller has joined.
 	FORTIFYING_ENCAMPMENT("Secure and Fortify the Encampment", Duration.ofMinutes(90), 5_000, 0, 0,
-		0, 1, 3, Duration.ofMinutes(30), BundleType.GENERIC, 25, 1, 0, CharacterClass.SKILLER);
+		0, 1, 3, BundleType.GENERIC, 25, 1, 0, CharacterClass.SKILLER);
 
 	/** Transmuting an item gives this many times its salvage value in coins. */
 	static final int TRANSMUTE_MULTIPLIER = 2;
 	/** The Guild level Fortifying the Encampment needs. */
 	static final int FORTIFY_GUILD_LEVEL = 2;
+	/** Each Skiller-tree follower in the party takes this percent off the trip, on every expedition. */
+	static final int SKILLER_PERCENT_OFF = 25;
+	/** Only this many Skillers count, so a trip never gets shorter than a quarter of its length. */
+	static final int MAX_SKILLERS_COUNTED = 3;
 
 	private final String displayName;
 	private final Duration duration;
@@ -42,8 +49,6 @@ public enum Expedition
 	private final int threatLevel;
 	private final int minPartySize;
 	private final int maxPartySize;
-	/** How much shorter the trip is for each member past the smallest party. */
-	private final Duration shorterPerExtra;
 	/** A bundle that can come back too, or null. */
 	private final BundleType bonusBundle;
 	private final int bonusBundleChance;
@@ -66,17 +71,15 @@ public enum Expedition
 		int bonusBundleCount, int cost, CharacterClass requiredClass)
 	{
 		this(displayName, duration, xpReward, minCoins, maxCoins, threatLevel, partySize, partySize,
-			Duration.ZERO, bonusBundle, bonusBundleChance, bonusBundleCount, cost, requiredClass);
+			bonusBundle, bonusBundleChance, bonusBundleCount, cost, requiredClass);
 	}
 
 	Expedition(String displayName, Duration duration, int xpReward, int minCoins, int maxCoins,
-		int threatLevel, int minPartySize, int maxPartySize, Duration shorterPerExtra,
-		BundleType bonusBundle, int bonusBundleChance, int bonusBundleCount, int cost,
+		int threatLevel, int minPartySize, int maxPartySize, BundleType bonusBundle, int bonusBundleChance, int bonusBundleCount, int cost,
 		CharacterClass requiredClass)
 	{
 		this.minPartySize = minPartySize;
 		this.maxPartySize = maxPartySize;
-		this.shorterPerExtra = shorterPerExtra;
 		this.bonusBundleCount = bonusBundleCount;
 		this.cost = cost;
 		this.requiredClass = requiredClass;
@@ -116,16 +119,23 @@ public enum Expedition
 		}
 	}
 
-	/** How long it takes with the smallest party (the longest it can take). */
+	/** How long it takes with no Skillers along (the longest it can take). */
 	public Duration getDuration()
 	{
 		return duration;
 	}
 
-	/** How long it takes with this many members: shorter for each one past the smallest party. */
-	public Duration getDuration(int partySize)
+	/** How long it takes with this many Skiller-tree followers in the party: 25% less for each, up to 3. */
+	public Duration getDuration(int skillers)
 	{
-		return duration.minus(shorterPerExtra.multipliedBy(Math.max(0, partySize - minPartySize)));
+		int counted = Math.max(0, Math.min(skillers, MAX_SKILLERS_COUNTED));
+		return duration.multipliedBy(100 - SKILLER_PERCENT_OFF * counted).dividedBy(100);
+	}
+
+	/** How many of these classes are in the Skiller tree (an advanced Harvester still counts). */
+	public static int countSkillers(Collection<CharacterClass> classes)
+	{
+		return (int) classes.stream().filter(c -> c.getBaseClass() == CharacterClass.SKILLER).count();
 	}
 
 	/** Fellowship XP for each party member. Class bonuses don't apply, but the level cap does. */

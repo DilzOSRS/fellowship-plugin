@@ -187,9 +187,15 @@ public class Team
 				return false;
 			}
 		}
+		List<CharacterClass> classes = new ArrayList<>();
 		for (int index : indexes)
 		{
-			characters.get(index).startExpedition(expedition, start, indexes.size());
+			classes.add(characters.get(index).getCharacterClass());
+		}
+		int skillers = Expedition.countSkillers(classes);
+		for (int index : indexes)
+		{
+			characters.get(index).startExpedition(expedition, start, skillers);
 		}
 		return true;
 	}

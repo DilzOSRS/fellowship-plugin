@@ -411,6 +411,12 @@ public class CharacterCard extends JPanel
 	/**
 	 * Show one button per class the character can evolve into, or hide them if evolvingFrom is null.
 	 */
+	/** How long the trip takes if this follower goes alone (or leads with no Skillers along). */
+	private Duration soloDuration(Expedition expedition)
+	{
+		return expedition.getDuration(Expedition.countSkillers(Collections.singletonList(shownClass)));
+	}
+
 	private void showEvolveButtons(CharacterClass evolvingFrom)
 	{
 		evolveButtons.removeAll();
@@ -490,7 +496,7 @@ public class CharacterCard extends JPanel
 				info.setFont(FontManager.getRunescapeSmallFont());
 				info.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 				row.add(info, BorderLayout.CENTER);
-				JButton button = new JButton("Send (" + formatDuration(option.getDuration()) + ")");
+				JButton button = new JButton("Send (" + formatDuration(soloDuration(option)) + ")");
 				button.addActionListener(e -> confirmSend(option));
 				row.add(button, BorderLayout.SOUTH);
 				expeditionButtons.add(row);
@@ -590,7 +596,7 @@ public class CharacterCard extends JPanel
 		int choice = JOptionPane.showConfirmDialog(
 			this,
 			"Send " + shownName + " to " + expedition.getDisplayName() + " for "
-				+ formatDuration(expedition.getDuration()) + "?\n\n"
+				+ formatDuration(soloDuration(expedition)) + "?\n\n"
 				+ (expedition.getCost() > 0 ? "It costs " + expedition.getCost() + " coins.\n" : "")
 				+ "It won't earn XP from your OSRS play while it's away.",
 			"Expedition",

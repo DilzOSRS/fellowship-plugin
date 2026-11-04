@@ -14,7 +14,7 @@ import org.junit.Test;
 public class DangerTest
 {
 	private static final Instant START = Instant.parse("2026-10-26T20:00:00Z");
-	private static final Instant BACK = START.plus(Duration.ofHours(2));
+	private static final Instant BACK = START.plus(Duration.ofMinutes(30));
 
 	/** A Random whose nextDouble always returns the same value. */
 	private static Random rolling(double value)

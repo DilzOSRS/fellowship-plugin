@@ -7,8 +7,8 @@ Every expedition, built and planned. The built ones are copied from the code (`E
 | Expedition | Who can go | Party | Length | Threat | XP each | Coins | Bundle | Unlocks when |
 |---|---|---|---|---|---|---|---|---|
 | Explore the Lumbridge Swamp Caves | Anyone | 1 | 15 min | 1 (→ 3 planned) | 1,000 | 10–50 | Generic, every success | First class advancement. First run rescues someone (Skillers can join) |
-| Secure and Fortify the Encampment | Skiller tree | 1–3 | 1.5 h, −30 min per extra Skiller | Safe | 5,000 | None | 25% Generic | Guild level 2 + a Skiller. First run lets a 2nd Adventurer join |
-| Loot the Dorgeshuun Caves | Anyone | Exactly 3 | 2 h | 8 (user: fine as is) | 3,000 | 40–100 | 20% Boss | You have 3 followers |
+| Secure and Fortify the Encampment | Skiller tree | 1–3 | ~~1.5 h, −30 min per extra Skiller~~ 1.5 h before the Skiller speed-up: 67.5 / 45 / 22.5 min with 1 / 2 / 3 Skillers (2026-11-03) | Safe | 5,000 | None | 25% Generic | Guild level 2 + a Skiller. First run lets a 2nd Adventurer join |
+| Loot the Dorgeshuun Caves | Anyone | Exactly 3 | ~~2 h~~ 30 min (2026-11-03: user wanted it shorter; rewards kept the same) | 8 (user: fine as is) | 3,000 | 40–100 | 20% Boss | You have 3 followers |
 | Traveling to trade at the Grand Exchange | Merchant only | 1 | 30 min | Safe | 1,000 | Costs 100, gives none | 5 Trade Bundles | First Merchant |
 | Transmute metals | Alchemist only | 1 | 10 min | Safe | 500 | 2× the salvage value of the item it carries | None | First Alchemist |
 
@@ -21,6 +21,10 @@ Every expedition, built and planned. The built ones are copied from the code (`E
 | Slayer Master's hunt | Slayer Master | TBD (safe or flat threat) | As long as your real Slayer task | Your kills decide the loot | Idea |
 | Barrows Raid | 3 Combat, needs a Vyre | 20 | 30 min | 1 Barrows Bundle per real Barrows chest opened while it runs | v1 end-game |
 | One or two rungs between 8 and 15 | ? | ~10–12 | ? | ? | **Needed** |
+
+## Skiller speed-up (built 2026-11-03)
+- Every Skiller-tree follower in a party takes **25% off the trip** (less time, not 1.25× speed), on **every expedition**, dangerous ones included. It stacks: 1 / 2 / 3 Skillers = 25 / 50 / 75% off. Only 3 count, so a trip never drops below a quarter of its length.
+- Injury rest is a third of the **full** trip: ~~the shortened trip~~ (2026-11-03, user: Skillers don't shorten rest).
 
 ## How party power works (from the code)
 - Party ATK and DEF are the **average** of the members, not the sum. So threat numbers are per follower: threat 15 means the average member needs about 15 ATK. A weak member drags everyone down, and bigger parties aren't stronger.
@@ -40,3 +44,8 @@ Every expedition, built and planned. The built ones are copied from the code (`E
 | Mixed Uncommon | 43% / 72% | 50% / 78% | 53% / 81% |
 | Mixed Epic | 0% / 0% | 0% / 0% | 0% / 6% |
 - 15 = a real Rare-gear challenge, specialist gear rewarded. 17 = the last big step before the raid (Claude's sweet spot if it should be that). 18 crowds the raid at 20.
+
+## History
+- 2026-11-03: Dorgeshuun 2 h → 30 min, rewards unchanged (user's choice; Claude warned it pays 4× faster per hour, Boss Bundles included).
+- 2026-11-03: Fortify no longer gets 30 min shorter per extra Skiller; always 1.5 h until the Skiller speed-up (upcoming-changes item 3).
+- 2026-11-03: Skiller speed-up built: 25% less time per Skiller-tree follower, stacking, on every expedition, only 3 count (user's choices).
